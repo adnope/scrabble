@@ -1,0 +1,9 @@
+---
+Checks: 'clang-analyzer-*,
+cppcoreguidelines-*,
+performance-*,
+bugprone-*,
+google-*,
+readability-*,
+-readability-identifier-length,
+-bugprone-easily-swappable-parameters'

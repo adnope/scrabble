@@ -9,9 +9,28 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 add_compile_options(-Wall -Wextra -Wshadow -Wnon-virtual-dtor -pedantic)
 
-find_package(SDL2 REQUIRED)
-find_package(SDL2_image REQUIRED)
-find_package(SDL2_ttf REQUIRED)
+include(FetchContent)
+
+FetchContent_Declare(
+  SDL2
+  GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
+  GIT_TAG release-2.32.8
+)
+FetchContent_MakeAvailable(SDL2)
+
+FetchContent_Declare(
+  SDL2_image
+  GIT_REPOSITORY https://github.com/libsdl-org/SDL_image.git
+  GIT_TAG release-2.8.8
+)
+FetchContent_MakeAvailable(SDL2_image)
+
+FetchContent_Declare(
+  SDL2_ttf
+  GIT_REPOSITORY https://github.com/libsdl-org/SDL_ttf.git
+  GIT_TAG release-2.24.0
+)
+FetchContent_MakeAvailable(SDL2_ttf)
 
 add_subdirectory(external)
 add_subdirectory(scrabble)
