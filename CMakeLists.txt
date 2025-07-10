@@ -1,0 +1,17 @@
+cmake_minimum_required(VERSION 3.14)
+project(c4ai LANGUAGES CXX)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_BUILD_TYPE Debug)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+
+add_compile_options(-Wall -Wextra -Wshadow -Wnon-virtual-dtor -pedantic)
+
+find_package(SDL2 REQUIRED)
+find_package(SDL2_image REQUIRED)
+find_package(SDL2_ttf REQUIRED)
+
+add_subdirectory(external)
+add_subdirectory(scrabble)
