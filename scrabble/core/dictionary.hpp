@@ -1,19 +1,22 @@
 #pragma once
 
 #include <string>
-
-#include "dawgdic/dictionary.h"
+#include <unordered_set>
 
 namespace core {
 class Dictionary {
  public:
   Dictionary();
 
-  explicit Dictionary(const std::string& dict_file);
+  explicit Dictionary(const std::string& dictionary_text_file);
 
-  bool Contain(const std::string& word) const;
+  bool Contains(const std::string& word, bool debug = false) const;
+
+  size_t Size() { return dictionary.size(); }
 
  private:
-  dawgdic::Dictionary dictionary;
+  std::unordered_set<std::string> dictionary;
+
+  void LoadDictionaryTextFile(const std::string& dictionary_text_file);
 };
 }  // namespace core

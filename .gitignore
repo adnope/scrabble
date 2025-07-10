@@ -1,5 +1,6 @@
 .cache/
 .idea/
+.git/
 .vscode/
 build/
 

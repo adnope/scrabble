@@ -1,3 +1,3 @@
-add_library(core STATIC dictionary.cpp)
-
-target_link_libraries(core PRIVATE external)
+target_sources(scrabble PRIVATE
+  dictionary.cpp
+)
