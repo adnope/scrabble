@@ -32,9 +32,9 @@ bool test_sdl2_libraries() {
   // Create an SDL window
   constexpr int WIDTH = 800;
   constexpr int HEIGHT = 600;
-  SDL_Window *window =
-      SDL_CreateWindow("SDL2 Test", SDL_WINDOWPOS_UNDEFINED,
-                       SDL_WINDOWPOS_UNDEFINED, WIDTH, HEIGHT, SDL_WINDOW_SHOWN);
+  SDL_Window *window = SDL_CreateWindow("SDL2 Test", SDL_WINDOWPOS_UNDEFINED,
+                                        SDL_WINDOWPOS_UNDEFINED, WIDTH, HEIGHT,
+                                        SDL_WINDOW_SHOWN);
   if (window == nullptr) {
     std::cerr << "SDL_CreateWindow Error: " << SDL_GetError() << '\n';
     TTF_Quit();
@@ -56,8 +56,9 @@ bool test_sdl2_libraries() {
   }
 
   // Load an image using SDL2_image
-  SDL_Surface *image = IMG_Load(
-      "assets/images/scrabble-ui.png");  // Ensure you have this image in the working directory
+  SDL_Surface *image =
+      IMG_Load("assets/images/scrabble-ui.png");  // Ensure you have this image
+                                                  // in the working directory
   if (image == nullptr) {
     std::cerr << "IMG_Load Error: " << IMG_GetError() << '\n';
     SDL_DestroyRenderer(renderer);
@@ -84,8 +85,8 @@ bool test_sdl2_libraries() {
 
   // Load font for text rendering using SDL2_ttf
   constexpr int FONT_SIZE = 24;
-  TTF_Font *font =
-      TTF_OpenFont("assets/fonts/Jersey15-Regular.ttf", FONT_SIZE);  // Ensure you have a font file
+  TTF_Font *font = TTF_OpenFont("assets/fonts/Jersey15-Regular.ttf",
+                                FONT_SIZE);  // Ensure you have a font file
   if (font == nullptr) {
     std::cerr << "TTF_OpenFont Error: " << TTF_GetError() << '\n';
     SDL_DestroyTexture(texture);
@@ -147,7 +148,8 @@ bool test_sdl2_libraries() {
     SDL_RenderCopy(renderer, texture, NULL, NULL);
 
     // Render the text
-    constexpr SDL_Rect textRect = {50, 50, 200, 50};  // Position and size of the text
+    constexpr SDL_Rect textRect = {50, 50, 200,
+                                   50};  // Position and size of the text
     SDL_RenderCopy(renderer, textTexture, NULL, &textRect);
 
     // Present the renderer
@@ -183,7 +185,7 @@ int main() {
   bag.PrintBagInfo();
 
   auto drawn_tiles = bag.DrawTiles(7);
-  for (const auto& tile : drawn_tiles) {
+  for (const auto &tile : drawn_tiles) {
     tile.PrintTileInfo();
   }
   std::cout << '\n';
