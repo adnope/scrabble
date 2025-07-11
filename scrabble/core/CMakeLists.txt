@@ -1,3 +1,3 @@
 target_sources(scrabble PRIVATE
-  dictionary.cpp
+  dictionary.cpp tile.cpp bag.cpp
 )
