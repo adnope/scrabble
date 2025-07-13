@@ -8,7 +8,7 @@ namespace core {
 class Bag {
  public:
   Bag();
-
+  // cai nay nen la AddTile chu nhi ?
   void AddTiles(const Tile& tile);
 
   void AddTiles(const std::vector<Tile>& tiles);

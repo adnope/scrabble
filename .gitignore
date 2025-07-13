@@ -3,6 +3,6 @@
 .git/
 .vscode/
 build/
-
+CMakeFiles/
 *.exe
 assets/dictionaries/*.txt
