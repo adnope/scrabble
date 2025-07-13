@@ -1,14 +1,24 @@
 #pragma once
 
+#include <cstdint>
 #include <string>
 #include <unordered_set>
 
 namespace core {
+
 class Dictionary {
  public:
+  enum DictionaryType : uint8_t { TWL, CSW };
+
   Dictionary();
 
-  explicit Dictionary(const std::string& dictionary_text_file);
+  explicit Dictionary(DictionaryType type);
+
+  explicit Dictionary(const std::string& dictionary_filepath);
+
+  void ChangeDictionary(DictionaryType type);
+
+  void LoadCustomDictionary(const std::string& dictionary_filepath);
 
   bool Contains(const std::string& word, bool debug = false) const;
 
@@ -16,7 +26,5 @@ class Dictionary {
 
  private:
   std::unordered_set<std::string> dictionary;
-
-  void LoadDictionaryTextFile(const std::string& dictionary_text_file);
 };
 }  // namespace core

@@ -170,8 +170,10 @@ bool test_sdl2_libraries() {
 }
 
 int main() {
+  using DictType = core::Dictionary::DictionaryType;
+
   auto start = std::chrono::high_resolution_clock::now();
-  core::Dictionary dictionary;
+  core::Dictionary dictionary(DictType::CSW);
   auto end = std::chrono::high_resolution_clock::now();
   std::cout << "Word count: " << dictionary.Size() << '\n';
   std::chrono::duration<double, std::milli> time_taken = end - start;
@@ -179,16 +181,18 @@ int main() {
 
   dictionary.Contains("juxtaposition", true);
 
-  // test_sdl2_libraries();
-
   core::Bag bag;
   bag.PrintBagInfo();
 
-  auto drawn_tiles = bag.DrawTiles(7);
+  constexpr int number_of_tiles_drawn = 7;
+  auto drawn_tiles = bag.DrawTiles(number_of_tiles_drawn);
   for (const auto &tile : drawn_tiles) {
     tile.PrintTileInfo();
   }
   std::cout << '\n';
   bag.PrintBagInfo();
+
+  // test_sdl2_libraries();
+
   return 0;
 }
