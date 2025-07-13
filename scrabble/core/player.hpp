@@ -1,36 +1,39 @@
 #pragma once
 #include <string>
 #include <vector>
+
 #include "bag.hpp"
+#include "board.hpp"
 #include "dictionary.hpp"
 #include "tile.hpp"
-//#include "board.hpp"
 
-using namespace std;
-
+namespace core {
 class Player {
  public:
-  Player(const string &playerName, int score, int numTiles);
-  ~Player();
-  string getName();
-  void getTiles(vector<core::Tile *>);
-  void useTiles(char c);
-  void exchangeTile(char c, core::Bag &bag);
-  void addScore(int score);
-  void subtractScore(int score);
-  bool findTile(char c, int &pos);
-  void returnTile(char c, std::vector<core::Tile *> &usedTiles);
-  bool executePlaceMove(core::Bag &bag, core::Dictionary &dictionary, core::Board &board,
-                        char dir, int row, int col, std::string word);
-  void executeExchangeMove(core::Bag &bag, std::string word);
+  Player(const std::string &player_name, int score, int number_of_tiles);
 
-  int getScore();
-  int getHandSize();
-  int getHandScore();
-  std::vector<core::Tile *> _handTiles;
+  void GetTiles(const std::vector<Tile> &tiles);
+  void UseTiles(char c);
+  void ExchangeTile(char c, Bag &bag);
+  bool FindTile(char c, int &pos);
+  void ReturnTile(char c, std::vector<Tile> &used_tiles);
+
+  void AddScore(int score);
+  void SubtractScore(int score);
+
+  bool ExecutePlaceMove(Bag &bag, Dictionary &dictionary, Board &board,
+                        char dir, int row, int col, std::string word);
+  void ExecuteExchangeMove(Bag &bag, std::string word);
+
+  int GetScore() const { return score; }
+  int GetHandSize() const { return static_cast<int>(hand_tiles.size()); }
+  std::string GetName() { return player_name; }
+  int GetHandScore();
 
  private:
-  int _score;
-  int _numTiles;
-  std::string _playerName;
+  int score;
+  int num_tiles;
+  std::string player_name;
+  std::vector<Tile> hand_tiles;
 };
+}  // namespace core

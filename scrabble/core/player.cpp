@@ -1,122 +1,91 @@
-#include <vector>
-#include <string>
-#include <iostream>
-#include <set>
-#include "bag.hpp"
-#include "dictionary.hpp"
-#include "tile.hpp"
 #include "player.hpp"
-// #include "square.hpp"
-// #include "board.hpp"
 
-using namespace std;
+#include <string>
+#include <vector>
 
-Player::Player(const string &playerName, int score, int numTiles) {
-    _playerName = playerName;
-    _score = score;
-    _numTiles = numTiles;
+#include "bag.hpp"
+#include "tile.hpp"
+
+namespace core {
+Player::Player(const std::string &player_name, int score, int number_of_tiles)
+    : score(score), num_tiles(number_of_tiles), player_name(player_name) {}
+
+// Hàm này sẽ trả về số điểm của người chơi
+void Player::GetTiles(const std::vector<Tile> &tiles) {
+  for (Tile tile : tiles) {
+    hand_tiles.push_back(tile);
+  }
 }
-
-Player::~Player() {
-    // Destructor player
-    for(int i = 0; i < _handTiles.size(); ++i) {
-        delete _handTiles[i];
-    }
-}
-
-// Hàm này sẽ trả về số điểm của người chơi 
-string Player::getName() {
-    return _playerName;
-}
-
-// Hàm này sẽ trả về số điểm của người chơi 
-void Player::getTiles(vector<core::Tile *> tiles) {
-    for (auto tile : tiles) {
-        _handTiles.push_back(tile);
-    }
-}
-
 
 // Hàm này sẽ sử dụng viên gạch trong tay người chơi
-void Player::useTiles(char c) {
-    int pos;
-    for(int i=0; i<_handTiles.size(); ++i) {
-        //need getLetter() function in Tile class
-        if(c == _handTiles[i]->getLetter()){
-			_handTiles.erase(_handTiles.begin() + i);
-			break;
-		}
+void Player::UseTiles(char c) {
+  for (int i = 0; i < static_cast<int>(hand_tiles.size()); ++i) {
+    // need getLetter() function in Tile class
+    if (c == hand_tiles[i].GetLetter()) {
+      hand_tiles.erase(hand_tiles.begin() + i);
+      break;
     }
+  }
+}
+
+// Hàm này sẽ trao đổi một viên gạch với bag
+void Player::ExchangeTile(char c, Bag &bag) {
+  int pos = 0;
+  if (FindTile(c, pos)) {
+    // Funtion AddTiles in Bag class nó là AddTiles(const Tile& tile),
+    // AddTiles(const std::vector<Tile>& tiles) nên mình sẽ dùng AddTiles(const
+    // Tile& tile) để thêm từng viên vào bag hiện tại nó không nhận 1 phẩn từ có
+    // thể là do nhầm 2 funtion với nhau
+    bag.AddTiles(hand_tiles[pos]);
+    hand_tiles.erase(hand_tiles.begin() + pos);
+  }
 }
 
 // Hàm này sẽ tìm vị trí của viên gạch trong tay người chơi
-bool Player::findTile(char c, int &pos) {
-    for(int i=0; i<_handTiles.size(); ++i) {
-        if i == pos
-            continue;
-        //need getLetter() function in Tile class
-        if(c == _handTiles[i]->getLetter()) {
-            pos = i;
-            return true;
-        }
+bool Player::FindTile(char c, int &pos) {
+  for (int i = 0; i < static_cast<int>(hand_tiles.size()); ++i) {
+    if (i == pos) {
+      continue;
     }
-    return false;
-}
-
-// Hàm này sẽ đưa viên gạch trong tay người chơi vào vector các viên gạch đã sử dụng
-// Nếu từ trên ô hợp lệ -> xóa khỏi tay người chơi 
-// Khi đó usedTiles sẽ chứa các viên gạch đã sử dụng sẽ sử dụng trong tính điểm và xóa khỏi tay người chơi
-void Player::returnTile(char c, std::vector<core::Tile *> &usedTiles) {
-    int pos;
-    if (findTile(c, pos)) {
-        usedTiles.push_back(_handTiles[pos]);
-        _handTiles.erase(_handTiles.begin() + pos);
+    // need getLetter() function in Tile class
+    if (c == hand_tiles[i].GetLetter()) {
+      pos = i;
+      return true;
     }
+  }
+  return false;
 }
 
-//Hàm này sẽ trao đổi một viên gạch với bag
-void Player::exchangeTile(char c, core::Bag &bag) {
-    int pos;
-    if (findTile(c, pos)) {
-        // Funtion AddTiles in Bag class nó là AddTiles(const Tile& tile), AddTiles(const std::vector<Tile>& tiles)
-        // nên mình sẽ dùng AddTiles(const Tile& tile) để thêm từng viên vào bag
-        // hiện tại nó không nhận 1 phẩn từ có thể là do nhầm 2 funtion với nhau
-        bag.AddTiles(_handTiles[pos]);
-        _handTiles.erase(_handTiles.begin() + pos);
-    }
+// Hàm này sẽ đưa viên gạch trong tay người chơi vào vector các viên gạch đã sử
+// dụng Nếu từ trên ô hợp lệ -> xóa khỏi tay người chơi Khi đó usedTiles sẽ chứa
+// các viên gạch đã sử dụng sẽ sử dụng trong tính điểm và xóa khỏi tay người
+// chơi
+void Player::ReturnTile(char c, std::vector<Tile> &used_tiles) {
+  int pos = 0;
+  if (FindTile(c, pos)) {
+    used_tiles.push_back(hand_tiles[pos]);
+    hand_tiles.erase(hand_tiles.begin() + pos);
+  }
 }
 
+void Player::AddScore(int score_to_add) { score += score_to_add; }
 
-void Player::addScore(int score) {
-    _score += score;
+void Player::SubtractScore(int score_to_subtract) { score -= score_to_subtract; }
+
+int Player::GetHandScore() {
+  int handScore = 0;
+  for (const Tile &tile : hand_tiles) {
+    // Need getPoints() function in Tile class
+    handScore += tile.GetPoints();
+  }
+  return handScore;
 }
 
-void Player::subtractScore(int score) {
-    _score -= score;
+void Player::ExecuteExchangeMove(Bag &bag, std::string word) {
+  // Implementation of place move logic
+  for (int i = 0; i < static_cast<int>(word.length()); ++i) {
+    this->ExchangeTile(word[i], bag);
+  }
+  this->GetTiles(bag.DrawTiles(static_cast<int>(word.length())));
 }
-
-int Player::getScore() {
-    return _score;
-}
-
-int Player::getHandSize() {
-    return _handTiles.size();
-}
-
-int Player::getHandScore() {
-    int handScore = 0;
-    for (const auto &tile : _handTiles) {
-        //Need getPoints() function in Tile class
-        handScore += tile->getPoints();
-    }
-    return handScore;
-}
-
-void Player::executeExchangeMove(core::Bag &bag, std::string word) {
-    // Implementation of place move logic
-    for(int i = 0; i < (int)word.length(); ++i) {
-        this->exchangeTile(word[i], bag);
-    }
-    this->getTiles(bag.DrawTiles(word.length()));
-}
-
+}  // namespace core
