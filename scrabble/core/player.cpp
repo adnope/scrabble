@@ -26,7 +26,7 @@ void Player::GetTiles(Bag &bag, const int number_of_tiles) {
 // Hàm này sẽ sử dụng viên gạch trong tay người chơi
 void Player::UseTiles(const char c) {
   for (int i = 0; i < static_cast<int>(hand_tiles_.size()); ++i) {
-    if (c == hand_tiles_[i].GetLetter()) {
+    if (c == hand_tiles_[i].letter()) {
       hand_tiles_.erase(hand_tiles_.begin() + i);
       break;
     }
@@ -52,7 +52,7 @@ bool Player::FindTile(const char c, int &pos) {
     if (i == pos) {
       continue;
     }
-    if (c == hand_tiles_[i].GetLetter()) {
+    if (c == hand_tiles_[i].letter()) {
       pos = i;
       return true;
     }
@@ -75,7 +75,7 @@ void Player::ReturnTile(const char c, std::vector<Tile> &used_tiles) {
 int Player::GetHandScore() const {
   int hand_score = 0;
   for (const Tile &tile : hand_tiles_) {
-    hand_score += tile.GetPoints();
+    hand_score += tile.points();
   }
   return hand_score;
 }
@@ -106,7 +106,7 @@ bool Player::ExecutePlaceMove(Bag &bag, Dictionary &dict, Board &board,
 
   bool is_valid = true;
   // Tính điểm nếu từ hợp lệ
-  words = board.AllWords(row, col, dir, word_score, used_tiles);
+  words = board.GetAllWords(row, col, dir, word_score, used_tiles);
 
   for (size_t i = 0; i < words.size(); i++) {
     for (size_t j = 0; j < words[i].length(); j++) {
@@ -147,7 +147,7 @@ bool Player::ExecutePlaceMove(Bag &bag, Dictionary &dict, Board &board,
   // Da dat len ban
   bool is_placed = false;
   while (i < number_of_used_tiles) {
-    const char tile_letter = used_tiles[i].GetLetter();
+    const char tile_letter = used_tiles[i].letter();
     is_placed = board.IsOccupiedAt(row - 1, col - 1);
     if (dir == '-') {
       if (!is_placed) {
@@ -174,7 +174,7 @@ bool Player::ExecutePlaceMove(Bag &bag, Dictionary &dict, Board &board,
     } else {
       this->GetTiles(bag, number_of_used_tiles);
     }
-    board.SetFirstMove(false);
+    board.set_first_move_status(false);
     return true;
   }
 }

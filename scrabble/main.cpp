@@ -147,12 +147,12 @@ bool test_sdl2_libraries() {
     SDL_RenderClear(renderer);
 
     // Render the image
-    SDL_RenderCopy(renderer, texture, NULL, NULL);
+    SDL_RenderCopy(renderer, texture, nullptr, nullptr);
 
     // Render the text
     constexpr SDL_Rect textRect = {50, 50, 200,
                                    50};  // Position and size of the text
-    SDL_RenderCopy(renderer, textTexture, NULL, &textRect);
+    SDL_RenderCopy(renderer, textTexture, nullptr, &textRect);
 
     // Present the renderer
     SDL_RenderPresent(renderer);
@@ -178,7 +178,7 @@ int main() {
 
   core::Bag bag;
 
-  // test_sdl2_libraries();
+  test_sdl2_libraries();
 
   return 0;
 }

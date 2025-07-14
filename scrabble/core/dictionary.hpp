@@ -22,7 +22,7 @@ class Dictionary {
 
   bool Contains(const std::string& word) const;
 
-  size_t Size() { return dictionary_.size(); }
+  size_t size() const { return dictionary_.size(); }
 
  private:
   std::unordered_set<std::string> dictionary_;

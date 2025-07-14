@@ -9,7 +9,7 @@
 namespace core {
 Dictionary::Dictionary() { ChangeDictionary(CSW); }
 
-Dictionary::Dictionary(DictionaryType type) { ChangeDictionary(type); }
+Dictionary::Dictionary(const DictionaryType type) { ChangeDictionary(type); }
 
 Dictionary::Dictionary(const std::string& dictionary_filepath) {
   LoadCustomDictionary(dictionary_filepath);
@@ -32,7 +32,7 @@ void Dictionary::LoadCustomDictionary(const std::string& dictionary_filepath) {
   spdlog::info("[Dictionary] Dictionary word count: {}", dictionary_.size());
 }
 
-void Dictionary::ChangeDictionary(DictionaryType type) {
+void Dictionary::ChangeDictionary(const DictionaryType type) {
   switch (type) {
     case CSW:
       LoadCustomDictionary("assets/dictionaries/csw6.dict");

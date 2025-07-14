@@ -1,7 +1,5 @@
 ---
 BasedOnStyle: Google
-IndentWidth: 2
-Language: Cpp
 # AccessModifierOffset: -2
 # AlignAfterOpenBracket: Align
 # AlignArrayOfStructures: None

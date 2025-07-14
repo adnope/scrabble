@@ -5,17 +5,18 @@ class Tile {
  public:
   Tile() : letter_{}, use_{}, points_{} {}
 
-  Tile(char letter, int points) : letter_(letter), use_(letter), points_(points) {}
-
-  char GetLetter() const { return letter_; }
-
-  int GetPoints() const { return points_; }
+  Tile(const char letter, const int points)
+      : letter_(letter), use_(letter), points_(points) {}
 
   bool IsBlank() const { return letter_ == '?'; }
 
-  char GetUse() const { return use_; }
+  void UseAs(const char use) { use_ = use; }
 
-  void UseAs(char use) { use_ = use; }
+  char get_use() const { return use_; }
+
+  char letter() const { return letter_; }
+
+  int points() const { return points_; }
 
   void PrintTileInfo() const;
 

@@ -30,7 +30,7 @@ scrabble() {
   build scrabble
   exec_path="build/bin/scrabble"
   if [ -x "$exec_path" ]; then
-    "$exec_path" $1 $2 $3
+    "$exec_path" "$1" "$2" "$3"
   else
     echo "Error: '$exec_path' not found"
   fi
@@ -40,7 +40,7 @@ runTest() {
   build scrabble_test
   exec_path="build/bin/scrabble_test"
   if [ -x "$exec_path" ]; then
-    "$exec_path" $1 $2 $3
+    "$exec_path" "$1" "$2" "$3"
   else
     echo "Error: '$exec_path' not found"
   fi

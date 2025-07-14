@@ -12,11 +12,12 @@ class Board {
  public:
   explicit Board();
 
-  std::vector<std::string> AllWords(int row, int col, char dir, int& score,
-                                    std::vector<Tile>& usedTiles);
+  std::vector<std::string> GetAllWords(int row, int col, char dir, int& score,
+                                       const std::vector<Tile>& usedTiles);
 
-  std::string VerticalWord(Tile t, int row, int col, int& points);
-  std::string HorizontalWord(Tile t, int row, int col, int& points);
+  std::string GetVerticalWord(Tile tile, int row, int col, int& points);
+
+  std::string GetHorizontalWord(Tile tile, int row, int col, int& points);
 
   void PlaceTile(const Tile& tile, const int row, const int col) {
     board_.at(row).at(col).PlaceTile(tile);
@@ -26,20 +27,21 @@ class Board {
     return board_.at(row).at(col).IsOccupied();
   }
 
-  void SetFirstMove(const bool is_first_move) {
+  void set_first_move_status(const bool is_first_move) {
     is_first_move_ = is_first_move;
   }
-  bool GetFirstMove() const { return is_first_move_; }
 
-  const auto& GetBoard() { return board_; }
+  bool is_first_move() const { return is_first_move_; }
 
-  static constexpr int WIDTH = 15;
-  static constexpr int HEIGHT = 15;
-  static constexpr int START_POS_X = 7;
-  static constexpr int START_POS_Y = 7;
+  const auto& board() { return board_; }
+
+  static constexpr int kWidth = 15;
+  static constexpr int kHeight = 15;
+  static constexpr int kStartPosRow = 7;
+  static constexpr int kStartPosColumn = 7;
 
  private:
-  std::array<std::array<Square, WIDTH>, HEIGHT> board_;
+  std::array<std::array<Square, kWidth>, kHeight> board_;
 
   bool is_first_move_;
 };

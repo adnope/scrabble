@@ -12,17 +12,17 @@ class Square {
   Square(int row, int col, const std::string& symbol,
          const std::string& multiplier);
 
-  std::string GetValue();
-
-  std::string GetMultiplier();
-
-  std::string ValueForBoard();
-
   void PlaceTile(Tile t);
 
-  int GetTilePoints();
+  bool IsOccupied() const { return has_tile_; }
 
-  bool IsOccupied() const;
+  std::string value();
+
+  std::string value_in_board();
+
+  int tile_points() const { return tile_.points(); }
+
+  std::string multiplier() const { return multiplier_; }
 
  private:
   int row_, col_;
