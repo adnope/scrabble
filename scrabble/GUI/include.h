@@ -3,7 +3,11 @@
 #define INCLUDE_H
 
 // Standard library includes
-#include<bits/stdc++.h>
+#include<string>
+#include<vector>
+#include<iostream>
+#include<math.h>
+#include<iomanip>
 
 // SDL2 includes
 #include<SDL2/SDL.h>

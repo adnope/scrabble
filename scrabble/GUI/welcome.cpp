@@ -163,8 +163,8 @@ int main() {
     SDL_Color welcomeColor = {255, 255, 255, 255};
     welcomeletter* welcome = new welcomeletter("This is Scrabble Game", renderer, welcomeX, welcomeY, font, welcomeColor);
     //khởi tạo start
-    int startX = windowWidth / 2 +100;
-    int startY = windowHeight / 2 -100;
+    int startX = windowWidth / 2 + 100;
+    int startY = windowHeight / 2 - 100;
     SDL_Color startColor = {0, 255, 0, 255};
     START* startButton = new START("START", renderer, startX, startY, font, startColor);
     //khởi tạo quit
