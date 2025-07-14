@@ -9,7 +9,7 @@
 #include "tile.hpp"
 
 namespace core {
-Board::Board() : isFirstMove(true) {
+Board::Board() : is_first_move(true) {
   std::string default_board =
       "t..2...t...2..t\n"
       ".d...3...3...d.\n"
@@ -80,7 +80,8 @@ Board::Board() : isFirstMove(true) {
 // int Board::getStartY() const { return START_POS_Y; }
 
 // This function finds vertical words connected to newly placed horizontal tiles
-std::string Board::VerticalWord(Tile tile, int row, int col, int& points) {
+std::string Board::VerticalWord(Tile tile, const int row, const int col,
+                                int& points) {
   std::string word;
   if (tile.IsBlank()) {
     word += tile.GetUse();
@@ -104,7 +105,8 @@ std::string Board::VerticalWord(Tile tile, int row, int col, int& points) {
 }
 
 // this function finds horizontal words connected to newly placed vertical tiles
-std::string Board::HorizontalWord(Tile t, int row, int col, int& points) {
+std::string Board::HorizontalWord(Tile t, const int row, const int col,
+                                  int& points) {
   std::string word;
   if (t.IsBlank()) {
     word += t.GetUse();
@@ -130,7 +132,8 @@ std::string Board::HorizontalWord(Tile t, int row, int col, int& points) {
 // this function finds the main word created by placed tiles
 // makes calls to find other words formed by a move
 // also scores every word that is created by a move
-std::vector<std::string> Board::AllWords(int row, int col, char dir, int& score,
+std::vector<std::string> Board::AllWords(const int row, const int col,
+                                         const char dir, int& score,
                                          std::vector<Tile>& usedTiles) {
   std::vector<std::string> words;
   std::string tempWord;
@@ -240,7 +243,7 @@ std::vector<std::string> Board::AllWords(int row, int col, char dir, int& score,
       }
     }
     // if not first move and no adjacent tiles, return empty vector
-    if (!isValid && !isFirstMove) {
+    if (!isValid && !is_first_move) {
       return words;
     }
     // add word to be checked by dictionary
@@ -305,15 +308,11 @@ std::vector<std::string> Board::AllWords(int row, int col, char dir, int& score,
       down++;
       counter++;
     }
-    if (!isValid && !isFirstMove) {
+    if (!isValid && !is_first_move) {
       return words;
     }
     words.push_back(tempWord);
   }
   return words;
 }
-
-void Board::SetFirstMove(bool b) { isFirstMove = b; }
-
-bool Board::GetFirstMove() const { return isFirstMove; }
 }  // namespace core

@@ -18,8 +18,18 @@ class Board {
   std::string VerticalWord(Tile t, int row, int col, int& points);
   std::string HorizontalWord(Tile t, int row, int col, int& points);
 
-  void SetFirstMove(bool b);
-  bool GetFirstMove() const;
+  void PlaceTile(const Tile& tile, const int row, const int col) {
+    board.at(row).at(col).PlaceTile(tile);
+  }
+
+  bool IsOccupiedAt(const int row, const int col) const {
+    return board.at(row).at(col).IsOccupied();
+  }
+
+  void SetFirstMove(const bool b) { is_first_move = b; }
+  bool GetFirstMove() const { return is_first_move; }
+
+  const auto& GetBoard() { return board; }
 
   // int getRowSize() const;
   // int getColSize() const;
@@ -32,9 +42,9 @@ class Board {
   static constexpr int START_POS_Y = 7;
 
  private:
-  //std::vector<std::vector<Square> > boardVect;
+  // std::vector<std::vector<Square> > boardVect;
   std::array<std::array<Square, WIDTH>, HEIGHT> board;
 
-  bool isFirstMove;
+  bool is_first_move;
 };
 }  // namespace core
