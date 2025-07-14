@@ -1,1 +1,0 @@
-target_sources(scrabble PRIVATE welcome.cpp)

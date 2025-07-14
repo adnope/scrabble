@@ -1,19 +1,15 @@
-
-#ifndef INCLUDE_H
-#define INCLUDE_H
+#ifndef SCRABBLE_GUI_INCLUDE_H
+#define SCRABBLE_GUI_INCLUDE_H
 
 // Standard library includes
-#include<string>
-#include<vector>
-#include<iostream>
-#include<math.h>
-#include<iomanip>
+#include <iostream>
+#include <vector>
+#include <string>
 
-// SDL2 includes
-#include"SDL2/SDL.h"
-#include"SDL_ttf.h"
-
-// Project-specific includes
-// #include "some_project_header.h"
-
-#endif // INCLUDE_H
+// Add your project-specific includes here
+#include<SDL2/SDL.h>
+#include "SDL_image.h"
+#include "SDL_ttf.h"
+// Add your declarations, classes, and function prototypes here
+#include "needsbasic.h"
+#endif // SCRABBLE_GUI_INCLUDE_H
