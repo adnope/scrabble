@@ -14,10 +14,10 @@ include(FetchContent)
 set(FETCHCONTENT_QUIET FALSE)
 
 FetchContent_Declare(
-    SDL2
-    GIT_REPOSITORY  https://github.com/libsdl-org/SDL
-    GIT_TAG         release-2.32.8
-    GIT_PROGRESS    TRUE
+  SDL2
+  GIT_REPOSITORY  https://github.com/libsdl-org/SDL
+  GIT_TAG         release-2.32.8
+  GIT_PROGRESS    TRUE
 )
 FetchContent_MakeAvailable(SDL2)
 
@@ -35,4 +35,6 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(SDL2_ttf)
 
+add_subdirectory(external)
 add_subdirectory(scrabble)
+add_subdirectory(test)

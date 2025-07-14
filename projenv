@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+
+# Source this env to quickly build, clear and run by these aliases
+# Run: source projenv
+
+# Function to autocomplete the "build" command argument (target)
+_complete_build_target() {
+  local cur="${words[-1]}"
+  local targets=("all" "scrabble" "scrabble_test")
+  
+  _describe 'target' targets
+}
+compdef _complete_build_target build
+
+build() {
+  target=$1
+  if [ ! -d build ]; then
+    mkdir build
+    cmake -DCMAKE_C_COMPILER:FILEPATH=clang -DCMAKE_CXX_COMPILER:FILEPATH=clang++ --no-warn-unused-cli -S . -B build -G Ninja
+  fi
+  if [ -z "$target" ]; then
+    clean
+    cmake --build build --config Debug --target all --
+  else
+    cmake --build build --config Debug --target "$target"
+  fi
+}
+
+scrabble() {
+  build scrabble
+  exec_path="build/bin/scrabble"
+  if [ -x "$exec_path" ]; then
+    "$exec_path" $1 $2 $3
+  else
+    echo "Error: '$exec_path' not found"
+  fi
+}
+
+runTest() {
+  build scrabble_test
+  exec_path="build/bin/scrabble_test"
+  if [ -x "$exec_path" ]; then
+    "$exec_path" $1 $2 $3
+  else
+    echo "Error: '$exec_path' not found"
+  fi
+}
