@@ -3,13 +3,14 @@
 
 // Standard library includes
 #include <iostream>
-#include <vector>
 #include <string>
+#include <vector>
 
 // Add your project-specific includes here
-#include<SDL2/SDL.h>
+#include <SDL2/SDL.h>
+
 #include "SDL_image.h"
 #include "SDL_ttf.h"
 // Add your declarations, classes, and function prototypes here
 #include "needsbasic.h"
-#endif // SCRABBLE_GUI_INCLUDE_H
+#endif  // SCRABBLE_GUI_INCLUDE_H

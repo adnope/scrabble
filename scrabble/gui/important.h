@@ -34,4 +34,4 @@ class Text {};
 class Image {};
 class Button_Text {};
 class Button_Image {};
-#endif // IMPORTANT_H
+#endif  // IMPORTANT_H
