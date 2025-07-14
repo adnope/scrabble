@@ -9,7 +9,7 @@
 #include "tile.hpp"
 
 namespace core {
-Board::Board() : is_first_move(true) {
+Board::Board() : is_first_move_(true) {
   std::string default_board =
       "t..2...t...2..t\n"
       ".d...3...3...d.\n"
@@ -35,32 +35,32 @@ Board::Board() : is_first_move(true) {
     for (int j = 0; j < WIDTH; ++j) {
       if (i == START_POS_Y && j == START_POS_X) {
         Square s(i, j, "***", "2n");
-        board.at(i).at(j) = s;
+        board_.at(i).at(j) = s;
       } else {
         switch (row[j]) {
           case '.': {
             Square square(i, j, "...", "1");
-            board.at(i).at(j) = square;
+            board_.at(i).at(j) = square;
             break;
           }
           case '2': {
             Square square(i, j, "2L ", "2");
-            board.at(i).at(j) = square;
+            board_.at(i).at(j) = square;
             break;
           }
           case '3': {
             Square square(i, j, "3L ", "3");
-            board.at(i).at(j) = square;
+            board_.at(i).at(j) = square;
             break;
           }
           case 'd': {
             Square square(i, j, "2W ", "2n");
-            board.at(i).at(j) = square;
+            board_.at(i).at(j) = square;
             break;
           }
           case 't': {
             Square square(i, j, "3W ", "3n");
-            board.at(i).at(j) = square;
+            board_.at(i).at(j) = square;
             break;
           }
           default:
@@ -91,14 +91,14 @@ std::string Board::VerticalWord(Tile tile, const int row, const int col,
   points += tile.GetPoints();
   int up = row - 1;
   int down = row + 1;
-  while (up >= 0 && board.at(up).at(col).IsOccupied()) {
-    word.insert(0, board.at(up).at(col).GetValue());
-    points += board.at(up).at(col).GetTilePoints();
+  while (up >= 0 && board_.at(up).at(col).IsOccupied()) {
+    word.insert(0, board_.at(up).at(col).GetValue());
+    points += board_.at(up).at(col).GetTilePoints();
     --up;
   }
-  while (down <= WIDTH - 1 && board.at(down).at(col).IsOccupied()) {
-    word += board.at(down).at(col).GetValue();
-    points += board.at(down).at(col).GetTilePoints();
+  while (down <= WIDTH - 1 && board_.at(down).at(col).IsOccupied()) {
+    word += board_.at(down).at(col).GetValue();
+    points += board_.at(down).at(col).GetTilePoints();
     ++down;
   }
   return word;
@@ -116,14 +116,14 @@ std::string Board::HorizontalWord(Tile t, const int row, const int col,
   points += t.GetPoints();
   int right = col + 1;
   int left = col - 1;
-  while (left >= 0 && board.at(row).at(left).IsOccupied()) {
-    word.insert(0, board.at(row).at(left).GetValue());
-    points += board.at(row).at(left).GetTilePoints();
+  while (left >= 0 && board_.at(row).at(left).IsOccupied()) {
+    word.insert(0, board_.at(row).at(left).GetValue());
+    points += board_.at(row).at(left).GetTilePoints();
     --left;
   }
-  while (right <= HEIGHT - 1 && board.at(row).at(right).IsOccupied()) {
-    word += board.at(row).at(right).GetValue();
-    points += board.at(row).at(right).GetTilePoints();
+  while (right <= HEIGHT - 1 && board_.at(row).at(right).IsOccupied()) {
+    word += board_.at(row).at(right).GetValue();
+    points += board_.at(row).at(right).GetTilePoints();
     ++right;
   }
   return word;
@@ -159,7 +159,7 @@ std::vector<std::string> Board::AllWords(const int row, const int col,
   } else {
     tempWord += usedTiles[0].GetLetter();
   }
-  std::string mult = board.at(row - 1).at(col - 1).GetMultiplier();
+  std::string mult = board_.at(row - 1).at(col - 1).GetMultiplier();
   if (mult == "3n") {
     multiplier *= 3;
     score += (3 * usedTiles[0].GetPoints());
@@ -186,20 +186,20 @@ std::vector<std::string> Board::AllWords(const int row, const int col,
     }
     while (left >= 0 && right < HEIGHT) {
       // add letters left adjacent to first placed tile
-      if (board.at(row - 1).at(left).IsOccupied()) {
+      if (board_.at(row - 1).at(left).IsOccupied()) {
         isValid = true;
-        tempWord.insert(0, board.at(row - 1).at(left).GetValue());
-        score += (board.at(row - 1).at(left).GetTilePoints()) * multiplier;
+        tempWord.insert(0, board_.at(row - 1).at(left).GetValue());
+        score += (board_.at(row - 1).at(left).GetTilePoints()) * multiplier;
         if (left != 0) {
           left--;
           continue;
         }
       }
       // add letters right adjacent to placed tiles
-      if (board.at(row - 1).at(right).IsOccupied()) {
+      if (board_.at(row - 1).at(right).IsOccupied()) {
         isValid = true;
-        tempWord += board.at(row - 1).at(right).GetValue();
-        score += (board.at(row - 1).at(right).GetTilePoints()) * multiplier;
+        tempWord += board_.at(row - 1).at(right).GetValue();
+        score += (board_.at(row - 1).at(right).GetTilePoints()) * multiplier;
         if (right != HEIGHT - 1) {
           right++;
           continue;
@@ -215,7 +215,7 @@ std::vector<std::string> Board::AllWords(const int row, const int col,
         } else {
           tempWord += usedTiles[counter].GetLetter();
         }
-        mult = board.at(row - 1).at(right).GetMultiplier();
+        mult = board_.at(row - 1).at(right).GetMultiplier();
         if (mult == "3n") {
           secondaryMultiplier *= 3;
           multiplier *= 3;
@@ -243,7 +243,7 @@ std::vector<std::string> Board::AllWords(const int row, const int col,
       }
     }
     // if not first move and no adjacent tiles, return empty vector
-    if (!isValid && !is_first_move) {
+    if (!isValid && !is_first_move_) {
       return words;
     }
     // add word to be checked by dictionary
@@ -260,17 +260,17 @@ std::vector<std::string> Board::AllWords(const int row, const int col,
       words.push_back(word2);
     }
     while (up >= 0 && down < WIDTH) {
-      if (board.at(up).at(col - 1).IsOccupied()) {
+      if (board_.at(up).at(col - 1).IsOccupied()) {
         isValid = true;
-        tempWord.insert(0, board.at(up).at(col - 1).GetValue());
-        score += (board.at(up).at(col - 1).GetTilePoints()) * multiplier;
+        tempWord.insert(0, board_.at(up).at(col - 1).GetValue());
+        score += (board_.at(up).at(col - 1).GetTilePoints()) * multiplier;
         up--;
         continue;
       }
-      if (board.at(down).at(col - 1).IsOccupied()) {
+      if (board_.at(down).at(col - 1).IsOccupied()) {
         isValid = true;
-        tempWord += board.at(down).at(col - 1).GetValue();
-        score += (board.at(down).at(col - 1).GetTilePoints()) * multiplier;
+        tempWord += board_.at(down).at(col - 1).GetValue();
+        score += (board_.at(down).at(col - 1).GetTilePoints()) * multiplier;
         down++;
         continue;
       }
@@ -282,7 +282,7 @@ std::vector<std::string> Board::AllWords(const int row, const int col,
       } else {
         tempWord += usedTiles[counter].GetLetter();
       }
-      mult = board.at(down).at(col - 1).GetMultiplier();
+      mult = board_.at(down).at(col - 1).GetMultiplier();
       if (mult == "3n") {
         secondaryMultiplier *= 3;
         multiplier *= 3;
@@ -308,7 +308,7 @@ std::vector<std::string> Board::AllWords(const int row, const int col,
       down++;
       counter++;
     }
-    if (!isValid && !is_first_move) {
+    if (!isValid && !is_first_move_) {
       return words;
     }
     words.push_back(tempWord);

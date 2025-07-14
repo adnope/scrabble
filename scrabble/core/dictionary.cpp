@@ -16,7 +16,7 @@ Dictionary::Dictionary(const std::string& dictionary_filepath) {
 }
 
 void Dictionary::LoadCustomDictionary(const std::string& dictionary_filepath) {
-  dictionary.clear();
+  dictionary_.clear();
   std::ifstream dict_stream(dictionary_filepath);
   if (!dict_stream.is_open()) {
     spdlog::error("[Dictionary] Cannot open dictionary file: {}",
@@ -27,9 +27,9 @@ void Dictionary::LoadCustomDictionary(const std::string& dictionary_filepath) {
   std::string line;
   while (std::getline(dict_stream, line)) {
     std::transform(line.begin(), line.end(), line.begin(), ::tolower);
-    dictionary.emplace(line);
+    dictionary_.emplace(line);
   }
-  spdlog::info("[Dictionary] Dictionary word count: {}", dictionary.size());
+  spdlog::info("[Dictionary] Dictionary word count: {}", dictionary_.size());
 }
 
 void Dictionary::ChangeDictionary(DictionaryType type) {
@@ -44,6 +44,6 @@ void Dictionary::ChangeDictionary(DictionaryType type) {
 }
 
 bool Dictionary::Contains(const std::string& word) const {
-  return dictionary.find(word) != dictionary.end();
+  return dictionary_.find(word) != dictionary_.end();
 }
 }  // namespace core

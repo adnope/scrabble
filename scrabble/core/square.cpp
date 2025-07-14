@@ -7,46 +7,46 @@
 namespace core {
 Square::Square(int row, int col, const std::string& symbol,
                const std::string& multiplier)
-    : row(row),
-      col(col),
-      hasTile(false),
-      symbol(symbol),
-      multiplier(multiplier) {}
+    : row_(row),
+      col_(col),
+      has_tile_(false),
+      symbol_(symbol),
+      multiplier_(multiplier) {}
 
 std::string Square::GetValue() {
-  if (hasTile) {
-    if (tile.IsBlank()) {
+  if (has_tile_) {
+    if (tile_.IsBlank()) {
       // std::cout << tile.GetUse() << '\n';
-      return std::string{tile.GetUse()};
+      return std::string{tile_.GetUse()};
     }
-    return std::string{tile.GetLetter()};
+    return std::string{tile_.GetLetter()};
   }
-  return symbol;
+  return symbol_;
 }
 
 std::string Square::ValueForBoard() {
-  if (hasTile) {
-    if (tile.IsBlank()) {
-      return std::string{tile.GetUse()} + "0 ";
+  if (has_tile_) {
+    if (tile_.IsBlank()) {
+      return std::string{tile_.GetUse()} + "0 ";
     }
     std::string temp =
-        std::string{tile.GetLetter()} + std::to_string(tile.GetPoints());
+        std::string{tile_.GetLetter()} + std::to_string(tile_.GetPoints());
     if (temp == "Z10") {
       return temp;
     }
     return temp + " ";
   }
-  return symbol;
+  return symbol_;
 }
 
 void Square::PlaceTile(Tile t) {
-  tile = t;
-  hasTile = true;
+  tile_ = t;
+  has_tile_ = true;
 }
 
-int Square::GetTilePoints() { return tile.GetPoints(); }
+int Square::GetTilePoints() { return tile_.GetPoints(); }
 
-std::string Square::GetMultiplier() { return multiplier; }
+std::string Square::GetMultiplier() { return multiplier_; }
 
-bool Square::IsOccupied() const { return hasTile; }
+bool Square::IsOccupied() const { return has_tile_; }
 }  // namespace core

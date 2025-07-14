@@ -61,17 +61,17 @@ Bag::Bag() {
     int count{};
     line_stream >> letter >> points >> count;
 
-    addTileToBag(tile_bag, letter, points, count);
+    addTileToBag(tile_bag_, letter, points, count);
   }
 
   Shuffle();
   spdlog::info("[Bag] Bag initialized");
 }
 
-void Bag::AddTiles(const Tile& tile) { tile_bag.emplace_back(tile); }
+void Bag::AddTiles(const Tile& tile) { tile_bag_.emplace_back(tile); }
 
 void Bag::AddTiles(const std::vector<Tile>& tiles) {
-  tile_bag.insert(tile_bag.end(), tiles.begin(), tiles.end());
+  tile_bag_.insert(tile_bag_.end(), tiles.begin(), tiles.end());
 }
 
 /**
@@ -87,27 +87,27 @@ std::vector<Tile> Bag::DrawTiles(const int number_of_tiles) {
   }
   std::vector<Tile> drawn_tiles;
   for (int i = 0; i < number_of_tiles && GetNumberOfTilesRemaining() > 0; ++i) {
-    drawn_tiles.emplace_back(tile_bag.back());
-    tile_bag.pop_back();
+    drawn_tiles.emplace_back(tile_bag_.back());
+    tile_bag_.pop_back();
   }
 
   return drawn_tiles;
 }
 
 int Bag::GetNumberOfTilesRemaining() const {
-  return static_cast<int>(tile_bag.size());
+  return static_cast<int>(tile_bag_.size());
 }
 
 void Bag::Shuffle() {
   std::random_device rd;
   std::mt19937 rng(rd());
-  std::shuffle(tile_bag.begin(), tile_bag.end(), rng);
+  std::shuffle(tile_bag_.begin(), tile_bag_.end(), rng);
 }
 
 void Bag::PrintBagInfo() const {
   spdlog::info("[Bag]");
   std::cout << "Bag content: \n";
-  for (const auto& tile : tile_bag) {
+  for (const auto& tile : tile_bag_) {
     tile.PrintTileInfo();
   }
   std::cout << '\n';
