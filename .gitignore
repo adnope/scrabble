@@ -4,7 +4,8 @@
 .vscode/
 build/
 CMakeFiles/
+_deps/
+Testing/
+
 *.exe
 assets/dictionaries/*.txt
-
-_deps/
