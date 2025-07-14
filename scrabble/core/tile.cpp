@@ -4,6 +4,6 @@
 
 namespace core {
 void Tile::PrintTileInfo() const {
-  std::cout << letter << points << ' ';
+  std::cout << letter_ << points_ << ' ';
 }
 }  // namespace core

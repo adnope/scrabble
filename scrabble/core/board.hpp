@@ -19,22 +19,19 @@ class Board {
   std::string HorizontalWord(Tile t, int row, int col, int& points);
 
   void PlaceTile(const Tile& tile, const int row, const int col) {
-    board.at(row).at(col).PlaceTile(tile);
+    board_.at(row).at(col).PlaceTile(tile);
   }
 
   bool IsOccupiedAt(const int row, const int col) const {
-    return board.at(row).at(col).IsOccupied();
+    return board_.at(row).at(col).IsOccupied();
   }
 
-  void SetFirstMove(const bool b) { is_first_move = b; }
-  bool GetFirstMove() const { return is_first_move; }
+  void SetFirstMove(const bool is_first_move) {
+    is_first_move_ = is_first_move;
+  }
+  bool GetFirstMove() const { return is_first_move_; }
 
-  const auto& GetBoard() { return board; }
-
-  // int getRowSize() const;
-  // int getColSize() const;
-  // int getStartX() const;
-  // int getStartY() const;
+  const auto& GetBoard() { return board_; }
 
   static constexpr int WIDTH = 15;
   static constexpr int HEIGHT = 15;
@@ -42,9 +39,8 @@ class Board {
   static constexpr int START_POS_Y = 7;
 
  private:
-  // std::vector<std::vector<Square> > boardVect;
-  std::array<std::array<Square, WIDTH>, HEIGHT> board;
+  std::array<std::array<Square, WIDTH>, HEIGHT> board_;
 
-  bool is_first_move;
+  bool is_first_move_;
 };
 }  // namespace core

@@ -11,23 +11,23 @@
 namespace core {
 Player::Player(const std::string &player_name, const int score,
                const int number_of_tiles)
-    : player_score(score),
-      num_tiles(number_of_tiles),
-      player_name(player_name) {}
+    : player_score_(score),
+      num_tiles_(number_of_tiles),
+      player_name_(player_name) {}
 
 // Hàm này sẽ trả về số điểm của người chơi
 void Player::GetTiles(Bag &bag, const int number_of_tiles) {
   auto tiles = bag.DrawTiles(number_of_tiles);
   for (Tile tile : tiles) {
-    hand_tiles.push_back(tile);
+    hand_tiles_.push_back(tile);
   }
 }
 
 // Hàm này sẽ sử dụng viên gạch trong tay người chơi
 void Player::UseTiles(const char c) {
-  for (int i = 0; i < static_cast<int>(hand_tiles.size()); ++i) {
-    if (c == hand_tiles[i].GetLetter()) {
-      hand_tiles.erase(hand_tiles.begin() + i);
+  for (int i = 0; i < static_cast<int>(hand_tiles_.size()); ++i) {
+    if (c == hand_tiles_[i].GetLetter()) {
+      hand_tiles_.erase(hand_tiles_.begin() + i);
       break;
     }
   }
@@ -41,18 +41,18 @@ void Player::ExchangeTile(const char c, Bag &bag) {
     // AddTiles(const std::vector<Tile>& tiles) nên mình sẽ dùng AddTiles(const
     // Tile& tile) để thêm từng viên vào bag hiện tại nó không nhận 1 phẩn từ có
     // thể là do nhầm 2 funtion với nhau
-    bag.AddTiles(hand_tiles[pos]);
-    hand_tiles.erase(hand_tiles.begin() + pos);
+    bag.AddTiles(hand_tiles_[pos]);
+    hand_tiles_.erase(hand_tiles_.begin() + pos);
   }
 }
 
 // Hàm này sẽ tìm vị trí của viên gạch trong tay người chơi
 bool Player::FindTile(const char c, int &pos) {
-  for (int i = 0; i < static_cast<int>(hand_tiles.size()); ++i) {
+  for (int i = 0; i < static_cast<int>(hand_tiles_.size()); ++i) {
     if (i == pos) {
       continue;
     }
-    if (c == hand_tiles[i].GetLetter()) {
+    if (c == hand_tiles_[i].GetLetter()) {
       pos = i;
       return true;
     }
@@ -67,14 +67,14 @@ bool Player::FindTile(const char c, int &pos) {
 void Player::ReturnTile(const char c, std::vector<Tile> &used_tiles) {
   int pos = 0;
   if (FindTile(c, pos)) {
-    used_tiles.push_back(hand_tiles[pos]);
-    hand_tiles.erase(hand_tiles.begin() + pos);
+    used_tiles.push_back(hand_tiles_[pos]);
+    hand_tiles_.erase(hand_tiles_.begin() + pos);
   }
 }
 
 int Player::GetHandScore() const {
   int hand_score = 0;
-  for (const Tile &tile : hand_tiles) {
+  for (const Tile &tile : hand_tiles_) {
     hand_score += tile.GetPoints();
   }
   return hand_score;
@@ -134,7 +134,7 @@ bool Player::ExecutePlaceMove(Bag &bag, Dictionary &dict, Board &board,
   const int number_of_used_tiles = static_cast<int>(used_tiles.size());
   // Nếu tất cả các viên gạch đã sử dụng đều là viên gạch trong tay người chơi
   // bonus points
-  if (number_of_used_tiles == num_tiles) {
+  if (number_of_used_tiles == num_tiles_) {
     constexpr int BONUS_SCORE = 50;
     word_score += BONUS_SCORE;
   }

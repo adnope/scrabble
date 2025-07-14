@@ -22,6 +22,6 @@ class Bag {
   void PrintBagInfo() const;
 
  private:
-  std::vector<Tile> tile_bag;
+  std::vector<Tile> tile_bag_;
 };
 }  // namespace core

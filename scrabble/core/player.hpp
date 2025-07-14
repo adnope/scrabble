@@ -22,24 +22,24 @@ class Player {
 
   void ReturnTile(char c, std::vector<Tile> &used_tiles);
 
-  void AddScore(const int score) { player_score += score; }
+  void AddScore(const int score) { player_score_ += score; }
 
-  void SubtractScore(const int score) { player_score -= score; }
+  void SubtractScore(const int score) { player_score_ -= score; }
 
   bool ExecutePlaceMove(Bag &bag, Dictionary &dictionary, Board &board,
                         char dir, int row, int col, const std::string &word);
 
   void ExecuteExchangeMove(Bag &bag, const std::string &word);
 
-  int GetScore() const { return player_score; }
-  int GetHandSize() const { return static_cast<int>(hand_tiles.size()); }
-  std::string GetName() const { return player_name; }
+  int GetScore() const { return player_score_; }
+  int GetHandSize() const { return static_cast<int>(hand_tiles_.size()); }
+  std::string GetName() const { return player_name_; }
   int GetHandScore() const;
 
  private:
-  int player_score;
-  int num_tiles;
-  std::string player_name;
-  std::vector<Tile> hand_tiles;
+  int player_score_;
+  int num_tiles_;
+  std::string player_name_;
+  std::vector<Tile> hand_tiles_;
 };
 }  // namespace core
