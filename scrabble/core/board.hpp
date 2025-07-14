@@ -32,7 +32,7 @@ class Board {
   static constexpr int START_POS_Y = 7;
 
  private:
-  // std::vector<std::vector<Square> > boardVect;
+  //std::vector<std::vector<Square> > boardVect;
   std::array<std::array<Square, WIDTH>, HEIGHT> board;
 
   bool isFirstMove;
