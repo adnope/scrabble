@@ -1,6 +1,5 @@
 #include "square.hpp"
 
-#include <iostream>
 #include <string>
 
 #include "tile.hpp"
@@ -17,7 +16,7 @@ Square::Square(int row, int col, const std::string& symbol,
 std::string Square::GetValue() {
   if (hasTile) {
     if (tile.IsBlank()) {
-      std::cout << tile.GetUse() << '\n';
+      // std::cout << tile.GetUse() << '\n';
       return std::string{tile.GetUse()};
     }
     return std::string{tile.GetLetter()};

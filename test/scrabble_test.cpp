@@ -1,12 +1,38 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+#include <fstream>
+#include <string>
+
+#include "core/dictionary.hpp"
 #include "doctest/doctest.h"
 
-int factorial(int number) { return number <= 1 ? number : factorial(number - 1) * number; }
-
-TEST_CASE("testing the factorial function") {
-  CHECK(factorial(1) == 1);
-  CHECK(factorial(2) == 2);
-  CHECK(factorial(3) == 6);
-  CHECK(factorial(10) == 3628800); 
-  CHECK(true);
+TEST_CASE("dictionary test") {
+  SUBCASE("csw") {
+    core::Dictionary dictionary(core::Dictionary::CSW);
+    std::ifstream csw6_stream("assets/dictionaries/csw6.dict");
+    std::string line;
+    int word_count = 0;
+    int word_contained_count = 0;
+    while (std::getline(csw6_stream, line)) {
+      ++word_count;
+      if (dictionary.Contains(line)) {
+        ++word_contained_count;
+      }
+    }
+    CHECK(word_count == word_contained_count);
+  }
+  SUBCASE("twl") {
+    core::Dictionary dictionary(core::Dictionary::TWL);
+    std::ifstream twl6_stream("assets/dictionaries/twl6.dict");
+    std::string line;
+    int word_count = 0;
+    int word_contained_count = 0;
+    while (std::getline(twl6_stream, line)) {
+      ++word_count;
+      if (dictionary.Contains(line)) {
+        ++word_contained_count;
+      }
+    }
+    CHECK(word_count == word_contained_count);
+  }
 }
+

@@ -1,7 +1,9 @@
 #include "tile.hpp"
 
-#include <iostream>
+#include "iostream"
 
 namespace core {
-void Tile::PrintTileInfo() const { std::cout << letter << points << " "; }
+void Tile::PrintTileInfo() const {
+  std::cout << letter << points << ' ';
+}
 }  // namespace core

@@ -20,7 +20,7 @@ class Dictionary {
 
   void LoadCustomDictionary(const std::string& dictionary_filepath);
 
-  bool Contains(const std::string& word, bool debug = false) const;
+  bool Contains(const std::string& word) const;
 
   size_t Size() { return dictionary.size(); }
 

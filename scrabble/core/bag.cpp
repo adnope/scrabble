@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "spdlog/spdlog.h"
 #include "tile.hpp"
 
 namespace core {
@@ -64,6 +65,7 @@ Bag::Bag() {
   }
 
   Shuffle();
+  spdlog::info("[Bag] Bag initialized");
 }
 
 void Bag::AddTiles(const Tile& tile) { tile_bag.emplace_back(tile); }
@@ -79,7 +81,8 @@ void Bag::AddTiles(const std::vector<Tile>& tiles) {
 std::vector<Tile> Bag::DrawTiles(const int number_of_tiles) {
   constexpr int MAX_TILES = 7;
   if (number_of_tiles > MAX_TILES || number_of_tiles < 0) {
-    std::cerr << "Invalid tiles draw. You must only draw from 0 to 7 tiles.\n";
+    spdlog::error("Invalid tiles draw. You must only draw from 0 to {} tiles.",
+                  MAX_TILES);
     return {};
   }
   std::vector<Tile> drawn_tiles;
@@ -102,10 +105,12 @@ void Bag::Shuffle() {
 }
 
 void Bag::PrintBagInfo() const {
+  spdlog::info("[Bag]");
   std::cout << "Bag content: \n";
   for (const auto& tile : tile_bag) {
     tile.PrintTileInfo();
   }
-  std::cout << "\nTiles remaining: " << GetNumberOfTilesRemaining() << '\n';
+  std::cout << '\n';
+  std::cout << "Tiles remaining: " << GetNumberOfTilesRemaining() << '\n';
 }
 }  // namespace core

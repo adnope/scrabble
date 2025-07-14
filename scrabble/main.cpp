@@ -1,4 +1,5 @@
-#include <chrono>
+#define FMT_HEADER_ONLY
+
 #include <iostream>
 
 #include "SDL2/SDL.h"
@@ -6,9 +7,7 @@
 #include "SDL_ttf.h"
 #include "core/bag.hpp"
 #include "core/dictionary.hpp"
-
-#include "fmt/base.h"
-#include "fmt/core.h"
+#include "spdlog/spdlog.h"
 
 bool test_sdl2_libraries() {
   // Initialize SDL2
@@ -173,31 +172,13 @@ bool test_sdl2_libraries() {
 }
 
 int main() {
-  // using DictType = core::Dictionary::DictionaryType;
+  using DictType = core::Dictionary::DictionaryType;
 
-  // auto start = std::chrono::high_resolution_clock::now();
-  // core::Dictionary dictionary(DictType::CSW);
-  // auto end = std::chrono::high_resolution_clock::now();
-  // std::cout << "Word count: " << dictionary.Size() << '\n';
-  // std::chrono::duration<double, std::milli> time_taken = end - start;
-  // std::cout << "Dictionary init time: " << time_taken.count() << " ms\n";
+  core::Dictionary dictionary(DictType::CSW);
 
-  // dictionary.Contains("juxtaposition", true);
-
-  // core::Bag bag;
-  // bag.PrintBagInfo();
-
-  // constexpr int number_of_tiles_drawn = 7;
-  // auto drawn_tiles = bag.DrawTiles(number_of_tiles_drawn);
-  // for (const auto &tile : drawn_tiles) {
-  //   tile.PrintTileInfo();
-  // }
-  // std::cout << '\n';
-  // bag.PrintBagInfo();
+  core::Bag bag;
 
   // test_sdl2_libraries();
-
-  fmt::print("This is a string: \"{}\"", "string");
 
   return 0;
 }

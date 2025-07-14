@@ -10,8 +10,8 @@
 #include<iomanip>
 
 // SDL2 includes
-#include<SDL2/SDL.h>
-#include<SDL2/SDL_ttf.h>
+#include"SDL2/SDL.h"
+#include"SDL_ttf.h"
 
 // Project-specific includes
 // #include "some_project_header.h"

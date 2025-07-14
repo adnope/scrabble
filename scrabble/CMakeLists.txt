@@ -1,9 +1,9 @@
 add_executable(scrabble main.cpp)
 
 add_subdirectory(core)
+add_subdirectory(gui)
 
 target_link_libraries(scrabble PRIVATE
-  external
   core
   SDL2::SDL2
   SDL2_ttf::SDL2_ttf
