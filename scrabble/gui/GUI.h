@@ -2,8 +2,10 @@
 #define SCRABBLE_GUI_GUI_H
 
 #include "include.h"
-int choose;
-struct GUI{
+extern int choose;  // <-- khai báo chứ không định nghĩa
+
+class GUI {
+public:
     void run_GUI_first();
 };
 #endif // SCRABBLE_GUI_GUI_H

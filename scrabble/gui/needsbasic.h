@@ -2,8 +2,7 @@
 #define NEEDSBASIC_H
 #include "include.h"
 
-SDL_Window *window;
-SDL_Renderer *renderer;
-SDL_Event e;
-bool quit;
+extern SDL_Window *window;
+extern SDL_Renderer *renderer;
+extern bool quit;
 #endif  // NEEDSBASIC_H

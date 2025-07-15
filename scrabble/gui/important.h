@@ -1,4 +1,3 @@
-#pragma once
 #ifndef IMPORTANT_H
 #define IMPORTANT_H
 
@@ -81,11 +80,12 @@ public:
     Button_Image(std::string imagePath, int x, int y, SDL_Renderer* renderer, bool press = false);
     ~Button_Image();
     bool checkpress();
+    void reset();
     bool loadImage(SDL_Renderer* renderer);
     void handleEvent(const SDL_Event& e);
     void onClick();
     bool isInside(int x, int y) const;
-
+    void print_Image(SDL_Renderer* renderer);
 protected:
     std::string path;
     int x, y;
