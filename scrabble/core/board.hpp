@@ -4,15 +4,23 @@
 #include <string>
 #include <vector>
 
+#include "enumerations.hpp"
 #include "square.hpp"
 #include "tile.hpp"
 
 namespace core {
 class Board {
  public:
+  struct PlayerMove {
+    Tile tile;
+    int row = 0;
+    int col = 0;
+  };
+
   explicit Board();
 
-  std::vector<std::string> GetAllWords(int row, int col, char dir, int& score,
+  std::vector<std::string> GetAllWords(int row, int col, Direction direction,
+                                       int& score,
                                        const std::vector<Tile>& usedTiles);
 
   std::string GetVerticalWord(Tile tile, int row, int col, int& points);
@@ -27,7 +35,7 @@ class Board {
     return board_.at(row).at(col).IsOccupied();
   }
 
-  void set_first_move_status(const bool is_first_move) {
+  void SetFirstMoveStatus(const bool is_first_move) {
     is_first_move_ = is_first_move;
   }
 
@@ -42,7 +50,6 @@ class Board {
 
  private:
   std::array<std::array<Square, kWidth>, kHeight> board_;
-
   bool is_first_move_;
 };
 }  // namespace core

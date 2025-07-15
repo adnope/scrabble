@@ -78,15 +78,15 @@ void Bag::AddTiles(const std::vector<Tile>& tiles) {
   Return a vector of tiles with letters in uppercase. This takes tiles from the
   end of tile_bag.
 */
-std::vector<Tile> Bag::DrawTiles(const int number_of_tiles) {
+std::vector<Tile> Bag::DrawTiles(const int num_tiles) {
   constexpr int MAX_TILES = 7;
-  if (number_of_tiles > MAX_TILES || number_of_tiles < 0) {
+  if (num_tiles > MAX_TILES || num_tiles < 0) {
     spdlog::error("Invalid tiles draw. You must only draw from 0 to {} tiles.",
                   MAX_TILES);
     return {};
   }
   std::vector<Tile> drawn_tiles;
-  for (int i = 0; i < number_of_tiles && GetNumberOfTilesRemaining() > 0; ++i) {
+  for (int i = 0; i < num_tiles && num_tiles_remanining() > 0; ++i) {
     drawn_tiles.emplace_back(tile_bag_.back());
     tile_bag_.pop_back();
   }
@@ -94,7 +94,7 @@ std::vector<Tile> Bag::DrawTiles(const int number_of_tiles) {
   return drawn_tiles;
 }
 
-int Bag::GetNumberOfTilesRemaining() const {
+int Bag::num_tiles_remanining() const {
   return static_cast<int>(tile_bag_.size());
 }
 
@@ -111,6 +111,6 @@ void Bag::PrintBagInfo() const {
     tile.PrintTileInfo();
   }
   std::cout << '\n';
-  std::cout << "Tiles remaining: " << GetNumberOfTilesRemaining() << '\n';
+  std::cout << "Tiles remaining: " << num_tiles_remanining() << '\n';
 }
 }  // namespace core

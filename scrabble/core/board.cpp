@@ -124,7 +124,7 @@ std::string Board::GetHorizontalWord(const Tile tile, const int row,
 // makes calls to find other words formed by a move
 // also scores every word that is created by a move
 std::vector<std::string> Board::GetAllWords(
-    const int row, const int col, const char dir, int& score,
+    const int row, const int col, Direction direction, int& score,
     const std::vector<Tile>& usedTiles) {
   std::vector<std::string> words;
   std::string tempWord;
@@ -166,7 +166,7 @@ std::vector<std::string> Board::GetAllWords(
     score += (usedTiles[0].points()) * multiplier;
   }
 
-  if (dir == '-') {
+  if (direction == Direction::kHorizontal) {
     points = 0;
     // check if there is are words in vertical direction
     word2 = GetVerticalWord(usedTiles[0], row - 1, col - 1, points);
@@ -242,7 +242,7 @@ std::vector<std::string> Board::GetAllWords(
   }
   // same as above, replace left with up & right with down
   // forms main word in vertical direction and connected horizontal words
-  else if (dir == '|') {
+  else if (direction == Direction::kVertical) {
     points = 0;
     word2 = GetHorizontalWord(usedTiles[0], row - 1, col - 1, points);
     if (word2.length() != 1) {

@@ -13,13 +13,13 @@ class Bag {
 
   void AddTiles(const std::vector<Tile>& tiles);
 
-  std::vector<Tile> DrawTiles(int number_of_tiles);
-
-  int GetNumberOfTilesRemaining() const;
+  std::vector<Tile> DrawTiles(int num_tiles);
 
   void Shuffle();
 
   void PrintBagInfo() const;
+
+  int num_tiles_remanining() const;
 
  private:
   std::vector<Tile> tile_bag_;

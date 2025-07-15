@@ -1,6 +1,5 @@
 #include "player.hpp"
 
-#include <cstddef>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -16,18 +15,18 @@ Player::Player(const std::string &player_name, const int score,
       player_name_(player_name) {}
 
 // Hàm này sẽ trả về số điểm của người chơi
-void Player::GetTiles(std::vector<Tile> &tiles) {
+void Player::GetTiles(const std::vector<Tile> &tiles) {
   // Lấy các viên gạch t
   for (const auto &tile : tiles) {
-    playerTiles.push_back(tile);
+    player_tiles_.push_back(tile);
   }
 }
 
 // Hàm này sẽ sử dụng viên gạch trong tay người chơi
 void Player::UseTiles(const char c) {
-  for (int i = 0; i < static_cast<int>(playerTiles.size()); ++i) {
-    if (c == playerTiles[i].letter()) {
-      playerTiles.erase(playerTiles.begin() + i);
+  for (int i = 0; i < static_cast<int>(player_tiles_.size()); ++i) {
+    if (c == player_tiles_[i].letter()) {
+      player_tiles_.erase(player_tiles_.begin() + i);
       break;
     }
   }
@@ -41,18 +40,18 @@ void Player::ExchangeTile(const char c, Bag &bag) {
     // AddTiles(const std::vector<Tile>& tiles) nên mình sẽ dùng AddTiles(const
     // Tile& tile) để thêm từng viên vào bag hiện tại nó không nhận 1 phẩn từ có
     // thể là do nhầm 2 funtion với nhau
-    bag.AddTiles(playerTiles[pos]);
-    playerTiles.erase(playerTiles.begin() + pos);
+    bag.AddTiles(player_tiles_[pos]);
+    player_tiles_.erase(player_tiles_.begin() + pos);
   }
 }
 
 // Hàm này sẽ tìm vị trí của viên gạch trong tay người chơi
-bool Player::FindTile(const char c, int &pos) {
-  for (int i = 0; i < static_cast<int>(playerTiles.size()); ++i) {
+bool Player::FindTile(const char c, int &pos) const {
+  for (int i = 0; i < static_cast<int>(player_tiles_.size()); ++i) {
     if (i == pos) {
       continue;
     }
-    if (c == playerTiles[i].letter()) {
+    if (c == player_tiles_[i].letter()) {
       pos = i;
       return true;
     }
@@ -67,14 +66,14 @@ bool Player::FindTile(const char c, int &pos) {
 void Player::ReturnTile(const char c, std::vector<Tile> &used_tiles) {
   int pos = 0;
   if (FindTile(c, pos)) {
-    used_tiles.push_back(playerTiles[pos]);
-    playerTiles.erase(playerTiles.begin() + pos);
+    used_tiles.push_back(player_tiles_[pos]);
+    player_tiles_.erase(player_tiles_.begin() + pos);
   }
 }
 
 int Player::GetHandScore() const {
   int hand_score = 0;
-  for (const Tile &tile : playerTiles) {
+  for (const Tile &tile : player_tiles_) {
     hand_score += tile.points();
   }
   return hand_score;
@@ -86,13 +85,13 @@ void Player::ExecuteExchangeMove(Bag &bag, const std::string &word) {
   for (int i = 0; i < number_of_tiles_to_draw; ++i) {
     this->ExchangeTile(word[i], bag);
   }
-  std::vector<Tile> tiles = bag.DrawTiles(word.length());
+  const std::vector<Tile> tiles = bag.DrawTiles(number_of_tiles_to_draw);
   this->GetTiles(tiles);
 }
 
-bool Player::ExecutePlaceMove(Bag &bag, Dictionary &dict, Board &board,
-                              const char dir, int row, int col,
-                              const std::string &word) {
+bool Player::ExecutePlaceMove(Bag &bag, const Dictionary &dictionary,
+                              Board &board, const Direction direction, int row,
+                              int col, const std::string &word) {
   // Implementation of place move logic
   std::vector<std::string> words;
   std::vector<Tile> used_tiles;
@@ -107,7 +106,7 @@ bool Player::ExecutePlaceMove(Bag &bag, Dictionary &dict, Board &board,
 
   bool is_valid = true;
   // Tính điểm nếu từ hợp lệ
-  words = board.GetAllWords(row, col, dir, word_score, used_tiles);
+  words = board.GetAllWords(row, col, direction, word_score, used_tiles);
 
   for (size_t i = 0; i < words.size(); i++) {
     for (size_t j = 0; j < words[i].length(); j++) {
@@ -124,7 +123,7 @@ bool Player::ExecutePlaceMove(Bag &bag, Dictionary &dict, Board &board,
   }
 
   for (size_t i = 0; i < words.size(); i++) {
-    is_valid = dict.Contains(words[i]);
+    is_valid = dictionary.Contains(words[i]);
     if (!is_valid) {
       // Nen hien thi notify cho nguoi dung GUI
       std::cout << "Invalid word: " << words[i] << '\n';
@@ -150,7 +149,7 @@ bool Player::ExecutePlaceMove(Bag &bag, Dictionary &dict, Board &board,
   while (i < number_of_used_tiles) {
     const char tile_letter = used_tiles[i].letter();
     is_placed = board.IsOccupiedAt(row - 1, col - 1);
-    if (dir == '-') {
+    if (direction == Direction::kHorizontal) {
       if (!is_placed) {
         // Need to check use board vector or not
         // board.GetBoard().at(row - 1).at(col - 1).PlaceTile(usedTiles[i]);
@@ -159,7 +158,7 @@ bool Player::ExecutePlaceMove(Bag &bag, Dictionary &dict, Board &board,
         i++;
       }
       col++;
-    } else if (dir == '|') {
+    } else if (direction == Direction::kVertical) {
       if (!is_placed) {
         board.PlaceTile(used_tiles[i], row - 1, col - 1);
         this->UseTiles(tile_letter);
@@ -168,16 +167,14 @@ bool Player::ExecutePlaceMove(Bag &bag, Dictionary &dict, Board &board,
       row++;
     }
 
-    const int number_of_tiles_remaining = bag.GetNumberOfTilesRemaining();
-    if (number_of_used_tiles > number_of_tiles_remaining) {
+    const int num_tiles_remaining = bag.num_tiles_remanining();
+    if (number_of_used_tiles > num_tiles_remaining) {
       // Nen hien thi notify cho nguoi dung GUI
-      std::vector<Tile> tiles = bag.DrawTiles(bag.GetNumberOfTilesRemaining());
-      this->GetTiles(tiles);
+      this->GetTiles(bag.DrawTiles(bag.num_tiles_remanining()));
     } else {
-      std::vector<Tile> tiles = bag.DrawTiles(number_of_used_tiles);
-      this->GetTiles(tiles);
+      this->GetTiles(bag.DrawTiles(number_of_used_tiles));
     }
-    board.set_first_move_status(false);
+    board.SetFirstMoveStatus(false);
     return true;
   }
 }
