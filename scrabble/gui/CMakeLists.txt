@@ -5,4 +5,5 @@ target_sources(scrabble PRIVATE
     settings.cpp
     start.cpp
     welcome.cpp
+    GUI.cpp
 )

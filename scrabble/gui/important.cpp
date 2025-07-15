@@ -117,7 +117,7 @@
   class Button_Text {
   public:
     void onClick() { press = true; };
-
+    bool checkpress() { return press; }
     // Check if a point is inside the button
     bool isInside(int x, int y) const {
       return x >= rect.x && x <= rect.x + rect.w && y >= rect.y &&
@@ -160,7 +160,7 @@
   class Button_Image {
   public:
     void onClick() { press = true; };
-
+    bool checkpress() { return press; }
     // Check if a point is inside the button
     bool isInside(int x, int y) const {
       return x >= rect.x && x <= rect.x + rect.w && y >= rect.y &&

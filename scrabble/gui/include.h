@@ -14,4 +14,5 @@
 // Add your declarations, classes, and function prototypes here
 #include "needsbasic.h"
 #include "important.h"
+#include "welcome.h"
 #endif  // SCRABBLE_GUI_INCLUDE_H

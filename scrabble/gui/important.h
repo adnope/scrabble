@@ -31,8 +31,67 @@ extern SDL_Color gold;
 extern SDL_Color dark_green;
 
 // class declarations
-class Text;
-class Image;
-class Button_Text;
-class Button_Image;
+class Text {
+public:
+    Text(const std::string& s, int x, int y, SDL_Renderer* renderer, SDL_Color color = white);
+    void print_Text(SDL_Renderer* renderer);
+
+protected:
+    SDL_Color color;
+    std::string s;
+    int x, y;
+    SDL_Rect rect;
+    SDL_Texture* texture;
+};
+
+class Image {
+public:
+    Image(std::string imagePath, int x, int y, SDL_Renderer* renderer);
+    ~Image();
+    bool loadImage(SDL_Renderer* renderer);
+    void print_Image(SDL_Renderer* renderer);
+    bool isLoaded() const;
+
+protected:
+    std::string path;
+    int x, y;
+    SDL_Rect rect;
+    SDL_Texture* texture;
+};
+
+class Button_Text {
+public:
+    Button_Text(const std::string& s, int x, int y, SDL_Renderer* renderer, SDL_Color color = white, bool press = false);
+    bool checkpress();
+    void handleEvent(const SDL_Event& e);
+    void onClick();
+    bool isInside(int x, int y) const;
+
+protected:
+    std::string s;
+    int x, y;
+    SDL_Rect rect;
+    SDL_Texture* texture;
+    SDL_Color color;
+    bool press;
+};
+
+class Button_Image {
+public:
+    Button_Image(std::string imagePath, int x, int y, SDL_Renderer* renderer, bool press = false);
+    ~Button_Image();
+    bool checkpress();
+    bool loadImage(SDL_Renderer* renderer);
+    void handleEvent(const SDL_Event& e);
+    void onClick();
+    bool isInside(int x, int y) const;
+
+protected:
+    std::string path;
+    int x, y;
+    SDL_Rect rect;
+    SDL_Texture* texture;
+    bool press;
+};
+
 #endif  // IMPORTANT_H
