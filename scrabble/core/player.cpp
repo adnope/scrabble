@@ -71,14 +71,6 @@ void Player::ReturnTile(const char c, std::vector<Tile> &used_tiles) {
   }
 }
 
-int Player::GetHandScore() const {
-  int hand_score = 0;
-  for (const Tile &tile : player_tiles_) {
-    hand_score += tile.points();
-  }
-  return hand_score;
-}
-
 void Player::ExecuteExchangeMove(Bag &bag, const std::string &word) {
   // Implementation of place move logic
   const int number_of_tiles_to_draw = static_cast<int>(word.length());
@@ -92,10 +84,9 @@ void Player::ExecuteExchangeMove(Bag &bag, const std::string &word) {
 bool Player::ExecutePlaceMove(Bag &bag, const Dictionary &dictionary,
                               Board &board, const Direction direction, int row,
                               int col, const std::string &word) {
-  // Implementation of place move logic
   std::vector<std::string> words;
   std::vector<Tile> used_tiles;
-  int word_score = 0;
+  int turn_score = 0;
   for (size_t i = 0; i < word.length(); ++i) {
     ReturnTile(word[i], used_tiles);
     if (used_tiles[used_tiles.size() - 1].IsBlank() && i + 1 < word.length()) {
@@ -104,9 +95,8 @@ bool Player::ExecutePlaceMove(Bag &bag, const Dictionary &dictionary,
     }
   }
 
-  bool is_valid = true;
-  // Tính điểm nếu từ hợp lệ
-  words = board.GetAllWords(row, col, direction, word_score, used_tiles);
+  // Get all the words constructed from move
+  words = board.GetAllWords(row, col, direction, turn_score, used_tiles);
 
   for (size_t i = 0; i < words.size(); i++) {
     for (size_t j = 0; j < words[i].length(); j++) {
@@ -114,52 +104,49 @@ bool Player::ExecutePlaceMove(Bag &bag, const Dictionary &dictionary,
     }
   }
 
+  // Found no words from move
   if (words.empty()) {
-    // Nen hien thi notify cho nguoi dung GUI
     std::cout
         << "At least one tile must be adjacent to other tiles on the board."
         << '\n';
     return false;
   }
 
+  // Word not in dictionary
   for (size_t i = 0; i < words.size(); i++) {
-    is_valid = dictionary.Contains(words[i]);
+    const bool is_valid = dictionary.Contains(words[i]);
     if (!is_valid) {
-      // Nen hien thi notify cho nguoi dung GUI
       std::cout << "Invalid word: " << words[i] << '\n';
       return false;
     }
   }
 
+  // Add special 50 points bonus
   const int number_of_used_tiles = static_cast<int>(used_tiles.size());
-  // Nếu tất cả các viên gạch đã sử dụng đều là viên gạch trong tay người chơi
-  // bonus points
   if (number_of_used_tiles == num_tiles_) {
     constexpr int BONUS_SCORE = 50;
-    word_score += BONUS_SCORE;
+    turn_score += BONUS_SCORE;
   }
 
-  this->AddScore(word_score);
-  // Hien thi GUI
-  std::cout << "score of this round: " << word_score << '\n';
+  this->AddScore(turn_score);
+  std::cout << "score of this turn: " << turn_score << '\n';
 
   int i = 0;
-  // Da dat len ban
-  bool is_placed = false;
+  // Check if board is occupied at the positions
+  bool is_occupied = false;
   while (i < number_of_used_tiles) {
     const char tile_letter = used_tiles[i].letter();
-    is_placed = board.IsOccupiedAt(row - 1, col - 1);
+    is_occupied = board.IsOccupiedAt(row - 1, col - 1);
     if (direction == Direction::kHorizontal) {
-      if (!is_placed) {
+      if (!is_occupied) {
         // Need to check use board vector or not
-        // board.GetBoard().at(row - 1).at(col - 1).PlaceTile(usedTiles[i]);
         board.PlaceTile(used_tiles[i], row - 1, col - 1);
         this->UseTiles(tile_letter);
         i++;
       }
       col++;
     } else if (direction == Direction::kVertical) {
-      if (!is_placed) {
+      if (!is_occupied) {
         board.PlaceTile(used_tiles[i], row - 1, col - 1);
         this->UseTiles(tile_letter);
         i++;
@@ -169,7 +156,6 @@ bool Player::ExecutePlaceMove(Bag &bag, const Dictionary &dictionary,
 
     const int num_tiles_remaining = bag.num_tiles_remanining();
     if (number_of_used_tiles > num_tiles_remaining) {
-      // Nen hien thi notify cho nguoi dung GUI
       this->GetTiles(bag.DrawTiles(bag.num_tiles_remanining()));
     } else {
       this->GetTiles(bag.DrawTiles(number_of_used_tiles));

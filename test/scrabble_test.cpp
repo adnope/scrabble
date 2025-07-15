@@ -52,14 +52,14 @@ TEST_CASE("Player functions test") {
   player.GetTiles(initial_tiles);
 
   SUBCASE("Player constructor") {
-    CHECK(player.GetName() == "Test Player");
-    CHECK(player.GetScore() == 0);
-    CHECK(player.GetHandSize() == 7);
+    CHECK(player.name() == "Test Player");
+    CHECK(player.score() == 0);
+    CHECK(player.num_tiles_in_hand() == 7);
   }
 
   SUBCASE("UseTiles") {
     // Check tile on hand
-    CHECK(player.GetHandSize() == 7);
+    CHECK(player.num_tiles_in_hand() == 7);
     std::string init_tile;
     for (const auto& tile : initial_tiles) {
       init_tile += tile.get_use();
@@ -67,7 +67,7 @@ TEST_CASE("Player functions test") {
     CHECK(init_tile == "ABCDEFG");
     // Use tiles
     player.UseTiles('A');
-    CHECK(player.GetHandSize() == 6);
+    CHECK(player.num_tiles_in_hand() == 6);
   }
 
   // SUBCASE("GetTiles") {

@@ -32,10 +32,9 @@ class Player {
 
   void ExecuteExchangeMove(Bag &bag, const std::string &word);
 
-  int GetScore() const { return player_score_; }
-  int GetHandSize() const { return static_cast<int>(player_tiles_.size()); }
-  std::string GetName() const { return player_name_; }
-  int GetHandScore() const;
+  int score() const { return player_score_; }
+  int num_tiles_in_hand() const { return static_cast<int>(player_tiles_.size()); }
+  std::string name() const { return player_name_; }
 
  private:
   int player_score_;
