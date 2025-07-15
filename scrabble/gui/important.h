@@ -1,3 +1,4 @@
+#pragma once
 #ifndef IMPORTANT_H
 #define IMPORTANT_H
 
@@ -30,8 +31,8 @@ extern SDL_Color gold;
 extern SDL_Color dark_green;
 
 // class declarations
-class Text {};
-class Image {};
-class Button_Text {};
-class Button_Image {};
+class Text;
+class Image;
+class Button_Text;
+class Button_Image;
 #endif  // IMPORTANT_H

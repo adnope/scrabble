@@ -13,4 +13,5 @@
 #include "SDL_ttf.h"
 // Add your declarations, classes, and function prototypes here
 #include "needsbasic.h"
+#include "important.h"
 #endif  // SCRABBLE_GUI_INCLUDE_H
