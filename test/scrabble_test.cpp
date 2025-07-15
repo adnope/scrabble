@@ -1,7 +1,10 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include <fstream>
 #include <string>
-
+#include "core/bag.hpp"
+#include "core/board.hpp"
+#include "core/player.hpp"
+#include "core/tile.hpp"
 #include "core/dictionary.hpp"
 #include "doctest/doctest.h"
 
@@ -36,3 +39,47 @@ TEST_CASE("dictionary test") {
   }
 }
 
+TEST_CASE("Player functions test") {
+  core::Bag bag;
+  core::Board board;
+  core::Dictionary dictionary(core::Dictionary::CSW);
+  core::Player player("Test Player", 0, 7);
+  std::vector<core::Tile> initial_tiles = {
+      core::Tile('A', 1), core::Tile('B', 3), core::Tile('C', 3),
+      core::Tile('D', 2), core::Tile('E', 1), core::Tile('F', 4),
+      core::Tile('G', 2)};
+
+  player.GetTiles(initial_tiles);
+
+  SUBCASE("Player constructor") {
+    CHECK(player.GetName() == "Test Player");
+    CHECK(player.GetScore() == 0);
+    CHECK(player.GetHandSize() == 7);
+  }
+
+  SUBCASE("UseTiles") {
+    // Check tile on hand
+    CHECK(player.GetHandSize() == 7);
+    std::string init_tile;
+    for (const auto& tile : initial_tiles) {
+      init_tile += tile.get_use();
+    }
+    CHECK(init_tile == "ABCDEFG");
+    // Use tiles
+    player.UseTiles('A');
+    CHECK(player.GetHandSize() == 6);
+  }
+
+  // SUBCASE("GetTiles") {
+  //   // Check tile on hand
+  //   CHECK(player.GetHandSize() == 7);
+  //   std::string init_tile;
+  //   for (const auto& tile : initial_tiles) {
+  //     init_tile += tile.get_use();
+  //   }
+  //   CHECK(init_tile == "ABCDEFG");
+  //   // Get tiles from bag
+  //   player.GetTiles();
+  //   CHECK(player.GetHandSize() == 7);
+  // }
+}
