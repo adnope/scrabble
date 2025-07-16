@@ -49,7 +49,7 @@ TEST_CASE("Player functions test") {
       core::Tile('D', 2), core::Tile('E', 1), core::Tile('F', 4),
       core::Tile('G', 2)};
 
-  player.GetTiles(initial_tiles);
+  player.PutTilesInHand(initial_tiles);
 
   SUBCASE("Player constructor") {
     CHECK(player.name() == "Test Player");
@@ -66,7 +66,7 @@ TEST_CASE("Player functions test") {
     }
     CHECK(init_tile == "ABCDEFG");
     // Use tiles
-    player.UseTiles('A');
+    player.UseTile('A');
     CHECK(player.num_tiles_in_hand() == 6);
   }
 

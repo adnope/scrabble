@@ -12,9 +12,9 @@ class Player {
  public:
   Player(const std::string &player_name, int score, int number_of_tiles);
 
-  void GetTiles(const std::vector<Tile> &tiles);
+  void PutTilesInHand(const std::vector<Tile> &tiles);
 
-  void UseTiles(char c);
+  void UseTile(char c);
 
   void ExchangeTile(char c, Bag &bag);
 
@@ -26,20 +26,25 @@ class Player {
 
   void SubtractScore(const int score) { player_score_ -= score; }
 
+  int GetHandScore() const;
+
   bool ExecutePlaceMove(Bag &bag, const Dictionary &dictionary, Board &board,
-                        Direction direction, int row, int col,
+                        bool horizontal, int row, int col,
                         const std::string &word);
 
   void ExecuteExchangeMove(Bag &bag, const std::string &word);
 
-  int score() const { return player_score_; }
-  int num_tiles_in_hand() const { return static_cast<int>(player_tiles_.size()); }
   std::string name() const { return player_name_; }
+  int score() const { return player_score_; }
+  auto &player_tiles() { return player_tiles_; }
+  int num_tiles_in_hand() const {
+    return static_cast<int>(player_tiles_.size());
+  }
 
  private:
-  int player_score_;
-  int num_tiles_;
   std::string player_name_;
   std::vector<Tile> player_tiles_;
+  int player_score_;
+  int num_tiles_;
 };
 }  // namespace core
