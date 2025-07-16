@@ -9,7 +9,7 @@ class Bag {
  public:
   Bag();
   
-  void AddTiles(const Tile& tile);
+  void AddTile(const Tile& tile);
 
   void AddTiles(const std::vector<Tile>& tiles);
 

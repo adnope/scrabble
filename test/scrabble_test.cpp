@@ -49,7 +49,13 @@ TEST_CASE("Player functions test") {
       core::Tile('D', 2), core::Tile('E', 1), core::Tile('F', 4),
       core::Tile('G', 2)};
 
+<<<<<<< HEAD
+  core::Bag bag1; 
+
+  player.GetTiles(initial_tiles);
+=======
   player.PutTilesInHand(initial_tiles);
+>>>>>>> aaf321228cf4007f9fd4d53a9997dbc8ab8efa2b
 
   SUBCASE("Player constructor") {
     CHECK(player.name() == "Test Player");
@@ -70,16 +76,12 @@ TEST_CASE("Player functions test") {
     CHECK(player.num_tiles_in_hand() == 6);
   }
 
-  // SUBCASE("GetTiles") {
-  //   // Check tile on hand
-  //   CHECK(player.GetHandSize() == 7);
-  //   std::string init_tile;
-  //   for (const auto& tile : initial_tiles) {
-  //     init_tile += tile.get_use();
-  //   }
-  //   CHECK(init_tile == "ABCDEFG");
-  //   // Get tiles from bag
-  //   player.GetTiles();
-  //   CHECK(player.GetHandSize() == 7);
-  // }
+  SUBCASE("Execute Exchange Move") {
+    // Get tiles from bag
+    std::string word = "ABC";
+    player.ExecuteExchangeMove(bag, word);
+    CHECK(player.num_tiles_in_hand() == 7);
+
+    //
+  }
 }
