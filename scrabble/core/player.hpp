@@ -35,7 +35,7 @@ class Player {
   int score() const { return player_score_; }
   int num_tiles_in_hand() const { return static_cast<int>(player_tiles_.size()); }
   std::string name() const { return player_name_; }
-
+  const std::vector<Tile>& GetHandTiles() const {return player_tiles_;}
  private:
   int player_score_;
   int num_tiles_;

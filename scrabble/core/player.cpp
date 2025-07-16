@@ -40,7 +40,7 @@ void Player::ExchangeTile(const char c, Bag &bag) {
     // AddTiles(const std::vector<Tile>& tiles) nên mình sẽ dùng AddTiles(const
     // Tile& tile) để thêm từng viên vào bag hiện tại nó không nhận 1 phẩn từ có
     // thể là do nhầm 2 funtion với nhau
-    bag.AddTiles(player_tiles_[pos]);
+    bag.AddTile(player_tiles_[pos]);
     player_tiles_.erase(player_tiles_.begin() + pos);
   }
 }
@@ -73,6 +73,7 @@ void Player::ReturnTile(const char c, std::vector<Tile> &used_tiles) {
 
 void Player::ExecuteExchangeMove(Bag &bag, const std::string &word) {
   // Implementation of place move logic
+  // Rule : bag.num_tiles_remanining() < 7 cannot exchange tiles;
   const int number_of_tiles_to_draw = static_cast<int>(word.length());
   for (int i = 0; i < number_of_tiles_to_draw; ++i) {
     this->ExchangeTile(word[i], bag);
