@@ -10,20 +10,19 @@
 namespace core {
 Player::Player(const std::string &player_name, const int score,
                const int number_of_tiles)
-    : player_score_(score),
-      num_tiles_(number_of_tiles),
-      player_name_(player_name) {}
+    : player_name_(player_name),
+      player_score_(score),
+      num_tiles_(number_of_tiles) {}
 
-// Hàm này sẽ trả về số điểm của người chơi
-void Player::GetTiles(const std::vector<Tile> &tiles) {
-  // Lấy các viên gạch t
+// Put tiles into player's hand
+void Player::PutTilesInHand(const std::vector<Tile> &tiles) {
   for (const auto &tile : tiles) {
     player_tiles_.push_back(tile);
   }
 }
 
-// Hàm này sẽ sử dụng viên gạch trong tay người chơi
-void Player::UseTiles(const char c) {
+// Use a tile in the player's hand
+void Player::UseTile(const char c) {
   for (int i = 0; i < static_cast<int>(player_tiles_.size()); ++i) {
     if (c == player_tiles_[i].letter()) {
       player_tiles_.erase(player_tiles_.begin() + i);
@@ -36,11 +35,15 @@ void Player::UseTiles(const char c) {
 void Player::ExchangeTile(const char c, Bag &bag) {
   int pos = 0;
   if (FindTile(c, pos)) {
+<<<<<<< HEAD
     // Funtion AddTiles in Bag class nó là AddTiles(const Tile& tile),
     // AddTiles(const std::vector<Tile>& tiles) nên mình sẽ dùng AddTiles(const
     // Tile& tile) để thêm từng viên vào bag hiện tại nó không nhận 1 phẩn từ có
     // thể là do nhầm 2 funtion với nhau
     bag.AddTile(player_tiles_[pos]);
+=======
+    bag.AddTiles(player_tiles_[pos]);
+>>>>>>> aaf321228cf4007f9fd4d53a9997dbc8ab8efa2b
     player_tiles_.erase(player_tiles_.begin() + pos);
   }
 }
@@ -79,11 +82,19 @@ void Player::ExecuteExchangeMove(Bag &bag, const std::string &word) {
     this->ExchangeTile(word[i], bag);
   }
   const std::vector<Tile> tiles = bag.DrawTiles(number_of_tiles_to_draw);
-  this->GetTiles(tiles);
+  this->PutTilesInHand(tiles);
+}
+
+int Player::GetHandScore() const {
+  int tilesScore = 0;
+  for(size_t i = 0; i < player_tiles_.size(); i++){
+    tilesScore += player_tiles_[i].points();
+  }
+  return tilesScore;
 }
 
 bool Player::ExecutePlaceMove(Bag &bag, const Dictionary &dictionary,
-                              Board &board, const Direction direction, int row,
+                              Board &board, const bool horizontal, int row,
                               int col, const std::string &word) {
   std::vector<std::string> words;
   std::vector<Tile> used_tiles;
@@ -97,7 +108,7 @@ bool Player::ExecutePlaceMove(Bag &bag, const Dictionary &dictionary,
   }
 
   // Get all the words constructed from move
-  words = board.GetAllWords(row, col, direction, turn_score, used_tiles);
+  words = board.GetAllWords(row, col, horizontal, turn_score, used_tiles);
 
   for (size_t i = 0; i < words.size(); i++) {
     for (size_t j = 0; j < words[i].length(); j++) {
@@ -138,18 +149,18 @@ bool Player::ExecutePlaceMove(Bag &bag, const Dictionary &dictionary,
   while (i < number_of_used_tiles) {
     const char tile_letter = used_tiles[i].letter();
     is_occupied = board.IsOccupiedAt(row - 1, col - 1);
-    if (direction == Direction::kHorizontal) {
+    if (horizontal) {
       if (!is_occupied) {
         // Need to check use board vector or not
         board.PlaceTile(used_tiles[i], row - 1, col - 1);
-        this->UseTiles(tile_letter);
+        this->UseTile(tile_letter);
         i++;
       }
       col++;
-    } else if (direction == Direction::kVertical) {
+    } else if (!horizontal) {
       if (!is_occupied) {
         board.PlaceTile(used_tiles[i], row - 1, col - 1);
-        this->UseTiles(tile_letter);
+        this->UseTile(tile_letter);
         i++;
       }
       row++;
@@ -157,9 +168,9 @@ bool Player::ExecutePlaceMove(Bag &bag, const Dictionary &dictionary,
 
     const int num_tiles_remaining = bag.num_tiles_remanining();
     if (number_of_used_tiles > num_tiles_remaining) {
-      this->GetTiles(bag.DrawTiles(bag.num_tiles_remanining()));
+      this->PutTilesInHand(bag.DrawTiles(bag.num_tiles_remanining()));
     } else {
-      this->GetTiles(bag.DrawTiles(number_of_used_tiles));
+      this->PutTilesInHand(bag.DrawTiles(number_of_used_tiles));
     }
     board.SetFirstMoveStatus(false);
     return true;

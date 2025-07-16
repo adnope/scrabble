@@ -13,7 +13,7 @@ Square::Square(const int row, const int col, const std::string& symbol,
       symbol_(symbol),
       multiplier_(multiplier) {}
 
-void Square::PlaceTile(Tile t) {
+void Square::PlaceTile(const Tile t) {
   tile_ = t;
   has_tile_ = true;
 }
