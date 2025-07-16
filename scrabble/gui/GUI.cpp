@@ -20,6 +20,7 @@ void GUI::run_GUI_first() {
         return ;
     }
     while (!quit) {
+        //std::cout<<123<<std::endl;
         choose=0;
         startbutton->reset();
         quitbutton->reset();
