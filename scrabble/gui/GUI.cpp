@@ -1,6 +1,7 @@
 #include "GUI.h"
 #include "include.h"
 #include "welcome.h"
+#include "settingnew.h"
 using namespace std;
 int choose = 0;
 SDL_Event e;
@@ -14,18 +15,21 @@ void GUI::run_GUI_first() {
         SDL_Quit();
         return ;
     }
+    // std::cout << "Before TTF_Init" << std::endl;
     if (TTF_Init() == -1) {
         std::cerr << "TTF_Init Error: " << TTF_GetError() << '\n';
         IMG_Quit();
         SDL_Quit();
         return ;
     }
+    //std::cout << "After TTF_Init" << std::endl;
     // Set background color: R, G, B, A (0-255)
     SDL_SetRenderDrawColor(renderer, 235, 252, 255, 255);  // Ví dụ: màu xanh da trời
 
     // Xóa màn hình bằng màu đã set (fill full screen)
     SDL_RenderClear(renderer);
-    cout<<HEIGHT<<" "<<WIDTH<<endl;
+    //cout<<HEIGHT<<" "<<WIDTH<<endl;
+    init_font();
     while (!quit) {
         //std::cout<<123<<std::endl;
         choose=0;
@@ -53,11 +57,19 @@ void GUI::run_GUI_first() {
         if (choose == 1) {
             std::cout << choose << std::endl;
         } else if (choose == 2) {
-            std::cout << choose << std::endl;
+            print_setting(e);
+            // TODO: Implement settings menu functionality here if needed
         } else if (choose == -1) {
             std::cout << choose << std::endl;
             quit = true;
         }
         SDL_RenderPresent(renderer);
     }
+    TTF_CloseFont(font_Jersey15_Regular);
+    TTF_Quit();
+    IMG_Quit();
+    SDL_DestroyRenderer(renderer);
+    SDL_DestroyWindow(window);
+    SDL_Quit();
+    return ;
 }

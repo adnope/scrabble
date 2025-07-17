@@ -4,13 +4,13 @@
 # Run: source projenv
 
 # Function to autocomplete the "build" command argument (target)
-_complete_build_target() {
-  local cur="${words[-1]}"
-  local targets=("all" "scrabble" "scrabble_test")
+# _complete_build_target() {
+#   local cur="${words[-1]}"
+#   local targets=("all" "scrabble" "scrabble_test")
   
-  _describe 'target' targets
-}
-compdef _complete_build_target build
+#   _describe 'target' targets
+# }
+# compdef _complete_build_target build
 
 build() {
   target=$1

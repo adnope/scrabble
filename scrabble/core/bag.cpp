@@ -68,7 +68,7 @@ Bag::Bag() {
   spdlog::info("[Bag] Bag initialized");
 }
 
-void Bag::AddTile(const Tile& tile) { tile_bag_.emplace_back(tile); }
+void Bag::AddTiles(const Tile& tile) { tile_bag_.emplace_back(tile); }
 
 void Bag::AddTiles(const std::vector<Tile>& tiles) {
   tile_bag_.insert(tile_bag_.end(), tiles.begin(), tiles.end());

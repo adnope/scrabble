@@ -179,9 +179,8 @@ int main() {
 
   // core::Bag bag;
   //test_sdl2_libraries();
-
-  //GUI gui;
-  //gui.run_GUI_first();
+  GUI gui;
+  gui.run_GUI_first();
 
   return 0;
 }

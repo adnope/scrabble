@@ -1,4 +1,5 @@
 #include "important.h"
+#include<SDL2/SDL.h>
 #include <SDL_image.h>
 #include <SDL_ttf.h>
 #include <cstdio>
@@ -6,11 +7,11 @@
 #include <string>
 using namespace std;
 // Font size
-const int FONT_SIZE = 32;
+const int FONT_SIZE = 128;
 
 // Fonts
-TTF_Font* font_Jersey15_Regular = TTF_OpenFont("assets/fonts/Jersey15-Regular.ttf", FONT_SIZE);
-TTF_Font* font_aptos = TTF_OpenFont("assets/fonts/Aptos.ttf", FONT_SIZE);
+TTF_Font* font_Jersey15_Regular ;
+TTF_Font* font_aptos;
 
 // Colors
 SDL_Color white       = {255, 255, 255, 255};
@@ -31,9 +32,23 @@ SDL_Color gold        = {255, 215,   0, 255};
 SDL_Color dark_green  = {  0, 100,   0, 255};
 
 // Text
+void init_font(){
+    font_Jersey15_Regular = TTF_OpenFont("assets/fonts/Jersey15-Regular.ttf", FONT_SIZE);
+    if (!font_Jersey15_Regular) {
+        std::cerr << "Failed to load Jersey15-Regular font: " << TTF_GetError() << std::endl;
+    }
+    font_aptos = TTF_OpenFont("assets/fonts/Aptos.ttf", FONT_SIZE);
+    if (!font_aptos) {
+        std::cerr << "Failed to load Aptos font: " << TTF_GetError() << std::endl;
+    }
+}
 Text::Text(const std::string& s, int x, int y, SDL_Renderer* renderer, SDL_Color color)
     : s(s), x(x), y(y), texture(nullptr), color(color) {
-    SDL_Surface* surface = TTF_RenderUTF8_Blended(font_Jersey15_Regular, s.c_str(), color);
+    if (!font_aptos) {
+        std::cerr << "font_Aptos is NULL!" << std::endl;
+        return;
+    }
+    SDL_Surface* surface = TTF_RenderUTF8_Blended(font_aptos, s.c_str(), color);
     if (surface) {
         texture = SDL_CreateTextureFromSurface(renderer, surface);
         rect.x = x;
@@ -97,8 +112,20 @@ bool Image::isLoaded() const {
 // Button_Text
 Button_Text::Button_Text(const std::string& s, int x, int y, SDL_Renderer* renderer, SDL_Color color, bool press)
     : s(s), x(x), y(y), texture(nullptr), color(color), press(press) {
-    SDL_Surface* surface = TTF_RenderUTF8_Blended(font_Jersey15_Regular, s.c_str(), color);
+    if (!font_Jersey15_Regular) {
+        std::cerr << "font_Jersey15_Regular is NULL!" << std::endl;
+        return;
+    }
+    if (!font_aptos) {
+        std::cerr << "font_Aptos is NULL!" << std::endl;
+        return;
+    }
+    SDL_Surface* surface = TTF_RenderUTF8_Blended(font_aptos, s.c_str(), color);
+    if (!surface) {
+    std::cerr << "Text surface creation failed: " << TTF_GetError() << std::endl;
+    }
     if (surface) {
+        //cout<<"success"<<endl;
         texture = SDL_CreateTextureFromSurface(renderer, surface);
         rect.x = x;
         rect.y = y;
@@ -109,7 +136,14 @@ Button_Text::Button_Text(const std::string& s, int x, int y, SDL_Renderer* rende
         rect = {x, y, 0, 0};
     }
 }
-
+void Button_Text::reset() {
+    press = false;
+}
+void Button_Text::print_Text(SDL_Renderer* renderer) {
+    if (texture) {
+        SDL_RenderCopy(renderer, texture, nullptr, &rect);
+    }
+}
 void Button_Text::onClick() {
     press = true;
 }

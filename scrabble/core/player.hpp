@@ -35,16 +35,12 @@ class Player {
   void ExecuteExchangeMove(Bag &bag, const std::string &word);
 
   std::string name() const { return player_name_; }
-<<<<<<< HEAD
-  const std::vector<Tile>& GetHandTiles() const {return player_tiles_;}
-=======
   int score() const { return player_score_; }
   auto &player_tiles() { return player_tiles_; }
   int num_tiles_in_hand() const {
     return static_cast<int>(player_tiles_.size());
   }
 
->>>>>>> aaf321228cf4007f9fd4d53a9997dbc8ab8efa2b
  private:
   std::string player_name_;
   std::vector<Tile> player_tiles_;

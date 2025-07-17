@@ -35,15 +35,7 @@ void Player::UseTile(const char c) {
 void Player::ExchangeTile(const char c, Bag &bag) {
   int pos = 0;
   if (FindTile(c, pos)) {
-<<<<<<< HEAD
-    // Funtion AddTiles in Bag class nó là AddTiles(const Tile& tile),
-    // AddTiles(const std::vector<Tile>& tiles) nên mình sẽ dùng AddTiles(const
-    // Tile& tile) để thêm từng viên vào bag hiện tại nó không nhận 1 phẩn từ có
-    // thể là do nhầm 2 funtion với nhau
-    bag.AddTile(player_tiles_[pos]);
-=======
     bag.AddTiles(player_tiles_[pos]);
->>>>>>> aaf321228cf4007f9fd4d53a9997dbc8ab8efa2b
     player_tiles_.erase(player_tiles_.begin() + pos);
   }
 }

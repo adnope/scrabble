@@ -29,6 +29,7 @@ extern SDL_Color pink;
 extern SDL_Color gold;
 extern SDL_Color dark_green;
 
+void init_font();
 // class declarations
 class Text {
 public:
@@ -50,7 +51,7 @@ public:
     bool loadImage(SDL_Renderer* renderer);
     void print_Image(SDL_Renderer* renderer);
     bool isLoaded() const;
-
+    
 protected:
     std::string path;
     int x, y;
@@ -65,7 +66,8 @@ public:
     void handleEvent(const SDL_Event& e);
     void onClick();
     bool isInside(int x, int y) const;
-
+    void print_Text(SDL_Renderer* renderer);
+    void reset();  // Reset the button state
 protected:
     std::string s;
     int x, y;
