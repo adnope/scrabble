@@ -22,36 +22,17 @@ void Player::PutTilesInHand(const std::vector<Tile> &tiles) {
 }
 
 // Use a tile in the player's hand
-void Player::UseTile(int index) {
-  player_tiles_.erase(player_tiles_.begin() + tile_index);
-}
-
-// Hàm này sẽ trao đổi viên gạch với bag
-
-// Hàm này sẽ tìm vị trí của viên gạch trong tay người chơi
-bool Player::FindTile(Tile tile, int &pos) const {
-  for (int i = 0; i < static_cast<int>(player_tiles_.size()); ++i) {
-    if (i == pos) {
-      continue;
-    }
-    if (tile.letter() == player_tiles_[i].letter()) {
-      pos = i;
-      return true;
-    }
-  }
-  return false;
+void Player::UseTile(const int index) {
+  player_tiles_.erase(player_tiles_.begin() + index);
 }
 
 // Hàm này sẽ đưa viên gạch trong tay người chơi vào vector các viên gạch đã sử
 // dụng Nếu từ trên ô hợp lệ -> xóa khỏi tay người chơi Khi đó usedTiles sẽ chứa
 // các viên gạch đã sử dụng sẽ sử dụng trong tính điểm và xóa khỏi tay người
 // chơi
-void Player::ReturnTile(Tile tile, std::vector<Tile> &used_tiles) {
-  int pos = 0;
-  if (FindTile(tile, pos)) {
-    used_tiles.push_back(player_tiles_[pos]);
-    player_tiles_.erase(player_tiles_.begin() + pos);
-  }
+void Player::PutTileToUsedTiles(const int index, std::vector<Tile> &used_tiles) {
+  used_tiles.push_back(player_tiles_[index]);
+  player_tiles_.erase(player_tiles_.begin() + index);
 }
 
 // Hàm này lấy viên gạch tại index khỏi tay người chơi và đặt lại vào bag
@@ -70,22 +51,22 @@ void Player::PerformSwap(Bag &bag, const std::vector<int> &indices) {
 }
 
 int Player::GetHandScore() const {
-  int tilesScore = 0;
+  int total_score = 0;
   for (size_t i = 0; i < player_tiles_.size(); i++) {
-    tilesScore += player_tiles_[i].points();
+    total_score += player_tiles_[i].points();
   }
-  return tilesScore;
+  return total_score;
 }
 
 bool Player::ExecutePlaceMove(Bag &bag, const Dictionary &dictionary,
                               Board &board, const bool horizontal, int row,
-                              int col, const std::vector<Tile> &tiles) {
+                              int col, const std::vector<int> &tile_indices) {
   std::vector<std::string> words;
   std::vector<Tile> used_tiles;
   int turn_score = 0;
-  for (size_t i = 0; i < tiles.size(); ++i) {
-    ReturnTile(tiles[i], used_tiles);
-    if (used_tiles[used_tiles.size() - 1].IsBlank() && i + 1 < tiles.size()) {
+  for (size_t i = 0; i < tile_indices.size(); ++i) {
+    PutTileToUsedTiles(tile_indices[i], used_tiles);
+    if (used_tiles[used_tiles.size() - 1].IsBlank() && i + 1 < tile_indices.size()) {
       used_tiles[used_tiles.size() - 1].UseAs(word[i + 1]);
       i++;
     }

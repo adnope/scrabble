@@ -19,11 +19,7 @@ class Player {
 
   void SwapTile(int index, Bag &bag);
 
-  void ExecuteSwapMove(std::vector<Tile> &tiles, Bag &bag);
-
-  bool FindTile(Tile tile, int &pos) const;
-
-  void ReturnTile(Tile tile, std::vector<Tile> &used_tiles);
+  void PutTileToUsedTiles(int index, std::vector<Tile> &used_tiles);
 
   void AddScore(const int score) { player_score_ += score; }
 
@@ -31,10 +27,9 @@ class Player {
 
   int GetHandScore() const;
 
-  // Cần đổi sang vector<Tile> tiles thay vì word hay char
   bool ExecutePlaceMove(Bag &bag, const Dictionary &dictionary, Board &board,
                         bool horizontal, int row, int col,
-                        const std::vector<Tile> &tiles);
+                        const std::vector<int>& tile_indices);
 
   void PerformSwap(Bag &bag, const std::vector<int>& indices);
 
