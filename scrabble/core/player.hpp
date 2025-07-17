@@ -15,9 +15,9 @@ class Player {
 
   void PutTilesInHand(const std::vector<Tile> &tiles);
 
-  void UseTile(char c);
+  void UseTile(int index);
 
-  void SwapTile(char c, Bag &bag);
+  void SwapTile(int index, Bag &bag);
 
   bool FindTile(char c, int &pos) const;
 
@@ -33,7 +33,7 @@ class Player {
                         bool horizontal, int row, int col,
                         const std::string &word);
 
-  void ExecuteExchangeMove(Bag &bag, const std::string &word);
+  void PerformSwap(Bag &bag, const std::vector<int>& indices);
 
   std::string name() const { return player_name_; }
   int score() const { return player_score_; }

@@ -22,22 +22,14 @@ void Player::PutTilesInHand(const std::vector<Tile> &tiles) {
 }
 
 // Use a tile in the player's hand
-void Player::UseTile(const char c) {
-  for (int i = 0; i < static_cast<int>(player_tiles_.size()); ++i) {
-    if (c == player_tiles_[i].letter()) {
-      player_tiles_.erase(player_tiles_.begin() + i);
-      break;
-    }
-  }
-}
-
-// Hàm này sẽ trao đổi viên gạch với bag
-void Player::SwapTile(const char c, Bag &bag) {
-  int pos = 0;
-  if (FindTile(c, pos)) {
-    bag.AddTile(player_tiles_[pos]);
-    player_tiles_.erase(player_tiles_.begin() + pos);
-  }
+void Player::UseTile(const int index) {
+  // for (int i = 0; i < static_cast<int>(player_tiles_.size()); ++i) {
+  //   if (c == player_tiles_[i].letter()) {
+  //     player_tiles_.erase(player_tiles_.begin() + i);
+  //     break;
+  //   }
+  // }
+  player_tiles_.erase(player_tiles_.begin() + index);
 }
 
 // Hàm này sẽ tìm vị trí của viên gạch trong tay người chơi
@@ -66,15 +58,19 @@ void Player::ReturnTile(const char c, std::vector<Tile> &used_tiles) {
   }
 }
 
-void Player::ExecuteExchangeMove(Bag &bag, const std::string &word) {
-  // Implementation of place move logic
-  // Rule : bag.num_tiles_remanining() < 7 cannot exchange tiles;
-  const int number_of_tiles_to_draw = static_cast<int>(word.length());
-  for (int i = 0; i < number_of_tiles_to_draw; ++i) {
-    this->SwapTile(word[i], bag);
+// Hàm này lấy viên gạch tại index khỏi tay người chơi và đặt lại vào bag
+void Player::SwapTile(const int index, Bag &bag) {
+  bag.AddTile(player_tiles_[index]);
+  player_tiles_.erase(player_tiles_.begin() + index);
+}
+
+void Player::PerformSwap(Bag &bag, const std::vector<int> &indices) {
+  const int num_tiles_to_draw = static_cast<int>(indices.size());
+  for (const int index : indices) {
+    SwapTile(index, bag);
   }
-  const std::vector<Tile> tiles = bag.DrawTiles(number_of_tiles_to_draw);
-  this->PutTilesInHand(tiles);
+  const std::vector<Tile> tiles_drawn = bag.DrawTiles(num_tiles_to_draw);
+  this->PutTilesInHand(tiles_drawn);
 }
 
 int Player::GetHandScore() const {

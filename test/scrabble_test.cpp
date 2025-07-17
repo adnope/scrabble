@@ -64,7 +64,7 @@ TEST_CASE("Player functions test") {
     CHECK(player.num_tiles_in_hand() == 7);
     std::string init_tile;
     for (const auto& tile : initial_tiles) {
-      init_tile += tile.get_use();
+      init_tile += tile.letter();
     }
     CHECK(init_tile == "ABCDEFG");
     // Use tiles
