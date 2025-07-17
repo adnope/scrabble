@@ -1,11 +1,13 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+
 #include <fstream>
 #include <string>
+
 #include "core/bag.hpp"
 #include "core/board.hpp"
+#include "core/dictionary.hpp"
 #include "core/player.hpp"
 #include "core/tile.hpp"
-#include "core/dictionary.hpp"
 #include "doctest/doctest.h"
 
 TEST_CASE("dictionary test") {

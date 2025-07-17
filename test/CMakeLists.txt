@@ -5,6 +5,5 @@ target_link_libraries(scrabble_test PRIVATE
   external
 )
 
-enable_testing()
-include(CTest)
-add_test(NAME scrabble_test COMMAND scrabble_test)
+target_include_directories(scrabble_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/new-logic)
+add_subdirectory(new-logic)
