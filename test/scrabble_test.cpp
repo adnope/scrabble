@@ -74,8 +74,7 @@ TEST_CASE("Player functions test") {
 
   SUBCASE("Execute Exchange Move") {
     // Get tiles from bag
-    std::string word = "ABC";
-    player.ExecuteExchangeMove(bag, word);
+    player.PerformSwap(bag, {1,2,3});
     CHECK(player.num_tiles_in_hand() == 7);
     //
   }

@@ -17,8 +17,6 @@ class Player {
 
   void UseTile(int index);
 
-  void SwapTile(int index, Bag &bag);
-
   void PutTileToUsedTiles(int index, std::vector<Tile> &used_tiles);
 
   void AddScore(const int score) { player_score_ += score; }
@@ -31,7 +29,7 @@ class Player {
                         bool horizontal, int row, int col,
                         const std::vector<int>& tile_indices);
 
-  void PerformSwap(Bag &bag, const std::vector<int>& indices);
+  bool PerformSwap(Bag &bag, const std::vector<int>& indices);
 
   std::string name() const { return player_name_; }
   int score() const { return player_score_; }
@@ -45,5 +43,7 @@ class Player {
   std::vector<Tile> player_tiles_;
   int player_score_;
   int num_tiles_;
+
+  void SwapTile(int index, Bag &bag);
 };
 }  // namespace core

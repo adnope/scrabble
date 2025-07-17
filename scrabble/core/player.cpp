@@ -41,13 +41,17 @@ void Player::SwapTile(const int index, Bag &bag) {
   player_tiles_.erase(player_tiles_.begin() + index);
 }
 
-void Player::PerformSwap(Bag &bag, const std::vector<int> &indices) {
+bool Player::PerformSwap(Bag &bag, const std::vector<int> &indices) {
   const int num_tiles_to_draw = static_cast<int>(indices.size());
+  if (num_tiles_to_draw > bag.num_tiles_remanining()) {
+    return false;
+  }
   for (const int index : indices) {
     SwapTile(index, bag);
   }
   const std::vector<Tile> tiles_drawn = bag.DrawTiles(num_tiles_to_draw);
   this->PutTilesInHand(tiles_drawn);
+  return true;
 }
 
 int Player::GetHandScore() const {
@@ -67,7 +71,7 @@ bool Player::ExecutePlaceMove(Bag &bag, const Dictionary &dictionary,
   for (size_t i = 0; i < tile_indices.size(); ++i) {
     PutTileToUsedTiles(tile_indices[i], used_tiles);
     if (used_tiles[used_tiles.size() - 1].IsBlank() && i + 1 < tile_indices.size()) {
-      used_tiles[used_tiles.size() - 1].UseAs(word[i + 1]);
+      // used_tiles[used_tiles.size() - 1].UseAs(word[i + 1]);
       i++;
     }
   }
