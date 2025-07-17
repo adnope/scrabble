@@ -22,23 +22,19 @@ void Player::PutTilesInHand(const std::vector<Tile> &tiles) {
 }
 
 // Use a tile in the player's hand
-void Player::UseTile(const int index) {
-  // for (int i = 0; i < static_cast<int>(player_tiles_.size()); ++i) {
-  //   if (c == player_tiles_[i].letter()) {
-  //     player_tiles_.erase(player_tiles_.begin() + i);
-  //     break;
-  //   }
-  // }
-  player_tiles_.erase(player_tiles_.begin() + index);
+void Player::UseTile(int index) {
+  player_tiles_.erase(player_tiles_.begin() + tile_index);
 }
 
+// Hàm này sẽ trao đổi viên gạch với bag
+
 // Hàm này sẽ tìm vị trí của viên gạch trong tay người chơi
-bool Player::FindTile(const char c, int &pos) const {
+bool Player::FindTile(Tile tile, int &pos) const {
   for (int i = 0; i < static_cast<int>(player_tiles_.size()); ++i) {
     if (i == pos) {
       continue;
     }
-    if (c == player_tiles_[i].letter()) {
+    if (tile.letter() == player_tiles_[i].letter()) {
       pos = i;
       return true;
     }
@@ -50,9 +46,9 @@ bool Player::FindTile(const char c, int &pos) const {
 // dụng Nếu từ trên ô hợp lệ -> xóa khỏi tay người chơi Khi đó usedTiles sẽ chứa
 // các viên gạch đã sử dụng sẽ sử dụng trong tính điểm và xóa khỏi tay người
 // chơi
-void Player::ReturnTile(const char c, std::vector<Tile> &used_tiles) {
+void Player::ReturnTile(Tile tile, std::vector<Tile> &used_tiles) {
   int pos = 0;
-  if (FindTile(c, pos)) {
+  if (FindTile(tile, pos)) {
     used_tiles.push_back(player_tiles_[pos]);
     player_tiles_.erase(player_tiles_.begin() + pos);
   }
@@ -83,13 +79,13 @@ int Player::GetHandScore() const {
 
 bool Player::ExecutePlaceMove(Bag &bag, const Dictionary &dictionary,
                               Board &board, const bool horizontal, int row,
-                              int col, const std::string &word) {
+                              int col, const std::vector<Tile> &tiles) {
   std::vector<std::string> words;
   std::vector<Tile> used_tiles;
   int turn_score = 0;
-  for (size_t i = 0; i < word.length(); ++i) {
-    ReturnTile(word[i], used_tiles);
-    if (used_tiles[used_tiles.size() - 1].IsBlank() && i + 1 < word.length()) {
+  for (size_t i = 0; i < tiles.size(); ++i) {
+    ReturnTile(tiles[i], used_tiles);
+    if (used_tiles[used_tiles.size() - 1].IsBlank() && i + 1 < tiles.size()) {
       used_tiles[used_tiles.size() - 1].UseAs(word[i + 1]);
       i++;
     }
