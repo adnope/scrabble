@@ -22,18 +22,11 @@ void Player::PutTilesInHand(const std::vector<Tile> &tiles) {
 }
 
 // Use a tile in the player's hand
-void Player::UseTile(int tile_index) {
+void Player::UseTile(int index) {
   player_tiles_.erase(player_tiles_.begin() + tile_index);
 }
 
 // Hàm này sẽ trao đổi viên gạch với bag
-void Player::SwapTile(Tile tile, Bag &bag) {
-  int pos = 0;
-  if (FindTile(tile, pos)) {
-    bag.AddTile(player_tiles_[pos]);
-    player_tiles_.erase(player_tiles_.begin() + pos);
-  }
-}
 
 // Hàm này sẽ tìm vị trí của viên gạch trong tay người chơi
 bool Player::FindTile(Tile tile, int &pos) const {
@@ -61,20 +54,19 @@ void Player::ReturnTile(Tile tile, std::vector<Tile> &used_tiles) {
   }
 }
 
-// Cái này chính là swapTiles -> đổi xong xóa, khỏi tại lại = drawtiles
-void Player::ExecuteSwapMove(std::vector<Tile> &tiles, Bag &bag) {
-  // Implementation of place move logic
-  // Rule : bag.num_tiles_remanining() < 7 cannot exchange tiles;
-  int number_of_tiles_to_draw = tiles.size();
-  if (bag.num_tiles_remanining() < 7) {
-    throw std::runtime_error(
-        "Cannot exchange tiles: fewer than 7 tiles remaining in the bag.");
+// Hàm này lấy viên gạch tại index khỏi tay người chơi và đặt lại vào bag
+void Player::SwapTile(const int index, Bag &bag) {
+  bag.AddTile(player_tiles_[index]);
+  player_tiles_.erase(player_tiles_.begin() + index);
+}
+
+void Player::PerformSwap(Bag &bag, const std::vector<int> &indices) {
+  const int num_tiles_to_draw = static_cast<int>(indices.size());
+  for (const int index : indices) {
+    SwapTile(index, bag);
   }
-  for (Tile &tile : tiles) {
-    SwapTile(tile, bag);
-  }
-  const std::vector<Tile> &drawn_tiles = bag.DrawTiles(number_of_tiles_to_draw);
-  this->PutTilesInHand(drawn_tiles);
+  const std::vector<Tile> tiles_drawn = bag.DrawTiles(num_tiles_to_draw);
+  this->PutTilesInHand(tiles_drawn);
 }
 
 int Player::GetHandScore() const {
