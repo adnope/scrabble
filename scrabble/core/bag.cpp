@@ -90,7 +90,6 @@ std::vector<Tile> Bag::DrawTiles(const int num_tiles) {
     drawn_tiles.emplace_back(tile_bag_.back());
     tile_bag_.pop_back();
   }
-
   return drawn_tiles;
 }
 

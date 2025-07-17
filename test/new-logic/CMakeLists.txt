@@ -1,0 +1,9 @@
+file(GLOB
+    SCRABBLE_TEST_SOURCES
+    CONFIGURE_DEPENDS
+    "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp"
+)
+
+target_sources(scrabble_test PRIVATE
+    ${SCRABBLE_TEST_SOURCES}
+)

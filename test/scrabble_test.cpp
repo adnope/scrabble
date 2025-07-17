@@ -1,11 +1,13 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+
 #include <fstream>
 #include <string>
+
 #include "core/bag.hpp"
 #include "core/board.hpp"
+#include "core/dictionary.hpp"
 #include "core/player.hpp"
 #include "core/tile.hpp"
-#include "core/dictionary.hpp"
 #include "doctest/doctest.h"
 
 TEST_CASE("dictionary test") {
@@ -62,7 +64,7 @@ TEST_CASE("Player functions test") {
     CHECK(player.num_tiles_in_hand() == 7);
     std::string init_tile;
     for (const auto& tile : initial_tiles) {
-      init_tile += tile.get_use();
+      init_tile += tile.letter();
     }
     CHECK(init_tile == "ABCDEFG");
     // Use tiles
@@ -72,10 +74,8 @@ TEST_CASE("Player functions test") {
 
   SUBCASE("Execute Exchange Move") {
     // Get tiles from bag
-    std::string word = "ABC";
-    player.ExecuteExchangeMove(bag, word);
+    player.PerformSwap(bag, {1,2,3});
     CHECK(player.num_tiles_in_hand() == 7);
-
     //
   }
 }

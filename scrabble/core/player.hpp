@@ -1,4 +1,5 @@
 #pragma once
+
 #include <string>
 #include <vector>
 
@@ -14,13 +15,9 @@ class Player {
 
   void PutTilesInHand(const std::vector<Tile> &tiles);
 
-  void UseTile(char c);
+  void UseTile(int index);
 
-  void ExchangeTile(char c, Bag &bag);
-
-  bool FindTile(char c, int &pos) const;
-
-  void ReturnTile(char c, std::vector<Tile> &used_tiles);
+  void PutTileToUsedTiles(int index, std::vector<Tile> &used_tiles);
 
   void AddScore(const int score) { player_score_ += score; }
 
@@ -30,9 +27,9 @@ class Player {
 
   bool ExecutePlaceMove(Bag &bag, const Dictionary &dictionary, Board &board,
                         bool horizontal, int row, int col,
-                        const std::string &word);
+                        const std::vector<int>& tile_indices);
 
-  void ExecuteExchangeMove(Bag &bag, const std::string &word);
+  bool PerformSwap(Bag &bag, const std::vector<int>& indices);
 
   std::string name() const { return player_name_; }
   int score() const { return player_score_; }
@@ -46,5 +43,7 @@ class Player {
   std::vector<Tile> player_tiles_;
   int player_score_;
   int num_tiles_;
+
+  void SwapTile(int index, Bag &bag);
 };
 }  // namespace core

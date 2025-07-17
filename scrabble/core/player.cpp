@@ -22,79 +22,56 @@ void Player::PutTilesInHand(const std::vector<Tile> &tiles) {
 }
 
 // Use a tile in the player's hand
-void Player::UseTile(const char c) {
-  for (int i = 0; i < static_cast<int>(player_tiles_.size()); ++i) {
-    if (c == player_tiles_[i].letter()) {
-      player_tiles_.erase(player_tiles_.begin() + i);
-      break;
-    }
-  }
-}
-
-// Hàm này sẽ trao đổi một viên gạch với bag
-void Player::ExchangeTile(const char c, Bag &bag) {
-  int pos = 0;
-  if (FindTile(c, pos)) {
-    bag.AddTiles(player_tiles_[pos]);
-    player_tiles_.erase(player_tiles_.begin() + pos);
-  }
-}
-
-// Hàm này sẽ tìm vị trí của viên gạch trong tay người chơi
-bool Player::FindTile(const char c, int &pos) const {
-  for (int i = 0; i < static_cast<int>(player_tiles_.size()); ++i) {
-    if (i == pos) {
-      continue;
-    }
-    if (c == player_tiles_[i].letter()) {
-      pos = i;
-      return true;
-    }
-  }
-  return false;
+void Player::UseTile(const int index) {
+  player_tiles_.erase(player_tiles_.begin() + index);
 }
 
 // Hàm này sẽ đưa viên gạch trong tay người chơi vào vector các viên gạch đã sử
 // dụng Nếu từ trên ô hợp lệ -> xóa khỏi tay người chơi Khi đó usedTiles sẽ chứa
 // các viên gạch đã sử dụng sẽ sử dụng trong tính điểm và xóa khỏi tay người
 // chơi
-void Player::ReturnTile(const char c, std::vector<Tile> &used_tiles) {
-  int pos = 0;
-  if (FindTile(c, pos)) {
-    used_tiles.push_back(player_tiles_[pos]);
-    player_tiles_.erase(player_tiles_.begin() + pos);
-  }
+void Player::PutTileToUsedTiles(const int index, std::vector<Tile> &used_tiles) {
+  used_tiles.push_back(player_tiles_[index]);
+  player_tiles_.erase(player_tiles_.begin() + index);
 }
 
-void Player::ExecuteExchangeMove(Bag &bag, const std::string &word) {
-  // Implementation of place move logic
-  // Rule : bag.num_tiles_remanining() < 7 cannot exchange tiles;
-  const int number_of_tiles_to_draw = static_cast<int>(word.length());
-  for (int i = 0; i < number_of_tiles_to_draw; ++i) {
-    this->ExchangeTile(word[i], bag);
+// Hàm này lấy viên gạch tại index khỏi tay người chơi và đặt lại vào bag
+void Player::SwapTile(const int index, Bag &bag) {
+  bag.AddTile(player_tiles_[index]);
+  player_tiles_.erase(player_tiles_.begin() + index);
+}
+
+bool Player::PerformSwap(Bag &bag, const std::vector<int> &indices) {
+  const int num_tiles_to_draw = static_cast<int>(indices.size());
+  if (num_tiles_to_draw > bag.num_tiles_remanining()) {
+    return false;
   }
-  const std::vector<Tile> tiles = bag.DrawTiles(number_of_tiles_to_draw);
-  this->PutTilesInHand(tiles);
+  for (const int index : indices) {
+    SwapTile(index, bag);
+  }
+  const std::vector<Tile> tiles_drawn = bag.DrawTiles(num_tiles_to_draw);
+  this->PutTilesInHand(tiles_drawn);
+  return true;
 }
 
 int Player::GetHandScore() const {
-  int tilesScore = 0;
-  for(size_t i = 0; i < player_tiles_.size(); i++){
-    tilesScore += player_tiles_[i].points();
+  int total_score = 0;
+  for (size_t i = 0; i < player_tiles_.size(); i++) {
+    total_score += player_tiles_[i].points();
   }
-  return tilesScore;
+  return total_score;
 }
 
 bool Player::ExecutePlaceMove(Bag &bag, const Dictionary &dictionary,
                               Board &board, const bool horizontal, int row,
-                              int col, const std::string &word) {
+                              int col, const std::vector<int> &tile_indices) {
   std::vector<std::string> words;
   std::vector<Tile> used_tiles;
   int turn_score = 0;
-  for (size_t i = 0; i < word.length(); ++i) {
-    ReturnTile(word[i], used_tiles);
-    if (used_tiles[used_tiles.size() - 1].IsBlank() && i + 1 < word.length()) {
-      used_tiles[used_tiles.size() - 1].UseAs(word[i + 1]);
+  for (size_t i = 0; i < tile_indices.size(); ++i) {
+    PutTileToUsedTiles(tile_indices[i], used_tiles);
+    if (used_tiles[used_tiles.size() - 1].IsBlank() && i + 1 < tile_indices.size()) {
+      // used_tiles[used_tiles.size() - 1].UseAs(word[i + 1]);
       i++;
     }
   }
