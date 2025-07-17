@@ -1,4 +1,5 @@
 #pragma once
+
 #include <string>
 #include <vector>
 
@@ -16,7 +17,7 @@ class Player {
 
   void UseTile(char c);
 
-  void ExchangeTiles(char c, Bag &bag);
+  void SwapTile(char c, Bag &bag);
 
   bool FindTile(char c, int &pos) const;
 

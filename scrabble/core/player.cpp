@@ -1,4 +1,5 @@
 #include "player.hpp"
+
 #include <iostream>
 #include <string>
 #include <vector>
@@ -31,7 +32,7 @@ void Player::UseTile(const char c) {
 }
 
 // Hàm này sẽ trao đổi viên gạch với bag
-void Player::ExchangeTiles(const char c, Bag &bag) {
+void Player::SwapTile(const char c, Bag &bag) {
   int pos = 0;
   if (FindTile(c, pos)) {
     bag.AddTile(player_tiles_[pos]);
@@ -70,7 +71,7 @@ void Player::ExecuteExchangeMove(Bag &bag, const std::string &word) {
   // Rule : bag.num_tiles_remanining() < 7 cannot exchange tiles;
   const int number_of_tiles_to_draw = static_cast<int>(word.length());
   for (int i = 0; i < number_of_tiles_to_draw; ++i) {
-    this->ExchangeTile(word[i], bag);
+    this->SwapTile(word[i], bag);
   }
   const std::vector<Tile> tiles = bag.DrawTiles(number_of_tiles_to_draw);
   this->PutTilesInHand(tiles);
@@ -78,7 +79,7 @@ void Player::ExecuteExchangeMove(Bag &bag, const std::string &word) {
 
 int Player::GetHandScore() const {
   int tilesScore = 0;
-  for(size_t i = 0; i < player_tiles_.size(); i++){
+  for (size_t i = 0; i < player_tiles_.size(); i++) {
     tilesScore += player_tiles_[i].points();
   }
   return tilesScore;
