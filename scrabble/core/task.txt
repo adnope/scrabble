@@ -1,0 +1,54 @@
+Game logic:
+- members:
+	- struct Move {
+		string word,
+		int score
+	}
+	- players: array<Player>
+	- board: Board
+	- bag: Bag: 100 tiles randomized
+	- dictionary: Dictionary
+	- move history: vector<Move>
+	- current turn: int
+	- pass count: array<int>
+
+- init game:
+	- init dictionary
+	- init bag
+	- init board
+	- init move history
+	- init n players: score = 0
+
+
+	- init first to move player: randomize 1 tile for each player, then determine the first to move -> InitFirstTurn()
+	- init player tiles: foreach player draw(7 tiles)
+	
+
+- game loop:
+	- if (tiles in bag = 0 && any player's hand is empty) -> end game
+	- if (is first move) -> ask for player action:
+		- pass turn
+		- perform move:
+			- if move is valid -> check if move in center
+				- if move in center -> place the move & add score
+				- else -> ask for move again
+			- if move is invalid -> ask for move again
+	- for each player if pass_count >= 2 -> break;
+	- players[turn]: if (deck size < 7) draw new tiles
+	
+    - player.TakeAction():
+		- pass turn: game.NextTurn()  ->Game function
+		- swap tiles: select indicies of tiles in deck: player.swap(vector<int> tile_indices)
+		- perform move: đã triển khai trong player
+			- if (move is valid) -> place the move and increase player's score
+			- if not -> nothings changes, notify the player, ask for a move again
+			-> need to implement CanMove() function and SubmitMove() function
+			- if used_tiles.size() == 7 -> BINGO -> add 50 extra points
+
+- game end:
+	- game_ender = player who ends the game
+	- for each player:
+		hand_score = GetHandScore() (sum of scores of all tiles remaining)
+		subtract hand_score from player score
+		add hand_score to game_ender score
+	- winner = player with highest final score
