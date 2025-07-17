@@ -1,0 +1,2 @@
+g++ GUI_main_test.cpp needsbasic.cpp welcome.cpp important.cpp GUI.cpp -o GUI_main_test -I/home/tiendung/scrabble/build/_deps/sdl2_image-src/include -I /home/tiendung/scrabble/build/_deps/sdl2_ttf-src -I /home/tiendung/scrabble/build/_deps/sdl2-src/include -lSDL2 -lSDL2_ttf -lSDL2_image
+./GUI_main_test

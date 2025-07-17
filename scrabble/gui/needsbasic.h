@@ -5,4 +5,6 @@
 extern SDL_Window *window;
 extern SDL_Renderer *renderer;
 extern bool quit;
+extern const int WIDTH;
+extern const int HEIGHT;
 #endif  // NEEDSBASIC_H

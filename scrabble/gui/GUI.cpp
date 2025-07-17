@@ -1,6 +1,7 @@
 #include "GUI.h"
 #include "include.h"
 #include "welcome.h"
+using namespace std;
 int choose = 0;
 SDL_Event e;
 void GUI::run_GUI_first() {
@@ -19,6 +20,12 @@ void GUI::run_GUI_first() {
         SDL_Quit();
         return ;
     }
+    // Set background color: R, G, B, A (0-255)
+    SDL_SetRenderDrawColor(renderer, 235, 252, 255, 255);  // Ví dụ: màu xanh da trời
+
+    // Xóa màn hình bằng màu đã set (fill full screen)
+    SDL_RenderClear(renderer);
+    cout<<HEIGHT<<" "<<WIDTH<<endl;
     while (!quit) {
         //std::cout<<123<<std::endl;
         choose=0;
@@ -44,7 +51,7 @@ void GUI::run_GUI_first() {
         }
         print_Welcome();
         if (choose == 1) {
-            std::cout << choose<< std::endl;
+            std::cout << choose << std::endl;
         } else if (choose == 2) {
             std::cout << choose << std::endl;
         } else if (choose == -1) {
