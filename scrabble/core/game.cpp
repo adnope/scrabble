@@ -1,12 +1,13 @@
 #include "game.hpp"
+
 #include <algorithm>
 #include <string>
+
 #include "bag.hpp"
 #include "board.hpp"
 #include "dictionary.hpp"
 #include "player.hpp"
 #include "spdlog/spdlog.h"
-
 
 namespace core {
 Game::Game(int num_players, Dictionary::DictionaryType dict_type,
@@ -184,9 +185,11 @@ bool Game::ExecuteMove(const std::string& move_type, const std::string& word,
   if (move_type_lower == "pass") {
     ExecutePassMove();
     return true;
-  } else if (move_type_lower == "place") {
+  }
+  if (move_type_lower == "place") {
     return ExecutePlaceMove(word, dir, row, col, move);
-  } else if (move_type_lower == "swap") {
+  }
+  if (move_type_lower == "swap") {
     return ExecuteSwapMove(word, move);
   }
 
