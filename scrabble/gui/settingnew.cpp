@@ -1,6 +1,7 @@
 #include "include.h"
 #include "GUI.h"
 #include "settingnew.h"
+using namespace std;
 Image* setting_image;
 Image * setting_function;
 Button_Text* decrease_1;
@@ -29,14 +30,30 @@ void print_setting (SDL_Event &e) {
         //return;
     }
     init_settings_UI();
+    int choice_1=0;
+    int choice_2=0;
+    int choice_3=0;
     while (!quit)
     {
+        //reset button
+        decrease_1->reset();
+        decrease_2->reset();
+        decrease_3->reset();
+        increase_1->reset();
+        increase_2->reset();
+        increase_3->reset();
         SDL_RenderClear(renderer);
         while (SDL_PollEvent(&e)) {
             if (e.type == SDL_QUIT) {
                 quit = true;
             } else if (e.type == SDL_MOUSEBUTTONDOWN) {
                 // Handle mouse button down events here
+                decrease_1->handleEvent(e);
+                decrease_2->handleEvent(e);
+                decrease_3->handleEvent(e);
+                increase_1->handleEvent(e);
+                increase_2->handleEvent(e);
+                increase_3->handleEvent(e);
             }
         }
         // Render settings UI elements here
@@ -49,6 +66,36 @@ void print_setting (SDL_Event &e) {
         increase_1->print_Text(renderer);
         increase_2->print_Text(renderer);
         increase_3->print_Text(renderer);
+        if(decrease_1 ->checkpress()) {
+            choice_1--;
+            choice_1%=3; // Prevent going below 0
+            cout<<"choice 1:"<<choice_1<<endl;
+        }
+        if(decrease_2 ->checkpress()) {
+            choice_2--;
+            choice_2%=3; // Prevent going below 0
+            cout<<"choice 2:"<<choice_2<<endl;
+        }
+        if(decrease_3 ->checkpress()) {
+            choice_3--;
+            choice_3%=3; // Prevent going below 0
+            cout<<"choice 3:"<<choice_3<<endl;
+        }
+        if(increase_1 ->checkpress()) {
+            choice_1++;
+            choice_1%=3; // Prevent going above 2
+            cout<<"choice 1:"<<choice_1<<endl;
+        }
+        if(increase_2 ->checkpress()) { 
+            choice_2++;
+            choice_2%=3; // Prevent going above 2
+            cout<<"choice 2:"<<choice_2<<endl;
+        }
+        if(increase_3 ->checkpress()) { 
+            choice_3++;
+            choice_3%=3; // Prevent going above 2
+            cout<<"choice 3:"<<choice_3<<endl;
+        }
         // Update the screen
         SDL_RenderPresent(renderer);
     }

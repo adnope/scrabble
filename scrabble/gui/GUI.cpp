@@ -32,6 +32,7 @@ void GUI::run_GUI_first() {
     init_font();
     while (!quit) {
         //std::cout<<123<<std::endl;
+        //SDL_RenderSetLogicalSize(renderer, 1280, 720);
         choose=0;
         startbutton->reset();
         quitbutton->reset();
