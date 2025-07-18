@@ -6,7 +6,7 @@
 #include "SDL_image.h"
 #include "SDL_ttf.h"
 #include "gui/GUI.h"
-#include "spdlog/spdlog.h"
+//#include "spdlog/spdlog.h"
 
 bool test_sdl2_libraries() {
   // Initialize SDL2

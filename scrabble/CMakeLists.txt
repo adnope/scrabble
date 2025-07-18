@@ -1,6 +1,6 @@
 add_executable(scrabble main.cpp)
 
-add_subdirectory(core)
+#add_subdirectory(core)
 add_subdirectory(gui)
 
 target_link_libraries(scrabble PRIVATE
