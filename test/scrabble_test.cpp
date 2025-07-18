@@ -9,6 +9,7 @@
 #include "core/player.hpp"
 #include "core/tile.hpp"
 #include "doctest/doctest.h"
+#include "spdlog/spdlog.h"
 
 TEST_CASE("dictionary test") {
   SUBCASE("csw") {
@@ -53,28 +54,31 @@ TEST_CASE("Player functions test") {
 
   player.PutTilesInHand(initial_tiles);
 
-  SUBCASE("Player constructor") {
+  SUBCASE("Constructor") {
+    spdlog::info("[Player constructor test]");
     CHECK(player.name() == "Test Player");
     CHECK(player.score() == 0);
     CHECK(player.num_tiles_in_hand() == 7);
+    player.PrintTilesInHand();
   }
 
-  SUBCASE("UseTiles") {
+  SUBCASE("Use tiles") {
+    spdlog::info("[Player UseTiles test]");
     // Check tile on hand
+    player.PrintTilesInHand();
     CHECK(player.num_tiles_in_hand() == 7);
-    std::string init_tile;
-    for (const auto& tile : initial_tiles) {
-      init_tile += tile.letter();
-    }
-    CHECK(init_tile == "ABCDEFG");
     // Use tiles
-    player.UseTile('A');
+    player.UseTile(1);
+    player.PrintTilesInHand();
     CHECK(player.num_tiles_in_hand() == 6);
   }
 
-  SUBCASE("Execute Exchange Move") {
+  SUBCASE("Perform swap") {
+    spdlog::info("[Player Swap test]");
+    player.PrintTilesInHand();
     // Get tiles from bag
     player.PerformSwap(bag, {1,2,3});
+    player.PrintTilesInHand();
     CHECK(player.num_tiles_in_hand() == 7);
     //
   }

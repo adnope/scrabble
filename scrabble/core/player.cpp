@@ -1,10 +1,10 @@
 #include "player.hpp"
 
-#include <iostream>
 #include <string>
 #include <vector>
 
 #include "bag.hpp"
+#include "spdlog/spdlog.h"
 #include "tile.hpp"
 
 namespace core {
@@ -30,7 +30,8 @@ void Player::UseTile(const int index) {
 // dụng Nếu từ trên ô hợp lệ -> xóa khỏi tay người chơi Khi đó usedTiles sẽ chứa
 // các viên gạch đã sử dụng sẽ sử dụng trong tính điểm và xóa khỏi tay người
 // chơi
-void Player::PutTileToUsedTiles(const int index, std::vector<Tile> &used_tiles) {
+void Player::PutTileToUsedTiles(const int index,
+                                std::vector<Tile> &used_tiles) {
   used_tiles.push_back(player_tiles_[index]);
   player_tiles_.erase(player_tiles_.begin() + index);
 }
@@ -53,6 +54,15 @@ bool Player::PerformSwap(Bag &bag, const std::vector<int> &indices) {
   this->PutTilesInHand(tiles_drawn);
   return true;
 }
+void Player::PrintTilesInHand() const {
+  std::string player_tiles;
+  for (const auto &tile : player_tiles_) {
+    player_tiles += tile.letter();
+    player_tiles += std::to_string(tile.points());
+    player_tiles += ' ';
+  }
+  spdlog::info("Player: {0}, tiles: {1}", player_name_, player_tiles);
+}
 
 int Player::GetHandScore() const {
   int total_score = 0;
@@ -70,7 +80,8 @@ bool Player::ExecutePlaceMove(Bag &bag, const Dictionary &dictionary,
   int turn_score = 0;
   for (size_t i = 0; i < tile_indices.size(); ++i) {
     PutTileToUsedTiles(tile_indices[i], used_tiles);
-    if (used_tiles[used_tiles.size() - 1].IsBlank() && i + 1 < tile_indices.size()) {
+    if (used_tiles[used_tiles.size() - 1].IsBlank() &&
+        i + 1 < tile_indices.size()) {
       // used_tiles[used_tiles.size() - 1].UseAs(word[i + 1]);
       i++;
     }
@@ -87,9 +98,7 @@ bool Player::ExecutePlaceMove(Bag &bag, const Dictionary &dictionary,
 
   // Found no words from move
   if (words.empty()) {
-    std::cout
-        << "At least one tile must be adjacent to other tiles on the board."
-        << '\n';
+    spdlog::error("At least one tile must be adjacent to other tiles on the board.");
     return false;
   }
 
@@ -97,7 +106,7 @@ bool Player::ExecutePlaceMove(Bag &bag, const Dictionary &dictionary,
   for (size_t i = 0; i < words.size(); i++) {
     const bool is_valid = dictionary.Contains(words[i]);
     if (!is_valid) {
-      std::cout << "Invalid word: " << words[i] << '\n';
+      spdlog::error("Invalid words: {}", words[i]);
       return false;
     }
   }
@@ -110,7 +119,7 @@ bool Player::ExecutePlaceMove(Bag &bag, const Dictionary &dictionary,
   }
 
   this->AddScore(turn_score);
-  std::cout << "score of this turn: " << turn_score << '\n';
+  spdlog::info("Score of this turn: {}", turn_score);
 
   int i = 0;
   // Check if board is occupied at the positions

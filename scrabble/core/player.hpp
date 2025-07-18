@@ -31,6 +31,8 @@ class Player {
 
   bool PerformSwap(Bag &bag, const std::vector<int>& indices);
 
+  void PrintTilesInHand() const;
+
   std::string name() const { return player_name_; }
   int score() const { return player_score_; }
   auto &player_tiles() { return player_tiles_; }
