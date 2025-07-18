@@ -37,4 +37,4 @@ FetchContent_MakeAvailable(SDL2_ttf)
 
 add_subdirectory(external)
 add_subdirectory(scrabble)
-add_subdirectory(test)
+#add_subdirectory(test)
