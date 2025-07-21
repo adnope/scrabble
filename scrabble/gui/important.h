@@ -7,10 +7,10 @@
 // fonts
 extern TTF_Font* font_Jersey15_Regular;
 extern TTF_Font* font_aptos;
-
+extern TTF_Font* font_aptos_small;  // Small font for settings
 // font size
 extern const int FONT_SIZE;
-
+extern const int FONT_SIZE_SMALL;  // Small font size for settings
 // colors
 extern SDL_Color white;
 extern SDL_Color black;
@@ -61,7 +61,7 @@ protected:
 
 class Button_Text {
 public:
-    Button_Text(const std::string& s, int x, int y, SDL_Renderer* renderer, SDL_Color color = white, bool press = false);
+    Button_Text(const std::string& s, int x, int y, SDL_Renderer* renderer, SDL_Color color = white, bool press = false, TTF_Font* style=font_aptos);
     bool checkpress();
     void handleEvent(const SDL_Event& e);
     void onClick();
@@ -75,6 +75,7 @@ protected:
     SDL_Texture* texture;
     SDL_Color color;
     bool press;
+    TTF_Font* style;  // Font style for the button text
 };
 
 class Button_Image {

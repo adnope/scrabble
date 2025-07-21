@@ -8,11 +8,11 @@
 using namespace std;
 // Font size
 const int FONT_SIZE = 128;
-
+const int FONT_SIZE_SMALL = 70;
 // Fonts
 TTF_Font* font_Jersey15_Regular ;
 TTF_Font* font_aptos;
-
+TTF_Font* font_aptos_small;
 // Colors
 SDL_Color white       = {255, 255, 255, 255};
 SDL_Color black       = {  0,   0,   0, 255};
@@ -41,6 +41,12 @@ void init_font(){
     if (!font_aptos) {
         std::cerr << "Failed to load Aptos font: " << TTF_GetError() << std::endl;
     }
+    font_aptos_small = TTF_OpenFont("assets/fonts/Aptos.ttf", FONT_SIZE_SMALL);
+    //debug font_aptos_small
+    if (!font_aptos_small) {
+        std::cerr << "Failed to load Aptos font: " << TTF_GetError() << std::endl;
+    }
+
 }
 Text::Text(const std::string& s, int x, int y, SDL_Renderer* renderer, SDL_Color color)
     : s(s), x(x), y(y), texture(nullptr), color(color) {
@@ -110,31 +116,25 @@ bool Image::isLoaded() const {
 }
 
 // Button_Text
-Button_Text::Button_Text(const std::string& s, int x, int y, SDL_Renderer* renderer, SDL_Color color, bool press)
-    : s(s), x(x), y(y), texture(nullptr), color(color), press(press) {
-    if (!font_Jersey15_Regular) {
-        std::cerr << "font_Jersey15_Regular is NULL!" << std::endl;
-        return;
-    }
-    if (!font_aptos) {
-        std::cerr << "font_Aptos is NULL!" << std::endl;
-        return;
-    }
-    SDL_Surface* surface = TTF_RenderUTF8_Blended(font_aptos, s.c_str(), color);
-    if (!surface) {
-    std::cerr << "Text surface creation failed: " << TTF_GetError() << std::endl;
-    }
-    if (surface) {
-        //cout<<"success"<<endl;
-        texture = SDL_CreateTextureFromSurface(renderer, surface);
-        rect.x = x;
-        rect.y = y;
-        rect.w = surface->w;
-        rect.h = surface->h;
-        SDL_FreeSurface(surface);
-    } else {
+Button_Text::Button_Text(const std::string& s, int x, int y, SDL_Renderer* renderer, SDL_Color color, bool press, TTF_Font* style)
+    : s(s), x(x), y(y), texture(nullptr), color(color), press(press), style(style) {
+    if (!style) {
+        std::cerr << "Button_Text: Provided font style is NULL!" <<" "<< TTF_GetError() << std::endl;
         rect = {x, y, 0, 0};
+        //return;
     }
+    SDL_Surface* surface = TTF_RenderUTF8_Blended(style, s.c_str(), color);
+    if (!surface) {
+        std::cerr << "Text surface creation failed: " << TTF_GetError() << std::endl;
+        rect = {x, y, 0, 0};
+        return;
+    }
+    texture = SDL_CreateTextureFromSurface(renderer, surface);
+    rect.x = x;
+    rect.y = y;
+    rect.w = surface->w;
+    rect.h = surface->h;
+    SDL_FreeSurface(surface);
 }
 void Button_Text::reset() {
     press = false;
