@@ -1,20 +1,26 @@
+#include <iostream>
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 
 #include <fstream>
 #include <string>
 
 #include "core/bag.hpp"
-#include "core/board.hpp"
 #include "core/dictionary.hpp"
 #include "core/player.hpp"
 #include "core/tile.hpp"
 #include "doctest/doctest.h"
 #include "spdlog/spdlog.h"
 
-TEST_CASE("dictionary test") {
-  SUBCASE("csw") {
+TEST_CASE("Dictionary test") {
+  SUBCASE("CSW") {
     core::Dictionary dictionary(core::Dictionary::CSW);
     std::ifstream csw6_stream("assets/dictionaries/csw6.dict");
+
+    if (!csw6_stream.is_open()) {
+      spdlog::error("Failed loading dictionary: assets/dictionaries/csw6.dict");
+      return;
+    }
+
     std::string line;
     int word_count = 0;
     int word_contained_count = 0;
@@ -26,9 +32,15 @@ TEST_CASE("dictionary test") {
     }
     CHECK(word_count == word_contained_count);
   }
-  SUBCASE("twl") {
+  SUBCASE("TWL") {
     core::Dictionary dictionary(core::Dictionary::TWL);
     std::ifstream twl6_stream("assets/dictionaries/twl6.dict");
+
+    if (!twl6_stream.is_open()) {
+      spdlog::error("Failed loading dictionary: assets/dictionaries/twl6.dict");
+      return;
+    }
+
     std::string line;
     int word_count = 0;
     int word_contained_count = 0;
@@ -42,44 +54,54 @@ TEST_CASE("dictionary test") {
   }
 }
 
-TEST_CASE("Player functions test") {
-  core::Bag bag;
-  core::Board board;
-  core::Dictionary dictionary(core::Dictionary::CSW);
-  core::Player player("Test Player", 0, 7);
-  std::vector<core::Tile> initial_tiles = {
-      core::Tile('A', 1), core::Tile('B', 3), core::Tile('C', 3),
-      core::Tile('D', 2), core::Tile('E', 1), core::Tile('F', 4),
-      core::Tile('G', 2)};
+TEST_CASE("Player test") {
+  using core::Bag;
+  using core::Tile;
 
-  player.PutTilesInHand(initial_tiles);
+  Bag bag;
+  core::Player player("test_player_1", 0);
+  // std::vector<Tile> initial_tiles = {{'A', 1}, {'B', 3}, {'C', 3}, {'D', 2},
+  //                                    {'E', 1}, {'F', 4}, {'G', 2}};
+  player.DrawNewTiles(bag);
+  // player.AddTiles(initial_tiles);
+  spdlog::info("New player created");
+  player.PrintDeck();
+  std::cout << "Subcase: ";
 
   SUBCASE("Constructor") {
-    spdlog::info("[Player constructor test]");
-    CHECK(player.name() == "Test Player");
+    std::cout << "[Player constructor]\n";
+
+    CHECK(player.name() == "test_player_1");
     CHECK(player.score() == 0);
-    CHECK(player.num_tiles_in_hand() == 7);
-    player.PrintTilesInHand();
+    CHECK(player.current_deck_size() == 7);
   }
 
-  SUBCASE("Use tiles") {
-    spdlog::info("[Player UseTiles test]");
-    // Check tile on hand
-    player.PrintTilesInHand();
-    CHECK(player.num_tiles_in_hand() == 7);
-    // Use tiles
+  SUBCASE("Use tiles and draw tiles") {
+    std::cout << "[Player use tiles and draw tiles]\n";
+
     player.UseTile(1);
-    player.PrintTilesInHand();
-    CHECK(player.num_tiles_in_hand() == 6);
+    player.UseTile(4);
+    player.UseTile(5);
+    std::cout << "Deck before: \n";
+    player.PrintDeck();
+    CHECK(player.current_deck_size() == 4);
+
+    player.DrawNewTiles(bag);
+    std::cout << "Deck before: \n";
+    player.PrintDeck();
+    CHECK(player.current_deck_size() == 7);
   }
 
-  SUBCASE("Perform swap") {
-    spdlog::info("[Player Swap test]");
-    player.PrintTilesInHand();
-    // Get tiles from bag
-    player.PerformSwap(bag, {1,2,3});
-    player.PrintTilesInHand();
-    CHECK(player.num_tiles_in_hand() == 7);
-    //
+  SUBCASE("Swapping") {
+    std::cout << "[Player swap]\n";
+    std::cout << "Deck before: \n";
+    player.PrintDeck();
+
+    player.PerformSwap(bag, {1, 2, 3});
+
+    std::cout << "Deck after: \n";
+    player.PrintDeck();
+
+    CHECK(player.current_deck_size() == 7);
   }
 }

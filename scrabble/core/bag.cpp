@@ -12,14 +12,6 @@
 #include "tile.hpp"
 
 namespace core {
-static constexpr void addTileToBag(std::vector<Tile>& tile_bag,
-                                   const char letter, const int points,
-                                   const int count) {
-  for (int i = 0; i < count; ++i) {
-    tile_bag.emplace_back(static_cast<char>(toupper(letter)), points);
-  }
-}
-
 Bag::Bag() {
   // The chosen letter distribution: <letter> <points> <letter count>
   std::string default_bag =
@@ -65,36 +57,31 @@ Bag::Bag() {
   }
 
   Shuffle();
-  spdlog::info("[Bag] Bag initialized");
 }
 
-void Bag::AddTile(const Tile& tile) { tile_bag_.emplace_back(tile); }
+constexpr void Bag::addTileToBag(std::vector<Tile>& tile_bag, const char letter,
+                                 const int points, const int count) {
+  for (int i = 0; i < count; ++i) {
+    tile_bag.emplace_back(static_cast<char>(toupper(letter)), points);
+  }
+}
+
+void Bag::AddTile(const Tile& tile) {
+  tile_bag_.emplace_back(tile);
+  Shuffle();
+}
 
 void Bag::AddTiles(const std::vector<Tile>& tiles) {
   tile_bag_.insert(tile_bag_.end(), tiles.begin(), tiles.end());
 }
 
-/**
-  Return a vector of tiles with letters in uppercase. This takes tiles from the
-  end of tile_bag.
-*/
-std::vector<Tile> Bag::DrawTiles(const int num_tiles) {
-  constexpr int MAX_TILES = 7;
-  if (num_tiles > MAX_TILES || num_tiles < 0) {
-    spdlog::error("Invalid tiles draw. You must only draw from 0 to {} tiles.",
-                  MAX_TILES);
-    return {};
-  }
-  std::vector<Tile> drawn_tiles;
-  for (int i = 0; i < num_tiles && num_tiles_remanining() > 0; ++i) {
-    drawn_tiles.emplace_back(tile_bag_.back());
-    tile_bag_.pop_back();
-  }
-  return drawn_tiles;
-}
+Tile Bag::DrawTile() {
+  Tile drawn_tile = tile_bag_.back();
+  tile_bag_.pop_back();
 
-int Bag::num_tiles_remanining() const {
-  return static_cast<int>(tile_bag_.size());
+  Shuffle();
+
+  return drawn_tile;
 }
 
 void Bag::Shuffle() {
@@ -107,7 +94,7 @@ void Bag::PrintBagInfo() const {
   spdlog::info("[Bag]");
   std::cout << "Bag content: \n";
   for (const auto& tile : tile_bag_) {
-    tile.PrintTileInfo();
+    tile.PrintInfo();
   }
   std::cout << '\n';
   std::cout << "Tiles remaining: " << num_tiles_remanining() << '\n';

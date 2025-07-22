@@ -23,13 +23,11 @@ void Dictionary::LoadCustomDictionary(const std::string& dictionary_filepath) {
                   dictionary_filepath);
     return;
   }
-  spdlog::info("[Dictionary] Loaded dictionary: {}", dictionary_filepath);
   std::string line;
   while (std::getline(dict_stream, line)) {
     std::transform(line.begin(), line.end(), line.begin(), ::tolower);
     dictionary_.emplace(line);
   }
-  spdlog::info("[Dictionary] Dictionary word count: {}", dictionary_.size());
 }
 
 void Dictionary::ChangeDictionary(const DictionaryType type) {

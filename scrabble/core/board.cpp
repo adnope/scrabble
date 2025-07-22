@@ -27,38 +27,45 @@ Board::Board() : is_first_move_(true) {
       ".d...3...3...d.\n"
       "t..2...t...2..t";
 
+  using Symbol = Square::Symbol;
+  using Multiplier = Square::Multiplier;
+
   std::istringstream board_stream(default_board);
   std::string row;
   for (int i = 0; i < kHeight; ++i) {
     getline(board_stream, row);
     for (int j = 0; j < kWidth; ++j) {
       if (i == kStartPosColumn && j == kStartPosRow) {
-        Square square(i, j, "***", "2n");
+        Square square(i, j, Symbol::kStart, Multiplier::kDoubleWord);
         board_grid_.at(i).at(j) = square;
       } else {
         switch (row[j]) {
           case '.': {
-            Square square(i, j, "...", "1");
+            Square square(i, j, Symbol::kNormal, Multiplier::kNormal);
             board_grid_.at(i).at(j) = square;
             break;
           }
           case '2': {
-            Square square(i, j, "2L ", "2");
+            Square square(i, j, Square::Symbol::kDoubleLetter,
+                          Square::Multiplier::kDoubleLetter);
             board_grid_.at(i).at(j) = square;
             break;
           }
           case '3': {
-            Square square(i, j, "3L ", "3");
+            Square square(i, j, Square::Symbol::kTripleLetter,
+                          Square::Multiplier::kTripleLetter);
             board_grid_.at(i).at(j) = square;
             break;
           }
           case 'd': {
-            Square square(i, j, "2W ", "2n");
+            Square square(i, j, Square::Symbol::kDoubleWord,
+                          Square::Multiplier::kDoubleWord);
             board_grid_.at(i).at(j) = square;
             break;
           }
           case 't': {
-            Square square(i, j, "3W ", "3n");
+            Square square(i, j, Square::Symbol::kTripleWord,
+                          Square::Multiplier::kTripleWord);
             board_grid_.at(i).at(j) = square;
             break;
           }
@@ -74,7 +81,7 @@ Board::Board() : is_first_move_(true) {
 std::string Board::GetVerticalWord(const Tile tile, const int row,
                                    const int col, int& points) {
   std::string word;
-  if (tile.IsBlank()) {
+  if (tile.IsBlankTile()) {
     word += tile.get_use();
   } else {
     word += tile.letter();
@@ -83,12 +90,12 @@ std::string Board::GetVerticalWord(const Tile tile, const int row,
   int up = row - 1;
   int down = row + 1;
   while (up >= 0 && board_grid_.at(up).at(col).IsOccupied()) {
-    word.insert(0, board_grid_.at(up).at(col).value());
+    word.insert(word.begin(), board_grid_.at(up).at(col).tile_letter());
     points += board_grid_.at(up).at(col).tile_points();
     --up;
   }
   while (down <= kWidth - 1 && board_grid_.at(down).at(col).IsOccupied()) {
-    word += board_grid_.at(down).at(col).value();
+    word += board_grid_.at(down).at(col).tile_letter();
     points += board_grid_.at(down).at(col).tile_points();
     ++down;
   }
@@ -99,7 +106,7 @@ std::string Board::GetVerticalWord(const Tile tile, const int row,
 std::string Board::GetHorizontalWord(const Tile tile, const int row,
                                      const int col, int& points) {
   std::string word;
-  if (tile.IsBlank()) {
+  if (tile.IsBlankTile()) {
     word += tile.get_use();
   } else {
     word += tile.letter();
@@ -108,12 +115,12 @@ std::string Board::GetHorizontalWord(const Tile tile, const int row,
   int right = col + 1;
   int left = col - 1;
   while (left >= 0 && board_grid_.at(row).at(left).IsOccupied()) {
-    word.insert(0, board_grid_.at(row).at(left).value());
+    word.insert(word.begin(), board_grid_.at(row).at(left).tile_letter());
     points += board_grid_.at(row).at(left).tile_points();
     --left;
   }
   while (right <= kHeight - 1 && board_grid_.at(row).at(right).IsOccupied()) {
-    word += board_grid_.at(row).at(right).value();
+    word += board_grid_.at(row).at(right).tile_letter();
     points += board_grid_.at(row).at(right).tile_points();
     ++right;
   }
@@ -145,25 +152,26 @@ std::vector<std::string> Board::GetAllWords(
   int counter = 1;
   bool isValid = false;
   int wordLen = static_cast<int>(usedTiles.size());
-  if (usedTiles[0].IsBlank()) {
+  if (usedTiles[0].IsBlankTile()) {
     tempWord += usedTiles[0].get_use();
   } else {
     tempWord += usedTiles[0].letter();
   }
-  std::string mult = board_grid_.at(row - 1).at(col - 1).multiplier();
-  if (mult == "3n") {
-    multiplier *= 3;
-    score += (3 * usedTiles[0].points());
-  } else if (mult == "2n") {
-    multiplier *= 2;
-    score += (2 * usedTiles[0].points());
 
-  } else if (mult == "3") {
-    score += (3 * usedTiles[0].points());
-  } else if (mult == "2") {
-    score += (2 * usedTiles[0].points());
-  } else {
-    score += (usedTiles[0].points()) * multiplier;
+  Square::Multiplier mult = board_grid_.at(row - 1).at(col - 1).multiplier();
+  switch (mult) {
+    case Square::Multiplier::kTripleWord:
+      multiplier *= 3;
+      score += (3 * usedTiles[0].points());
+    case Square::Multiplier::kDoubleWord:
+      multiplier *= 2;
+      score += (2 * usedTiles[0].points());
+    case Square::Multiplier::kTripleLetter:
+      score += (3 * usedTiles[0].points());
+    case Square::Multiplier::kDoubleLetter:
+      score += (2 * usedTiles[0].points());
+    default:
+      score += (usedTiles[0].points()) * multiplier;
   }
 
   if (horizontal) {
@@ -179,7 +187,8 @@ std::vector<std::string> Board::GetAllWords(
       // add letters left adjacent to first placed tile
       if (board_grid_.at(row - 1).at(left).IsOccupied()) {
         isValid = true;
-        tempWord.insert(0, board_grid_.at(row - 1).at(left).value());
+        tempWord.insert(tempWord.begin(),
+                        board_grid_.at(row - 1).at(left).tile_letter());
         score += (board_grid_.at(row - 1).at(left).tile_points()) * multiplier;
         if (left != 0) {
           left--;
@@ -189,7 +198,7 @@ std::vector<std::string> Board::GetAllWords(
       // add letters right adjacent to placed tiles
       if (board_grid_.at(row - 1).at(right).IsOccupied()) {
         isValid = true;
-        tempWord += board_grid_.at(row - 1).at(right).value();
+        tempWord += board_grid_.at(row - 1).at(right).tile_letter();
         score += (board_grid_.at(row - 1).at(right).tile_points()) * multiplier;
         if (right != kHeight - 1) {
           right++;
@@ -201,27 +210,30 @@ std::vector<std::string> Board::GetAllWords(
         if (counter >= wordLen) {
           break;
         }
-        if (usedTiles[counter].IsBlank()) {
+        if (usedTiles[counter].IsBlankTile()) {
           tempWord += usedTiles[counter].get_use();
         } else {
           tempWord += usedTiles[counter].letter();
         }
         mult = board_grid_.at(row - 1).at(right).multiplier();
-        if (mult == "3n") {
-          secondaryMultiplier *= 3;
-          multiplier *= 3;
-          score += (usedTiles[counter].points()) * multiplier;
-        } else if (mult == "2n") {
-          secondaryMultiplier *= 2;
-          multiplier *= 2;
-          score += (usedTiles[counter].points()) * multiplier;
-        } else if (mult == "3") {
-          score += (3 * usedTiles[counter].points()) * multiplier;
-        } else if (mult == "2") {
-          score += (2 * usedTiles[counter].points()) * multiplier;
-        } else {
-          score += (usedTiles[counter].points()) * multiplier;
+
+        switch (mult) {
+          case Square::Multiplier::kTripleWord:
+            secondaryMultiplier *= 3;
+            multiplier *= 3;
+            score += (usedTiles[counter].points()) * multiplier;
+          case Square::Multiplier::kDoubleWord:
+            secondaryMultiplier *= 2;
+            multiplier *= 2;
+            score += (usedTiles[counter].points()) * multiplier;
+          case Square::Multiplier::kTripleLetter:
+            score += (3 * usedTiles[counter].points()) * multiplier;
+          case Square::Multiplier::kDoubleLetter:
+            score += (2 * usedTiles[counter].points()) * multiplier;
+          default:
+            score += (usedTiles[counter].points()) * multiplier;
         }
+
         points = 0;
         word2 = GetVerticalWord(usedTiles[counter], row - 1, right, points);
         if (word2.length() != 1) {
@@ -253,14 +265,15 @@ std::vector<std::string> Board::GetAllWords(
     while (up >= 0 && down < kWidth) {
       if (board_grid_.at(up).at(col - 1).IsOccupied()) {
         isValid = true;
-        tempWord.insert(0, board_grid_.at(up).at(col - 1).value());
+        tempWord.insert(tempWord.begin(),
+                        board_grid_.at(up).at(col - 1).tile_letter());
         score += (board_grid_.at(up).at(col - 1).tile_points()) * multiplier;
         up--;
         continue;
       }
       if (board_grid_.at(down).at(col - 1).IsOccupied()) {
         isValid = true;
-        tempWord += board_grid_.at(down).at(col - 1).value();
+        tempWord += board_grid_.at(down).at(col - 1).tile_letter();
         score += (board_grid_.at(down).at(col - 1).tile_points()) * multiplier;
         down++;
         continue;
@@ -268,27 +281,30 @@ std::vector<std::string> Board::GetAllWords(
       if (counter >= wordLen) {
         break;
       }
-      if (usedTiles[counter].IsBlank()) {
+      if (usedTiles[counter].IsBlankTile()) {
         tempWord += usedTiles[counter].get_use();
       } else {
         tempWord += usedTiles[counter].letter();
       }
       mult = board_grid_.at(down).at(col - 1).multiplier();
-      if (mult == "3n") {
-        secondaryMultiplier *= 3;
-        multiplier *= 3;
-        score += (usedTiles[counter].points()) * multiplier;
-      } else if (mult == "2n") {
-        secondaryMultiplier *= 2;
-        multiplier *= 2;
-        score += (usedTiles[counter].points()) * multiplier;
-      } else if (mult == "3") {
-        score += (3 * usedTiles[counter].points()) * multiplier;
-      } else if (mult == "2") {
-        score += (2 * usedTiles[counter].points()) * multiplier;
-      } else {
-        score += (usedTiles[counter].points()) * multiplier;
+
+      switch (mult) {
+        case Square::Multiplier::kTripleWord:
+          secondaryMultiplier *= 3;
+          multiplier *= 3;
+          score += (usedTiles[counter].points()) * multiplier;
+        case Square::Multiplier::kDoubleWord:
+          secondaryMultiplier *= 2;
+          multiplier *= 2;
+          score += (usedTiles[counter].points()) * multiplier;
+        case Square::Multiplier::kTripleLetter:
+          score += (3 * usedTiles[counter].points()) * multiplier;
+        case Square::Multiplier::kDoubleLetter:
+          score += (2 * usedTiles[counter].points()) * multiplier;
+        default:
+          score += (usedTiles[counter].points()) * multiplier;
       }
+
       points = 0;
       word2 = GetHorizontalWord(usedTiles[counter], down, col - 1, points);
       if (word2.length() != 1) {

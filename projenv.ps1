@@ -27,7 +27,7 @@ function scrabble {
     [string]$arg3
   )
 
-  Build -target "scrabble"
+  build -target "scrabble"
   $execPath = "build\bin\scrabble.exe"
   if (Test-Path $execPath) {
     & $execPath $arg1 $arg2 $arg3
@@ -44,7 +44,7 @@ function test {
     [string]$arg3
   )
 
-  Build -target "scrabble_test"
+  build -target "scrabble_test"
   $execPath = "build\bin\scrabble_test.exe"
   if (Test-Path $execPath) {
     & $execPath $arg1 $arg2 $arg3

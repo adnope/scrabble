@@ -1,28 +1,44 @@
 #pragma once
 
-#include <string>
+#include <cstdint>
 
 #include "tile.hpp"
 
 namespace core {
 class Square {
  public:
-  Square() : row_{}, col_{}, has_tile_{} {}
+  enum class Symbol : uint8_t {
+    kStart,
+    kNormal,
+    kDoubleLetter,
+    kDoubleWord,
+    kTripleLetter,
+    kTripleWord
+  };
 
-  Square(int row, int col, const std::string& symbol,
-         const std::string& multiplier);
+  enum class Multiplier : uint8_t {
+    kNormal,
+    kDoubleLetter,
+    kDoubleWord,
+    kTripleLetter,
+    kTripleWord
+  };
+
+  Square() : row_{}, col_{}, has_tile_{}, symbol_{1}, multiplier_{} {}
+
+  Square(int row, int col, Symbol symbol, Multiplier multiplier);
 
   void PlaceTile(Tile t);
 
   bool IsOccupied() const { return has_tile_; }
 
-  std::string value();
-
-  std::string value_in_board();
+  char tile_letter() const;
 
   int tile_points() const { return tile_.points(); }
 
-  std::string multiplier() const { return multiplier_; }
+  Symbol symbol() const { return symbol_; }
+
+  Multiplier multiplier() const { return multiplier_; }
 
  private:
   int row_, col_;
@@ -30,12 +46,7 @@ class Square {
   Tile tile_;
   bool has_tile_;
 
-  // Symbol includes: '***' (start square), '...' (normal square), '2L' (double
-  // letter), '3L' (triple letter), '2W' (double word), '3W' (triple word)
-  std::string symbol_;
-
-  // Multiplier includes: '1' (normal), '2' (double letter), '3' (triple
-  // letter), '2N' (double word), '3N' (triple word)
-  std::string multiplier_;
+  Symbol symbol_;
+  Multiplier multiplier_;
 };
 }  // namespace core

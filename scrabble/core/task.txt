@@ -48,7 +48,7 @@ Game logic:
 - game end:
 	- game_ender = player who ends the game
 	- for each player:
-		hand_score = GetHandScore() (sum of scores of all tiles remaining)
+		hand_score = GetDeckScore() (sum of scores of all tiles remaining)
 		subtract hand_score from player score
 		add hand_score to game_ender score
 	- winner = player with highest final score

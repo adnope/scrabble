@@ -5,7 +5,6 @@ add_library(core STATIC
     board.cpp
     square.cpp
     player.cpp
-    game.cpp
 )
 
 target_include_directories(core PUBLIC ${CMAKE_SOURCE_DIR}/scrabble)

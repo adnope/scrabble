@@ -1,12 +1,8 @@
-#define FMT_HEADER_ONLY
-
 #include <iostream>
 
 #include "SDL2/SDL.h"
 #include "SDL_image.h"
 #include "SDL_ttf.h"
-#include "gui/GUI.h"
-#include "spdlog/spdlog.h"
 
 bool test_sdl2_libraries() {
   // Initialize SDL2
@@ -57,9 +53,9 @@ bool test_sdl2_libraries() {
   }
 
   // Load an image using SDL2_image
-  SDL_Surface *image =
-      IMG_Load("assets/images/SCRABBLE1.png");  // Ensure you have this image
-                                                // in the working directory
+  SDL_Surface *image = IMG_Load(
+      "assets/images/MainmenuScene.png");  // Ensure you have this image
+                                           // in the working directory
   if (image == nullptr) {
     std::cerr << "IMG_Load Error: " << IMG_GetError() << '\n';
     SDL_DestroyRenderer(renderer);
@@ -86,7 +82,7 @@ bool test_sdl2_libraries() {
 
   // Load font for text rendering using SDL2_ttf
   constexpr int FONT_SIZE = 24;
-  TTF_Font *font = TTF_OpenFont("assets/fonts/Jersey15-Regular.ttf",
+  TTF_Font *font = TTF_OpenFont("assets/fonts/Aptos.ttf",
                                 FONT_SIZE);  // Ensure you have a font file
   if (font == nullptr) {
     std::cerr << "TTF_OpenFont Error: " << TTF_GetError() << '\n';
@@ -171,10 +167,7 @@ bool test_sdl2_libraries() {
 }
 
 int main() {
-  // test_sdl2_libraries();
-
-  GUI gui;
-  gui.run_GUI_first();
+  test_sdl2_libraries();
 
   return 0;
 }

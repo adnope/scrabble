@@ -8,7 +8,9 @@ class Tile {
   Tile(const char letter, const int points)
       : letter_(letter), use_(letter), points_(points) {}
 
-  bool IsBlank() const { return letter_ == '?'; }
+  bool IsBlankTile() const { return letter_ == '?'; }
+
+  bool IsEmpty() const { return letter_ == 0; }
 
   void UseAs(const char use) { use_ = use; }
 
@@ -18,7 +20,7 @@ class Tile {
 
   int points() const { return points_; }
 
-  void PrintTileInfo() const;
+  void PrintInfo() const;
 
  private:
   char letter_;

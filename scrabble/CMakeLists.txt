@@ -1,7 +1,8 @@
 add_executable(scrabble main.cpp)
 
 add_subdirectory(core)
-add_subdirectory(gui)
+# add_subdirectory(game)
+# add_subdirectory(gui)
 
 target_link_libraries(scrabble PRIVATE
   core
