@@ -2,6 +2,7 @@
 
 #include <cstdint>
 
+#include "core/tile.hpp"
 #include "tile.hpp"
 
 namespace core {
@@ -24,13 +25,15 @@ class Square {
     kTripleWord
   };
 
-  Square() : row_{}, col_{}, has_tile_{}, symbol_{1}, multiplier_{} {}
-
-  Square(int row, int col, Symbol symbol, Multiplier multiplier);
+  Square() : is_occupied_{}, symbol_{Symbol::kNormal}, multiplier_{} {}
+  
+  Square(Symbol symbol, Multiplier multiplier);
 
   void PlaceTile(Tile t);
 
-  bool IsOccupied() const { return has_tile_; }
+  bool IsOccupied() const { return is_occupied_; }
+
+  Tile tile() const { return tile_; }
 
   char tile_letter() const;
 
@@ -41,10 +44,8 @@ class Square {
   Multiplier multiplier() const { return multiplier_; }
 
  private:
-  int row_, col_;
-
   Tile tile_;
-  bool has_tile_;
+  bool is_occupied_;
 
   Symbol symbol_;
   Multiplier multiplier_;

@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include "core/board.hpp"
+#include "core/square.hpp"
 
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 
@@ -109,6 +110,31 @@ TEST_CASE("Player test") {
   }
 }
 
+void PrintBoardResponse(const core::Board::MoveSubmissionResponse& response) {
+  std::cout << "[Move response]: \nWords: \n";
+  for (const auto& word : response.words) {
+    const auto content = word.content();
+    for (const auto& [letter, mult] : content) {
+      std::string multiplier;
+      if (mult == core::Square::Multiplier::kDoubleLetter) {
+        multiplier = "-DL";
+      }
+      if (mult == core::Square::Multiplier::kDoubleWord) {
+        multiplier = "-DW";
+      }
+      if (mult == core::Square::Multiplier::kTripleLetter) {
+        multiplier = "-TL";
+      }
+      if (mult == core::Square::Multiplier::kTripleWord) {
+        multiplier = "-TW";
+      }
+      std::cout << letter << multiplier << '\n';
+    }
+  }
+  std::cout << "Points: " << response.move_points << '\n';
+  std::cout << "Status code: " << response.status_code << '\n';
+}
+
 TEST_CASE("Board test") {
   spdlog::info("Board test");
   core::Board board;
@@ -126,9 +152,12 @@ TEST_CASE("Board test") {
 
   std::vector<core::Board::Placement> move = {{{'A', 1}, 6, 9},
                                               {{'T', 1}, 6, 10}};
-  std::cout << board.PlaceMoveAndGetScore(move, dictionary) << '\n';
+  const auto board_response = board.SubmitMove(move, dictionary);
+  PrintBoardResponse(board_response);
   std::cout << board.GetDisplayFormat();
+
   std::vector<core::Board::Placement> move2 = {{{'P', 3}, 4, 10}};
-  std::cout << board.PlaceMoveAndGetScore(move2, dictionary) << '\n';
+  const auto board_response2 = board.SubmitMove(move2, dictionary);
+  PrintBoardResponse(board_response2);
   std::cout << board.GetDisplayFormat();
 }
