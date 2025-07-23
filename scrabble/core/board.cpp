@@ -239,7 +239,7 @@ bool Board::AreInDictionary(const std::vector<std::string>& words,
   return true;
 }
 
-Board::MoveSubmissionResponse Board::SubmitMove(const Move& move,
+Board::MoveValidationResponse Board::ValidateMove(const Move& move,
                                                 const Dictionary& dictionary) {
   // Check if any placement is performed on occupied square
   if (IsMoveOccupied(move)) {

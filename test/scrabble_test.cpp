@@ -110,7 +110,7 @@ TEST_CASE("Player test") {
   }
 }
 
-void PrintBoardResponse(const core::Board::MoveSubmissionResponse& response) {
+void PrintBoardResponse(const core::Board::MoveValidationResponse& response) {
   std::cout << "[Move response]: \nWords: \n";
   for (const auto& word : response.words) {
     const auto content = word.content();
@@ -152,12 +152,12 @@ TEST_CASE("Board test") {
 
   std::vector<core::Board::Placement> move = {{{'A', 1}, 6, 9},
                                               {{'T', 1}, 6, 10}};
-  const auto board_response = board.SubmitMove(move, dictionary);
+  const auto board_response = board.ValidateMove(move, dictionary);
   PrintBoardResponse(board_response);
   std::cout << board.GetDisplayFormat();
 
   std::vector<core::Board::Placement> move2 = {{{'P', 3}, 4, 10}};
-  const auto board_response2 = board.SubmitMove(move2, dictionary);
+  const auto board_response2 = board.ValidateMove(move2, dictionary);
   PrintBoardResponse(board_response2);
   std::cout << board.GetDisplayFormat();
 }

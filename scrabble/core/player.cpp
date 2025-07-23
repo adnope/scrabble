@@ -66,11 +66,29 @@ bool Player::PerformSwap(Bag &bag, const std::vector<int> &indices) {
   return true;
 }
 
-bool Player::PerformMove(const std::vector<Placement> &move, Board &board) {
-  auto temp_board = board;
-  for (const auto& placement : move) {
-    
+Player::MoveSubmissionResponse Player::SubmitMove(
+    const Move &move, Board &board, const Dictionary &dictionary) {
+  // Convert Player::Move to Board::Move
+  std::vector<Board::Placement> board_move;
+  board_move.reserve(move.size());
+  for (const auto &[index, row, col] : move) {
+    board_move.emplace_back(deck_.at(index), row, col);
   }
+
+  // Get board validation response
+  auto board_response = board.ValidateMove(board_move, dictionary);
+  MoveSubmissionResponse response(board_response);
+
+  if (response.status_code != 0) {
+    return response;
+  }
+
+  // Actually play the move if it is valid
+  AddScore(response.move_points);
+  for (const auto &placement : move) {
+    UseTile(placement.tile_index);
+  }
+  return response;
 }
 
 void Player::PrintDeck() const {

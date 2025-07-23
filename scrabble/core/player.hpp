@@ -17,6 +17,20 @@ class Player {
     int col = 0;
   };
 
+  struct MoveSubmissionResponse {
+    std::vector<Word> words;
+    int move_points;
+    int status_code;
+
+    explicit MoveSubmissionResponse(
+        const Board::MoveValidationResponse &board_response)
+        : words(board_response.words),
+          move_points(board_response.move_points),
+          status_code(board_response.status_code) {}
+  };
+
+  using Move = std::vector<Placement>;
+
   static constexpr int kMaxDeckSize = 7;
 
   Player(const std::string &player_name, int score);
@@ -37,7 +51,8 @@ class Player {
 
   bool PerformSwap(Bag &bag, const std::vector<int> &indices);
 
-  bool PerformMove(const std::vector<Placement> &move, Board &board);
+  MoveSubmissionResponse SubmitMove(const Move &move, Board &board,
+                                    const Dictionary &dictionary);
 
   void PrintDeck() const;
 

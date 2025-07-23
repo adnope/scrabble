@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 
+#include "core/tile.hpp"
 #include "dictionary.hpp"
 #include "square.hpp"
 #include "tile.hpp"
@@ -32,9 +33,12 @@ class Board {
     Tile tile;
     int row = 0;
     int col = 0;
+
+    Placement(const Tile& tile, int row, int col)
+        : tile(tile), row(row), col(col) {}
   };
 
-  struct MoveSubmissionResponse {
+  struct MoveValidationResponse {
     std::vector<Word> words;
     int move_points;
     int status_code;
@@ -51,7 +55,7 @@ class Board {
     return board_grid_.at(row).at(col).IsOccupied();
   }
 
-  MoveSubmissionResponse SubmitMove(const Move& move,
+  MoveValidationResponse ValidateMove(const Move& move,
                                     const Dictionary& dictionary);
 
   std::string GetDisplayFormat();
