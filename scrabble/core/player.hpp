@@ -20,13 +20,13 @@ class Player {
   struct MoveSubmissionResponse {
     std::vector<Word> words;
     int move_points;
-    int status_code;
+    Board::ResponseStatus status;
 
     explicit MoveSubmissionResponse(
         const Board::MoveValidationResponse &board_response)
         : words(board_response.words),
           move_points(board_response.move_points),
-          status_code(board_response.status_code) {}
+          status(board_response.status) {}
   };
 
   using Move = std::vector<Placement>;

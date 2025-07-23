@@ -1,11 +1,12 @@
 add_executable(scrabble main.cpp)
 
 add_subdirectory(core)
-# add_subdirectory(game)
+add_subdirectory(game)
 # add_subdirectory(gui)
 
 target_link_libraries(scrabble PRIVATE
   core
+  game
   SDL2::SDL2
   SDL2_ttf::SDL2_ttf
   SDL2_image::SDL2_image

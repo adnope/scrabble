@@ -11,23 +11,19 @@
 #include "word.hpp"
 
 namespace core {
-/**
-  Class usage:
-  - Init using default constructor
-  - Use the SubmitMove() method to get a response
-  - Response contains:
-    + words: a list of Word objects. Use the content() method to receive and
-    display the content of the word
-    + move_points: total points of the move
-    + status code: 0 means success, -1 means occupied, -2 means moves not
-    aligned, -3 means words not in dictionary
-*/
 class Board {
  public:
   static constexpr int kWidth = 15;
   static constexpr int kHeight = 15;
   static constexpr int kStartPosRow = 7;
   static constexpr int kStartPosColumn = 7;
+
+  enum class ResponseStatus : uint8_t {
+    kSuccess,
+    kOccupied,
+    kNotAligned,
+    kWordsInvalid
+  };
 
   struct Placement {
     Tile tile;
@@ -41,7 +37,7 @@ class Board {
   struct MoveValidationResponse {
     std::vector<Word> words;
     int move_points;
-    int status_code;
+    ResponseStatus status;
   };
 
   using Move = std::vector<Placement>;
@@ -56,7 +52,7 @@ class Board {
   }
 
   MoveValidationResponse ValidateMove(const Move& move,
-                                    const Dictionary& dictionary);
+                                      const Dictionary& dictionary);
 
   std::string GetDisplayFormat();
 

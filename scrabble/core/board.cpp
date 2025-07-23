@@ -243,13 +243,13 @@ Board::MoveValidationResponse Board::ValidateMove(const Move& move,
                                                 const Dictionary& dictionary) {
   // Check if any placement is performed on occupied square
   if (IsMoveOccupied(move)) {
-    return {{}, 0, -1};
+    return {{}, 0, ResponseStatus::kOccupied};
   }
 
   // Checking placements alignment
   int horizontal = IsAligned(move);
   if (horizontal == -2) {
-    return {{}, 0, -2};
+    return {{}, 0, ResponseStatus::kNotAligned};
   }
 
   // Checking words validity
@@ -260,7 +260,7 @@ Board::MoveValidationResponse Board::ValidateMove(const Move& move,
     word_list.push_back(word.AsString());
   }
   if (!AreInDictionary(word_list, dictionary)) {
-    return {words, 0, -3};
+    return {words, 0, ResponseStatus::kWordsInvalid};
   }
 
   int move_points = 0;
@@ -273,7 +273,7 @@ Board::MoveValidationResponse Board::ValidateMove(const Move& move,
     PlaceTile(tile, row, col);
   }
 
-  return {words, move_points, 0};
+  return {words, move_points, ResponseStatus::kSuccess};
 }
 
 std::string Board::GetDisplayFormat() {

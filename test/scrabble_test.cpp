@@ -1,16 +1,13 @@
-#include <iostream>
-
-#include "core/board.hpp"
-#include "core/square.hpp"
-
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-
 #include <fstream>
+#include <iostream>
 #include <string>
 
 #include "core/bag.hpp"
+#include "core/board.hpp"
 #include "core/dictionary.hpp"
 #include "core/player.hpp"
+#include "core/square.hpp"
 #include "core/tile.hpp"
 #include "doctest/doctest.h"
 #include "spdlog/spdlog.h"
@@ -132,7 +129,24 @@ void PrintBoardResponse(const core::Board::MoveValidationResponse& response) {
     }
   }
   std::cout << "Points: " << response.move_points << '\n';
-  std::cout << "Status code: " << response.status_code << '\n';
+  switch (response.status) {
+    case core::Board::ResponseStatus::kSuccess: {
+      std::cout << "Status: SUCCESS\n";
+      break;
+    }
+    case core::Board::ResponseStatus::kOccupied: {
+      std::cout << "Status: MOVE OCCUPIED\n";
+      break;
+    }
+    case core::Board::ResponseStatus::kNotAligned: {
+      std::cout << "Status: MOVE NOT ALIGNED\n";
+      break;
+    }
+    case core::Board::ResponseStatus::kWordsInvalid: {
+      std::cout << "Status: INVALID WORDS\n";
+      break;
+    }
+  }
 }
 
 TEST_CASE("Board test") {

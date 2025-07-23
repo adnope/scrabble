@@ -1,57 +1,70 @@
 #pragma once
 
-#include "bag.hpp"
-#include "board.hpp"
+#include <cstdint>
+#include <vector>
+
+#include "core/bag.hpp"
+#include "core/board.hpp"
 #include "core/dictionary.hpp"
-#include "player.hpp"
+#include "core/player.hpp"
+#include "core/word.hpp"
 
 namespace core {
-
-struct Move {
-  std::string player_name;
-  std::vector<std::string> words;
-  int row;
-  int col;
-  bool horizontal;
-  int score;
-  std::vector<int> tile_indices;
-  bool is_pass;
-  std::string move_type;
-};
-
 class Game {
  public:
-  Game(int num_players, Dictionary::DictionaryType dict_type,
-       const std::vector<std::string>& custom_names = {});
-  bool IsGameOver() const;
-  void NextTurn();
-  bool ExecuteMove(const std::string& move_type, const std::string& word,
-                   char dir, int row, int col);
-  Player GetWinner() const;
-  const Player& GetCurrentPlayer() const;
-  int GetBagSize() const { return bag_.num_tiles_remanining(); }
-  void EndGame();
-  const std::vector<Move>& GetMoveHistory() const {
-    return move_history_;
+  enum class MoveType : uint8_t { kPlacing, kSwapping, kPassing };
+
+  struct Move {
+    MoveType type;
+    std::string player_name;
+    std::vector<Word> words;
+    int points = 0;
+  };
+
+  explicit Game(Dictionary::DictionaryType dict_type);
+
+  void AddPlayer(const std::string& name, const int score) {
+    players_.emplace_back(name, score);
   }
 
- private:
- //Xử lý các lượt -> lưu thông tin các hành động
- //Các hàm này đc implement để có thể dễ dàng gọi lại trong ExecuteMove vốn khá phức tạp bởi 
- //trong game có rất nhiều hành động diễn ra
-  void ExecutePassMove();
-  bool ExecutePlaceMove(const std::string& word, char dir, int row, int col,
-                        Move& move);
-  bool ExecuteSwapMove(const std::string& word, Move& move);
-  bool GetTileIndices(const std::string& word, std::vector<int>& tile_indices);
+  int NumPlayers() const { return static_cast<int>(players_.size()); }
 
+  bool IsGameOver();
+
+  void NextTurn();
+
+  void ExecutePassMove();
+
+  bool ExecuteSwapMove(const std::vector<int>& indices);
+
+  Board::ResponseStatus ExecutePlaceMove(const Player::Move& player_move);
+
+  void Start() {
+    
+  }
+
+  Player GetCurrentPlayer() const { return players_[current_player_index_]; }
+
+  int GetBagSize() const { return bag_.num_tiles_remanining(); }
+
+  Player GetWinner() const { return winner_; }
+
+  std::vector<Move> GetMoveHistory() const { return move_history_; }
+
+ private:
   std::vector<Player> players_;
   Bag bag_;
   Board board_;
   Dictionary dictionary_;
-  int current_player_index_;
-  int consecutive_passes_;
-  bool game_over_;
   std::vector<Move> move_history_;
+
+  int current_player_index_ = 0;
+  int consecutive_passes_ = 0;
+  Player winner_{"", 0};
+
+  void EndGame();
+  Player& current_player() {
+    return players_[current_player_index_];
+  }
 };
 }  // namespace core

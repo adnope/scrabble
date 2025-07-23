@@ -1,10 +1,10 @@
 add_library(core STATIC
-    dictionary.cpp
-    tile.cpp
     bag.cpp
     board.cpp
-    square.cpp
+    dictionary.cpp
     player.cpp
+    square.cpp
+    tile.cpp
 )
 
 target_include_directories(core PUBLIC ${CMAKE_SOURCE_DIR}/scrabble)

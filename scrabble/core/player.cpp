@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "bag.hpp"
+#include "core/board.hpp"
 #include "spdlog/spdlog.h"
 #include "tile.hpp"
 
@@ -79,7 +80,7 @@ Player::MoveSubmissionResponse Player::SubmitMove(
   auto board_response = board.ValidateMove(board_move, dictionary);
   MoveSubmissionResponse response(board_response);
 
-  if (response.status_code != 0) {
+  if (response.status != Board::ResponseStatus::kSuccess) {
     return response;
   }
 
