@@ -66,6 +66,13 @@ bool Player::PerformSwap(Bag &bag, const std::vector<int> &indices) {
   return true;
 }
 
+bool Player::PerformMove(const std::vector<Placement> &move, Board &board) {
+  auto temp_board = board;
+  for (const auto& placement : move) {
+    
+  }
+}
+
 void Player::PrintDeck() const {
   std::string player_tiles;
   for (const auto &tile : deck_) {

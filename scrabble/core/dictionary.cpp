@@ -42,6 +42,9 @@ void Dictionary::ChangeDictionary(const DictionaryType type) {
 }
 
 bool Dictionary::Contains(const std::string& word) const {
-  return dictionary_.find(word) != dictionary_.end();
+  std::string word_lower = word;
+  std::transform(word_lower.begin(), word_lower.end(), word_lower.begin(),
+                 ::tolower);
+  return dictionary_.find(word_lower) != dictionary_.end();
 }
 }  // namespace core

@@ -13,7 +13,7 @@
 
 namespace core {
 Bag::Bag() {
-  // The chosen letter distribution: <letter> <points> <letter count>
+  // The chosen letter distribution: <letter> <points> <quantity>
   std::string default_bag =
       "? 0 2\n"
       "a 1 9\n"

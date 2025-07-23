@@ -1,4 +1,7 @@
 #include <iostream>
+
+#include "core/board.hpp"
+
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 
 #include <fstream>
@@ -104,4 +107,28 @@ TEST_CASE("Player test") {
 
     CHECK(player.current_deck_size() == 7);
   }
+}
+
+TEST_CASE("Board test") {
+  spdlog::info("Board test");
+  core::Board board;
+  core::Dictionary dictionary;
+
+  std::vector<core::Board::Placement> initial_state_move = {
+      {{'V', 4}, 5, 7},  {{'I', 1}, 5, 8}, {{'S', 1}, 5, 9}, {{'I', 1}, 5, 10},
+      {{'T', 1}, 5, 11}, {{'T', 1}, 7, 4}, {{'A', 1}, 7, 5}, {{'N', 1}, 7, 6},
+      {{'N', 1}, 7, 7},  {{'E', 1}, 7, 8}, {{'D', 2}, 7, 9}, {{'P', 3}, 2, 8},
+      {{'R', 1}, 3, 8},  {{'A', 1}, 4, 8}, {{'S', 1}, 6, 8}};
+  for (const auto& placement : initial_state_move) {
+    board.PlaceTile(placement.tile, placement.row, placement.col);
+  }
+  std::cout << board.GetDisplayFormat();
+
+  std::vector<core::Board::Placement> move = {{{'A', 1}, 6, 9},
+                                              {{'T', 1}, 6, 10}};
+  std::cout << board.PlaceMoveAndGetScore(move, dictionary) << '\n';
+  std::cout << board.GetDisplayFormat();
+  std::vector<core::Board::Placement> move2 = {{{'P', 3}, 4, 10}};
+  std::cout << board.PlaceMoveAndGetScore(move2, dictionary) << '\n';
+  std::cout << board.GetDisplayFormat();
 }

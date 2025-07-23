@@ -5,13 +5,14 @@
 #include <vector>
 
 #include "bag.hpp"
+#include "board.hpp"
 #include "tile.hpp"
 
 namespace core {
 class Player {
  public:
-  struct PlayerMove {
-    Tile tile;
+  struct Placement {
+    int tile_index = 0;
     int row = 0;
     int col = 0;
   };
@@ -35,6 +36,8 @@ class Player {
   int GetDeckScore() const;
 
   bool PerformSwap(Bag &bag, const std::vector<int> &indices);
+
+  bool PerformMove(const std::vector<Placement> &move, Board &board);
 
   void PrintDeck() const;
 

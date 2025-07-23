@@ -11,8 +11,8 @@ Square::Square(const int row, const int col, Symbol symbol,
       symbol_(symbol),
       multiplier_(multiplier) {}
 
-void Square::PlaceTile(const Tile t) {
-  tile_ = t;
+void Square::PlaceTile(const Tile tile) {
+  tile_ = tile;
   has_tile_ = true;
 }
 
