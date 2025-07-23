@@ -6,6 +6,7 @@ build/
 CMakeFiles/
 _deps/
 Testing/
+__cmake_systeminformation/
 
 *.exe
 assets/dictionaries/*.txt
