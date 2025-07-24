@@ -16,6 +16,8 @@ Button_Text* res_1280x720;
 Image* save;
 Button_Text* Vsync_YES;
 Button_Text* Vsync_NO;
+Button_Text* CSW;
+Button_Text* TWL;
 void init_settings_UI() {
     setting_image = new Image("assets/images/Setting.png", WIDTH/3-50, HEIGHT*(9/10), renderer);
     setting_function = new Image("assets/images/edit.png", WIDTH/3-350, HEIGHT*(3/4), renderer);
@@ -28,9 +30,11 @@ void init_settings_UI() {
     home       =new Button_Image("assets/images/home.png",5,5,renderer);
     res_1280x720 = new Button_Text("1280x720", WIDTH/2+170, HEIGHT/4-30, renderer, green, false,font_aptos_small);
     res_1900x1200 = new Button_Text("1900x1200", WIDTH/2+170, HEIGHT/4-30, renderer, green, false,font_aptos_small);
-    Vsync_YES = new Button_Text("YES", WIDTH/2+170, HEIGHT/3+30, renderer, green, false,font_aptos_small);
-    Vsync_NO = new Button_Text("NO", WIDTH/2+170, HEIGHT/3+30, renderer, green, false,font_aptos_small);
-    save = new Image("assets/images/savesetting.png", WIDTH/2-250, HEIGHT-200, renderer);
+    Vsync_YES = new Button_Text("YES", WIDTH/2+280, HEIGHT/2+10, renderer, green, false,font_aptos_small);
+    Vsync_NO = new Button_Text("NO", WIDTH/2+280, HEIGHT/2+10, renderer, green, false,font_aptos_small);
+    CSW = new Button_Text("CSW", WIDTH/2+260, HEIGHT/3+35, renderer, green, false,font_aptos_small);
+    TWL = new Button_Text("TWL", WIDTH/2+260, HEIGHT/3+35, renderer, green, false,font_aptos_small);
+    save = new Image("assets/images/savesetting.png", WIDTH/2-250, HEIGHT-300, renderer);
     // Add
 }
 void print_setting (SDL_Event &e) {
@@ -85,6 +89,16 @@ void print_setting (SDL_Event &e) {
         } else {
             res_1280x720->print_Text(renderer);
         }
+        if(choice_2==0){
+            CSW->print_Text(renderer);
+        } else {
+            TWL->print_Text(renderer);
+        }
+        if(choice_3==0){
+            Vsync_YES->print_Text(renderer);
+        } else {
+            Vsync_NO->print_Text(renderer);
+        }
         //res_1900x1200->print_Text(renderer);
         home->print_Image(renderer);
         save->print_Image(renderer);
@@ -95,13 +109,13 @@ void print_setting (SDL_Event &e) {
         }
         if(decrease_2 ->checkpress()) {
             choice_2--;
-            choice_2%=3; // Prevent going below 0
+            choice_2%=2; // Prevent going below 0
             cout<<"choice 2:"<<choice_2<<endl;
         }
         if(decrease_3 ->checkpress()) {
             choice_3--;
-            choice_3%=3; // Prevent going below 0
-            cout<<"choice 3:"<<choice_3<<endl;
+            choice_3%=2; // Prevent going below 0
+            //cout<<"choice 3:"<<choice_3<<endl;
         }
         if(increase_1 ->checkpress()) {
             choice_1++;
@@ -110,13 +124,13 @@ void print_setting (SDL_Event &e) {
         }
         if(increase_2 ->checkpress()) { 
             choice_2++;
-            choice_2%=3; // Prevent going above 2
+            choice_2%=2; // Prevent going above 2
             cout<<"choice 2:"<<choice_2<<endl;
         }
         if(increase_3 ->checkpress()) { 
             choice_3++;
-            choice_3%=3; // Prevent going above 2
-            cout<<"choice 3:"<<choice_3<<endl;
+            choice_3%=2; // Prevent going above 2
+            //cout<<"choice 3:"<<choice_3<<endl;
         }
         if (home->checkpress())
         {

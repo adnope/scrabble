@@ -18,5 +18,5 @@ const SDL_DisplayMode displayMode = []{
     return mode;
 }();
 
-extern const int WIDTH = 1900;
-extern const int HEIGHT = 1080;
+extern const int WIDTH = displayMode.w;
+extern const int HEIGHT = displayMode.h;

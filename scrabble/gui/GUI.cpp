@@ -2,6 +2,7 @@
 #include "include.h"
 #include "welcome.h"
 #include "settingnew.h"
+#include "start.h"
 using namespace std;
 int choose = 0;
 SDL_Event e;
@@ -56,7 +57,7 @@ void GUI::run_GUI_first() {
         }
         print_Welcome();
         if (choose == 1) {
-            std::cout << choose << std::endl;
+            print_start(e);
         } else if (choose == 2) {
             print_setting(e);
             // TODO: Implement settings menu functionality here if needed
