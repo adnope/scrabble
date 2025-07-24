@@ -5,7 +5,6 @@
 #include <sstream>
 #include <string>
 #include <vector>
-
 #include "square.hpp"
 #include "tile.hpp"
 
@@ -228,10 +227,9 @@ int Board::IsAligned(const Move& move) {
   return static_cast<int>(horizontal);
 }
 
-bool Board::AreInDictionary(const std::vector<std::string>& words,
-                            const Dictionary& dictionary) {
+bool Board::AreInDictionary(const std::vector<std::string>& words, const Lexicon& lexicon) {
   for (const auto& word : words) {
-    if (!dictionary.Contains(word)) {
+    if (!lexicon.IsContain(word)) {
       std::cout << "Invalid word: " << word << '\n';
       return false;
     }
@@ -239,8 +237,7 @@ bool Board::AreInDictionary(const std::vector<std::string>& words,
   return true;
 }
 
-Board::MoveValidationResponse Board::ValidateMove(const Move& move,
-                                                const Dictionary& dictionary) {
+Board::MoveValidationResponse Board::ValidateMove(const Move& move,const Lexicon& lexicon) {
   // Check if any placement is performed on occupied square
   if (IsMoveOccupied(move)) {
     return {{}, 0, ResponseStatus::kOccupied};
@@ -259,7 +256,7 @@ Board::MoveValidationResponse Board::ValidateMove(const Move& move,
   for (const auto& word : words) {
     word_list.push_back(word.AsString());
   }
-  if (!AreInDictionary(word_list, dictionary)) {
+  if (!AreInDictionary(word_list, lexicon)) {
     return {words, 0, ResponseStatus::kWordsInvalid};
   }
 

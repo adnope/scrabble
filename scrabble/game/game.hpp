@@ -6,8 +6,10 @@
 #include "core/bag.hpp"
 #include "core/board.hpp"
 #include "core/dictionary.hpp"
+#include "core/lexicon.hpp"
 #include "core/player.hpp"
 #include "core/word.hpp"
+#include "core/lexicon.hpp"
 
 namespace core {
 class Game {
@@ -56,6 +58,7 @@ class Game {
   Bag bag_;
   Board board_;
   Dictionary dictionary_;
+  Lexicon lexicon_;
   std::vector<Move> move_history_;
 
   int current_player_index_ = 0;

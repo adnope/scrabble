@@ -52,7 +52,7 @@ class Player {
   bool PerformSwap(Bag &bag, const std::vector<int> &indices);
 
   MoveSubmissionResponse SubmitMove(const Move &move, Board &board,
-                                    const Dictionary &dictionary);
+                                     const Lexicon &lexicon);
 
   void PrintDeck() const;
 

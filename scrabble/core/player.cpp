@@ -68,7 +68,7 @@ bool Player::PerformSwap(Bag &bag, const std::vector<int> &indices) {
 }
 
 Player::MoveSubmissionResponse Player::SubmitMove(
-    const Move &move, Board &board, const Dictionary &dictionary) {
+    const Move &move, Board &board, const Lexicon &lexicon) {
   // Convert Player::Move to Board::Move
   std::vector<Board::Placement> board_move;
   board_move.reserve(move.size());
@@ -77,7 +77,7 @@ Player::MoveSubmissionResponse Player::SubmitMove(
   }
 
   // Get board validation response
-  auto board_response = board.ValidateMove(board_move, dictionary);
+  auto board_response = board.ValidateMove(board_move, lexicon);
   MoveSubmissionResponse response(board_response);
 
   if (response.status != Board::ResponseStatus::kSuccess) {

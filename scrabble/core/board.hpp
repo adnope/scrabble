@@ -5,10 +5,10 @@
 #include <vector>
 
 #include "core/tile.hpp"
-#include "dictionary.hpp"
 #include "square.hpp"
 #include "tile.hpp"
 #include "word.hpp"
+#include "lexicon.hpp"
 
 namespace core {
 class Board {
@@ -52,7 +52,7 @@ class Board {
   }
 
   MoveValidationResponse ValidateMove(const Move& move,
-                                      const Dictionary& dictionary);
+                                     const Lexicon& lexicon);
 
   std::string GetDisplayFormat();
 
@@ -75,6 +75,6 @@ class Board {
   static int IsAligned(const Move& move);
 
   static bool AreInDictionary(const std::vector<std::string>& words,
-                              const Dictionary& dictionary);
+                              const Lexicon& lexicon);
 };
 }  // namespace core

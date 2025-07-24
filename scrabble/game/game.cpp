@@ -81,7 +81,7 @@ void Game::EndGame() {
 
 Board::ResponseStatus Game::ExecutePlaceMove(const Player::Move& player_move) {
   const auto player_response =
-      current_player().SubmitMove(player_move, board_, dictionary_);
+      current_player().SubmitMove(player_move, board_, lexicon_);
   if (player_response.status == Board::ResponseStatus::kSuccess) {
     Move move;
     move.type = MoveType::kPlacing;

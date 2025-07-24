@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <fstream>
 #include <string>
-
+#include <vector>
 #include "spdlog/spdlog.h"
 
 namespace core {
@@ -26,7 +26,7 @@ void Dictionary::LoadCustomDictionary(const std::string& dictionary_filepath) {
   std::string line;
   while (std::getline(dict_stream, line)) {
     std::transform(line.begin(), line.end(), line.begin(), ::tolower);
-    dictionary_.emplace(line);
+    dictionary_.push_back(line);
   }
 }
 
@@ -41,10 +41,10 @@ void Dictionary::ChangeDictionary(const DictionaryType type) {
   }
 }
 
-bool Dictionary::Contains(const std::string& word) const {
-  std::string word_lower = word;
-  std::transform(word_lower.begin(), word_lower.end(), word_lower.begin(),
-                 ::tolower);
-  return dictionary_.find(word_lower) != dictionary_.end();
-}
+// bool Dictionary::Contains(const std::string& word) const {
+//   std::string word_lower = word;
+//   std::transform(word_lower.begin(), word_lower.end(), word_lower.begin(),
+//                  ::tolower);
+//   return dictionary_.find(word_lower) != dictionary_.end();
+// }
 }  // namespace core

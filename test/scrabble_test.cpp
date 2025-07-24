@@ -6,54 +6,39 @@
 #include "core/bag.hpp"
 #include "core/board.hpp"
 #include "core/dictionary.hpp"
+#include "core/lexicon.hpp"
 #include "core/player.hpp"
 #include "core/square.hpp"
 #include "core/tile.hpp"
 #include "doctest/doctest.h"
 #include "spdlog/spdlog.h"
 
-TEST_CASE("Dictionary test") {
-  SUBCASE("CSW") {
-    core::Dictionary dictionary(core::Dictionary::CSW);
-    std::ifstream csw6_stream("assets/dictionaries/csw6.dict");
 
-    if (!csw6_stream.is_open()) {
-      spdlog::error("Failed loading dictionary: assets/dictionaries/csw6.dict");
-      return;
+TEST_CASE("Lexicon core") {
+    Lexicon lexicon;
+    lexicon.AddWord("cat");
+    lexicon.AddWord("car");
+    lexicon.AddWord("dog");
+
+    SUBCASE("Lexicon size") {
+        CHECK(lexicon.size() == 8);
     }
 
-    std::string line;
-    int word_count = 0;
-    int word_contained_count = 0;
-    while (std::getline(csw6_stream, line)) {
-      ++word_count;
-      if (dictionary.Contains(line)) {
-        ++word_contained_count;
-      }
-    }
-    CHECK(word_count == word_contained_count);
-  }
-  SUBCASE("TWL") {
-    core::Dictionary dictionary(core::Dictionary::TWL);
-    std::ifstream twl6_stream("assets/dictionaries/twl6.dict");
-
-    if (!twl6_stream.is_open()) {
-      spdlog::error("Failed loading dictionary: assets/dictionaries/twl6.dict");
-      return;
+    SUBCASE("Lexicon contains words") {
+        CHECK(lexicon.IsContain("cat") == true);
+        CHECK(lexicon.IsContain("car") == true);
+        CHECK(lexicon.IsContain("dog") == true);
     }
 
-    std::string line;
-    int word_count = 0;
-    int word_contained_count = 0;
-    while (std::getline(twl6_stream, line)) {
-      ++word_count;
-      if (dictionary.Contains(line)) {
-        ++word_contained_count;
-      }
+    SUBCASE("Lexicon contains prefixes") {
+        CHECK(lexicon.ContainsPrefix("ca") == true);
+        CHECK(lexicon.ContainsPrefix("do") == true);
+        CHECK(lexicon.ContainsPrefix("fi") == false);
+        CHECK(lexicon.ContainsPrefix("bi") == false);
     }
-    CHECK(word_count == word_contained_count);
-  }
 }
+
+TEST_CASE("Lexicon Full build from dictionary"){}
 
 TEST_CASE("Player test") {
   using core::Bag;

@@ -1,89 +1,55 @@
 #include "lexicon.hpp"
 #include "dictionary.hpp"
+#include <sys/types.h>
+#include <string>
+#include <fstream>
+#include "spdlog/spdlog.h"
 
-Node::Node() : is_word(false) {}
-Node::~Node() {
-    for (std::unordered_map<char, Node*>::iterator it = suffiexes.begin(); it != suffiexes.end(); ++it) {
-        delete it->second;
-    }
-    suffiexes.clear();
-}
+Node::Node() : is_word(false) {};
 
-void Node::size(unsigned int &curr) {
-    if (is_word) {
-        curr++;
-    }
-    for (const auto &pair : suffiexes) {
-        pair.second->size(curr);
+Lexicon::Lexicon() : root(nullptr), length(0) {}
+
+void::Node::size(unsigned int &curr) {
+    curr++;
+    for (const auto& suffix : suffixes) {
+        suffix.second->size(curr);
     }
 }
 
-void Lexicon::AddWord(std::string word) {
+void Lexicon::AddWord(const std::string& word) {
     NodePath(word)->is_word = true;
     length++;
 }
 
-bool Lexicon::IsContains(std::string &word) const {
+bool Lexicon::IsContain(const std::string &word) const {
     const Node* node = FindNode(word);
-    return node != nullptr && node->is_word;
+    if (node == nullptr) {
+        return false;
+    }
+    return node->is_word;
 }
 
 bool Lexicon::ContainsPrefix(const std::string &prefix) const {
     return FindNode(prefix) != nullptr;
 }
 
-const Node* Lexicon::FindNode(const std::string &word) const {
-    Node* current = root;
-    for (char c : word) {
-        if (current->suffiexes.find(c) == current->suffiexes.end()) {
-            return nullptr;
-        }
-        current = current->suffiexes[c];
-    }
-    return current;
+// plit_string
+static std::pair<std::string, std::string> split_string(const std::string& str, size_t index) {
+    return {str.substr(0, index), str.substr(index)};
+}
+//reverse_str
+static std::string reverse_str(const std::string& str) {
+    return std::string(str.rbegin(), str.rend());
 }
 
-Node *Lexicon::NodePath(const std::string &word) const {
-    if (root == nullptr) {
-        root = new Node();
-    }
-    Node* current = root;
-    for (char c : word) {
-        if (current->suffiexes.find(c) == current->suffiexes.end()) {
-            current->suffiexes[c] = new Node();
-        }
-        current = current->suffiexes[c];
-    }
-    return current;
-}
-
-void Lexicon::LoadDictionaryType(DictionaryType type) {
-    // Nen chuyen dictionary thanh 1 pair: <Word,Meaning>
-    // Lexicon truy cap de tim tu trong dictionary, khi nguoi choi can truy cap nghia --> Hien thi Meaning
-    // Tu do khong can quan tam den nghia, chi can quan tam den tu
-    Dictionary dictionary;
-    dictionary.LoadDictionaryType(type);
-    for (const auto &word : dictionary.GetWords()) {
-        AddWord(word);
-    }
-}
-
-unsigned int Lexicon::size() const {
-    unsigned int curr = 0;
-    if (root != nullptr) {
-        root->size(curr);
-    }
-    return curr;
-}
-
-static void GADDAG(std::string word, std::vector<std::string>& array) {
+static void GADDAG(const std::string& word, std::vector<std::string>& array) {
     for(unsigned int i = 0; i < word.size(); i++){
         std::pair<std::string, std::string> p = split_string(word, i);
         array.push_back(reverse_str(p.first) + "+" + p.second);
     }
 }
 
-void Lexicon::BuildLexiconTree(Dictionary& dictionary) {
+void Lexicon::BuildLexiconTree(const core::Dictionary& dictionary) {
     std::vector<std::string> lexicon;
     std::vector<std::string> words = dictionary.GetWords();
     for (const auto &word : words) {
@@ -94,4 +60,88 @@ void Lexicon::BuildLexiconTree(Dictionary& dictionary) {
         lexicon.clear();
     }
     spdlog::info("[Lexicon] Lexicon tree built with {} words", size());
+}
+
+
+void Lexicon::PreLoadDictionary(const core::Dictionary& dictionary, core::Dictionary::DictionaryType type) {
+  std::string filename;
+  switch (type) {
+    case core::Dictionary::DictionaryType::CSW:
+      filename = "assets/lexicons/lexicon_csw.bin";
+      break;
+    case core::Dictionary::DictionaryType::TWL:
+      filename = "assets/lexicons/lexicon_twl.bin";
+      break;
+  }
+
+  if (LoadFromFile(filename)) {
+    spdlog::info("[Lexicon] Loaded lexicon from {}", filename);
+    return;
+  }
+
+  BuildLexiconTree(dictionary);
+  SaveToFile(filename);
+  spdlog::info("[Lexicon] Built and saved lexicon to {}", filename);
+}
+
+
+void Lexicon::SaveToFile(const std::string& filename) const {
+    std::ofstream ofs(filename, std::ios::binary);
+    if (!ofs) {
+        spdlog::error("[Lexicon] Failed to open file {} for writing", filename);
+        return;
+    }
+    root->serialize(ofs);
+    ofs.close();
+    spdlog::info("[Lexicon] Lexicon saved to {}", filename);
+}
+
+bool Lexicon::LoadFromFile(const std::string& filename) {
+    std::ifstream ifs(filename, std::ios::binary);
+    if (!ifs) {
+        spdlog::error("[Lexicon] Failed to open file {} for reading", filename);
+        return false;
+    }
+    root = std::make_unique<Node>();
+    Node::deserialize(ifs);
+    ifs.close();
+    spdlog::info("[Lexicon] Lexicon loaded from {}", filename);
+    return true;
+}
+
+Node* Lexicon::NodePath(const std::string& word) {
+    if (word.empty()) {
+        return root.get();
+    }
+
+    Node* current = root.get();
+    for (char c : word) {
+        auto it = current->suffixes.find(c);
+        if (it == current->suffixes.end()) {
+            current->suffixes[c] = std::make_unique<Node>();
+        }
+        current = current->suffixes[c].get();
+    }
+    return current;
+}
+
+const Node* Lexicon::FindNode(const std::string& word) const {
+    const Node* current = root.get();
+    for (char c : word) {
+        auto it = current->suffixes.find(c);
+        if (it == current->suffixes.end()) {
+            return nullptr;
+        }
+        current = it->second.get();
+    }
+    return current;
+}
+
+
+unsigned int Lexicon::size() const {
+    unsigned int curr = 0;
+  if (root != nullptr) {
+    root->size(curr);
+  }
+  return curr;
 }
