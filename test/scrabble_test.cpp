@@ -1,8 +1,8 @@
+
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include <fstream>
 #include <iostream>
 #include <string>
-
+#include "core/dictionary.hpp"
 #include "core/bag.hpp"
 #include "core/board.hpp"
 #include "core/lexicon.hpp"
@@ -12,32 +12,43 @@
 #include "doctest/doctest.h"
 #include "spdlog/spdlog.h"
 
-TEST_CASE("Lexicon core") {
-    
-    core::Lexicon lexicon;
-    lexicon.AddWord("cat");
-    lexicon.AddWord("car");
-    lexicon.AddWord("dog");
+TEST_CASE("Lexicon add and check contains words") {
+  core::Lexicon lexicon;
+  lexicon.AddWord("cat");
+  lexicon.AddWord("car");
+  lexicon.AddWord("dog");
 
-    SUBCASE("Lexicon size") {
-        CHECK(lexicon.size() == 8);
-    }
+  SUBCASE("Lexicon size") { CHECK(lexicon.size() == 8); }
 
-    SUBCASE("Lexicon contains words") {
-        CHECK(lexicon.IsContain("cat") == true);
-        CHECK(lexicon.IsContain("car") == true);
-        CHECK(lexicon.IsContain("dog") == true);
-    }
+  SUBCASE("Lexicon contains words") {
+    CHECK(lexicon.IsContain("cat") == true);
+    CHECK(lexicon.IsContain("car") == true);
+    CHECK(lexicon.IsContain("dog") == true);
+  }
 
-    SUBCASE("Lexicon contains prefixes") {
-        CHECK(lexicon.ContainsPrefix("ca") == true);
-        CHECK(lexicon.ContainsPrefix("do") == true);
-        CHECK(lexicon.ContainsPrefix("fi") == false);
-        CHECK(lexicon.ContainsPrefix("bi") == false);
-    }
+  SUBCASE("Lexicon contains prefixes") {
+    CHECK(lexicon.ContainsPrefix("ca") == true);
+    CHECK(lexicon.ContainsPrefix("do") == true);
+    CHECK(lexicon.ContainsPrefix("fi") == false);
+    CHECK(lexicon.ContainsPrefix("bi") == false);
+  }
 }
 
-TEST_CASE("Lexicon Full build from dictionary"){}
+TEST_CASE("Lexicon PreLoadDictionary") {
+  core::Lexicon lexicon;
+
+  SUBCASE("Random word check") {
+    lexicon.PreLoadDictionary(core::Dictionary::DictionaryType::CSW);
+    CHECK(lexicon.IsContain("aalii") == true);
+    CHECK(lexicon.IsContain("abactinally") == true);
+    CHECK(lexicon.IsContain("avitaminosis") == true);
+
+    CHECK(lexicon.IsContain("avifaunaszz") == false);
+    CHECK(lexicon.IsContain("axiomatizationsp") == false);
+    CHECK(lexicon.IsContain("penicillationsss") == false);
+  }
+
+}
 
 TEST_CASE("Player test") {
   using core::Bag;

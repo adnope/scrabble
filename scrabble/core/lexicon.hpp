@@ -35,12 +35,10 @@ public:
     void AddWord(const std::string &word);
     bool IsContain(const std::string &word)const;
     bool ContainsPrefix(const std::string &prefix) const;
-    void PreLoadDictionary(const core::Dictionary& dictionary, core::Dictionary::DictionaryType type);
+    void PreLoadDictionary(core::Dictionary::DictionaryType type);
     void BuildLexiconTree(const core::Dictionary& dictionary);
 
     unsigned int size() const;
-    void SaveToFile(const std::string& filename) const;
-    bool LoadFromFile(const std::string& filename);
 private:
     std::unique_ptr<Node> root;
     const Node* FindNode(const std::string& word) const;
