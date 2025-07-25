@@ -5,7 +5,6 @@
 
 #include "core/bag.hpp"
 #include "core/board.hpp"
-#include "core/dictionary.hpp"
 #include "core/lexicon.hpp"
 #include "core/player.hpp"
 #include "core/square.hpp"
@@ -13,9 +12,9 @@
 #include "doctest/doctest.h"
 #include "spdlog/spdlog.h"
 
-
 TEST_CASE("Lexicon core") {
-    Lexicon lexicon;
+    
+    core::Lexicon lexicon;
     lexicon.AddWord("cat");
     lexicon.AddWord("car");
     lexicon.AddWord("dog");
@@ -137,7 +136,7 @@ void PrintBoardResponse(const core::Board::MoveValidationResponse& response) {
 TEST_CASE("Board test") {
   spdlog::info("Board test");
   core::Board board;
-  core::Dictionary dictionary;
+  core::Lexicon lexicon;
 
   std::vector<core::Board::Placement> initial_state_move = {
       {{'V', 4}, 5, 7},  {{'I', 1}, 5, 8}, {{'S', 1}, 5, 9}, {{'I', 1}, 5, 10},
@@ -151,12 +150,12 @@ TEST_CASE("Board test") {
 
   std::vector<core::Board::Placement> move = {{{'A', 1}, 6, 9},
                                               {{'T', 1}, 6, 10}};
-  const auto board_response = board.ValidateMove(move, dictionary);
+  const auto board_response = board.ValidateMove(move, lexicon);
   PrintBoardResponse(board_response);
   std::cout << board.GetDisplayFormat();
 
   std::vector<core::Board::Placement> move2 = {{{'P', 3}, 4, 10}};
-  const auto board_response2 = board.ValidateMove(move2, dictionary);
+  const auto board_response2 = board.ValidateMove(move2, lexicon);
   PrintBoardResponse(board_response2);
   std::cout << board.GetDisplayFormat();
 }

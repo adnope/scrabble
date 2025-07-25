@@ -1,15 +1,19 @@
 #include "lexicon.hpp"
+#include <core/lexicon.hpp>
 #include "dictionary.hpp"
 #include <sys/types.h>
+#include <memory>
 #include <string>
 #include <fstream>
 #include "spdlog/spdlog.h"
 
+namespace core {
+
 Node::Node() : is_word(false) {};
 
-Lexicon::Lexicon() : root(nullptr), length(0) {}
+Lexicon::Lexicon() : root(std::make_unique<Node>()), length(0) {}
 
-void::Node::size(unsigned int &curr) {
+void Node::size(unsigned int &curr) {
     curr++;
     for (const auto& suffix : suffixes) {
         suffix.second->size(curr);
@@ -42,6 +46,7 @@ static std::string reverse_str(const std::string& str) {
     return std::string(str.rbegin(), str.rend());
 }
 
+//Kiem tra lai
 static void GADDAG(const std::string& word, std::vector<std::string>& array) {
     for(unsigned int i = 0; i < word.size(); i++){
         std::pair<std::string, std::string> p = split_string(word, i);
@@ -53,6 +58,9 @@ void Lexicon::BuildLexiconTree(const core::Dictionary& dictionary) {
     std::vector<std::string> lexicon;
     std::vector<std::string> words = dictionary.GetWords();
     for (const auto &word : words) {
+        //Tu goc
+        AddWord(word);
+        //Tu bien the GADDAG
         GADDAG(word, lexicon);
         for(const auto &lex : lexicon) {
             AddWord(lex);
@@ -140,8 +148,34 @@ const Node* Lexicon::FindNode(const std::string& word) const {
 
 unsigned int Lexicon::size() const {
     unsigned int curr = 0;
-  if (root != nullptr) {
-    root->size(curr);
-  }
-  return curr;
+    if (root != nullptr) {
+        root->size(curr);
+    }
+    return curr;
 }
+
+//
+void Node::serialize(std::ofstream& ofs) const {
+    ofs<< is_word<< " "<<suffixes.size() << " ";
+    for (const auto& suffix : suffixes) {
+        ofs << suffix.first << " ";
+        if(suffix.second){
+            suffix.second->serialize(ofs);
+        }
+    }
+}
+
+std::unique_ptr<Node> Node::deserialize(std::ifstream &ifs) {
+    auto node = std::make_unique<Node>();
+    ifs >> node->is_word;
+    size_t suffix_count = 0;
+    ifs >> suffix_count;
+    for (size_t i = 0; i < suffix_count; ++i) {
+        char c = 0;
+        ifs >> c;
+        node->suffixes[c] = Node::deserialize(ifs);
+    }
+    return node;
+}
+
+}  // namespace core

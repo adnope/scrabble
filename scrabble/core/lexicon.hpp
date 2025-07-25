@@ -5,6 +5,7 @@
 #include <memory>
 #include "core/dictionary.hpp"
 
+namespace core {
 struct Node {
     bool is_word;
     std::unordered_map<char, std::unique_ptr<Node>> suffixes;
@@ -46,3 +47,5 @@ private:
     Node* NodePath(const std::string& word);
     unsigned int length;
 };
+
+} // namespace core
