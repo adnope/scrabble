@@ -61,12 +61,11 @@ class Board {
   void SetFirstMoveStatus(const bool is_first_move) {
     is_first_move_ = is_first_move;
   }
+  bool IsMoveOccupied(const Move& move) const;
 
  private:
   BoardGrid board_grid_;
   bool is_first_move_;
-
-  bool IsMoveOccupied(const Move& move) const;
 
   Word GetWordFromPos(int row, int col, bool horizontal, const Move& move);
 

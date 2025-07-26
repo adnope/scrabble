@@ -37,7 +37,7 @@ TEST_CASE("Lexicon add and check contains words") {
 TEST_CASE("Lexicon PreLoadDictionary") {
   core::Lexicon lexicon;
 
-  SUBCASE("Random word check") {
+  SUBCASE("Random word check with CSW dictionary") {
     lexicon.PreLoadDictionary(core::Dictionary::DictionaryType::CSW);
     CHECK(lexicon.IsContain("aalii") == true);
     CHECK(lexicon.IsContain("abactinally") == true);
@@ -48,6 +48,17 @@ TEST_CASE("Lexicon PreLoadDictionary") {
     CHECK(lexicon.IsContain("penicillationsss") == false);
   }
 
+  SUBCASE("Random word check with TWL dictionary") {
+    lexicon.PreLoadDictionary(core::Dictionary::DictionaryType::TWL);
+    CHECK(lexicon.IsContain("aasvogel") == true);
+    CHECK(lexicon.IsContain("aasvogels") == true);
+    CHECK(lexicon.IsContain("trailheads") == true);
+    CHECK(lexicon.IsContain("traditionalists") == true);
+
+    CHECK(lexicon.IsContain("avifaunaszz") == false);
+    CHECK(lexicon.IsContain("axiomatizationsp") == false);
+    CHECK(lexicon.IsContain("penicillationsss") == false);
+  }
 }
 
 TEST_CASE("Player test") {
@@ -169,4 +180,8 @@ TEST_CASE("Board test") {
   const auto board_response2 = board.ValidateMove(move2, lexicon);
   PrintBoardResponse(board_response2);
   std::cout << board.GetDisplayFormat();
+}
+
+TEST_CASE("Bot player") {
+  
 }

@@ -52,3 +52,10 @@ Game logic:
 		subtract hand_score from player score
 		add hand_score to game_ender score
 	- winner = player with highest final score
+
+
+- bot 
+	- get board status, hand's tile
+	- check valid move
+	- get best move
+	- action like player
