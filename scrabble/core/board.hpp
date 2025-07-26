@@ -5,10 +5,10 @@
 #include <vector>
 
 #include "core/tile.hpp"
+#include "lexicon.hpp"
 #include "square.hpp"
 #include "tile.hpp"
 #include "word.hpp"
-#include "lexicon.hpp"
 
 namespace core {
 class Board {
@@ -51,8 +51,7 @@ class Board {
     return board_grid_.at(row).at(col).IsOccupied();
   }
 
-  MoveValidationResponse ValidateMove(const Move& move,
-                                     const Lexicon& lexicon);
+  MoveValidationResponse ValidateMove(const Move& move, const Lexicon& lexicon);
 
   std::string GetDisplayFormat();
 

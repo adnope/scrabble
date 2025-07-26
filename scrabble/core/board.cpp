@@ -5,6 +5,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+
 #include "square.hpp"
 #include "tile.hpp"
 
@@ -227,9 +228,10 @@ int Board::IsAligned(const Move& move) {
   return static_cast<int>(horizontal);
 }
 
-bool Board::AreInDictionary(const std::vector<std::string>& words, const Lexicon& lexicon) {
+bool Board::AreInDictionary(const std::vector<std::string>& words,
+                            const Lexicon& lexicon) {
   for (const auto& word : words) {
-    if (!lexicon.IsContain(word)) {
+    if (!lexicon.Contains(word)) {
       std::cout << "Invalid word: " << word << '\n';
       return false;
     }
@@ -237,7 +239,8 @@ bool Board::AreInDictionary(const std::vector<std::string>& words, const Lexicon
   return true;
 }
 
-Board::MoveValidationResponse Board::ValidateMove(const Move& move,const Lexicon& lexicon) {
+Board::MoveValidationResponse Board::ValidateMove(const Move& move,
+                                                  const Lexicon& lexicon) {
   // Check if any placement is performed on occupied square
   if (IsMoveOccupied(move)) {
     return {{}, 0, ResponseStatus::kOccupied};

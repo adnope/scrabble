@@ -2,6 +2,8 @@
 
 #include <sys/types.h>
 
+#include <algorithm>
+#include <cctype>
 #include <core/lexicon.hpp>
 #include <fstream>
 #include <memory>
@@ -28,7 +30,8 @@ void Lexicon::AddWord(const std::string& word) {
   length++;
 }
 
-bool Lexicon::IsContain(const std::string& word) const {
+bool Lexicon::Contains(std::string word) const {
+  std::transform(word.begin(), word.end(), word.begin(), ::tolower);
   const Node* node = FindNode(word);
   if (node == nullptr) {
     return false;
@@ -40,7 +43,7 @@ bool Lexicon::ContainsPrefix(const std::string& prefix) const {
   return FindNode(prefix) != nullptr;
 }
 
-// plit_string
+// split_string
 static std::pair<std::string, std::string> split_string(const std::string& str,
                                                         size_t index) {
   return {str.substr(0, index), str.substr(index)};
@@ -80,7 +83,6 @@ void Lexicon::PreLoadDictionary(core::Dictionary::DictionaryType type) {
   BuildLexiconTree(dictionary);
 }
 
-
 Node* Lexicon::NodePath(const std::string& word) {
   if (word.empty()) {
     return root.get();
@@ -117,7 +119,6 @@ unsigned int Lexicon::size() const {
   return curr;
 }
 
-
 void Node::serialize(std::ofstream& ofs) const {
   ofs << is_word << " " << suffixes.size() << " ";
   for (const auto& suffix : suffixes) {
@@ -140,6 +141,5 @@ std::unique_ptr<Node> Node::deserialize(std::ifstream& ifs) {
   }
   return node;
 }
-
 
 }  // namespace core

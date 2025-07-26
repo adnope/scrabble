@@ -36,10 +36,10 @@ void Dictionary::ChangeDictionary(const DictionaryType type) {
   std::string filepath;
   switch (type) {
     case CSW:
-      filepath = "/home/hungp/projects/scrabble/assets/dictionaries/csw6.dict";
+      filepath = "assets/dictionaries/csw6.dict";
       break;
     case TWL:
-      filepath = "/home/hungp/projects/scrabble/assets/dictionaries/twl6.dict";
+      filepath = "assets/dictionaries/twl6.dict";
       break;
   }
   LoadCustomDictionary(filepath);

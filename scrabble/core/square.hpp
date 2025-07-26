@@ -26,7 +26,7 @@ class Square {
   };
 
   Square() : is_occupied_{}, symbol_{Symbol::kNormal}, multiplier_{} {}
-  
+
   Square(Symbol symbol, Multiplier multiplier);
 
   void PlaceTile(Tile t);

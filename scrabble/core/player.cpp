@@ -67,8 +67,9 @@ bool Player::PerformSwap(Bag &bag, const std::vector<int> &indices) {
   return true;
 }
 
-Player::MoveSubmissionResponse Player::SubmitMove(
-    const Move &move, Board &board, const Lexicon &lexicon) {
+Player::MoveSubmissionResponse Player::SubmitMove(const Move &move,
+                                                  Board &board,
+                                                  const Lexicon &lexicon) {
   // Convert Player::Move to Board::Move
   std::vector<Board::Placement> board_move;
   board_move.reserve(move.size());

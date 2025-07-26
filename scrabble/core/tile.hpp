@@ -22,9 +22,7 @@ class Tile {
 
   void PrintInfo() const;
 
-  bool operator<(const Tile &other) const{
-    return letter_ < other.letter_;
-  }
+  bool operator<(const Tile &other) const { return letter_ < other.letter_; }
 
  private:
   char letter_;

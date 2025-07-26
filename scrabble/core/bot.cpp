@@ -45,8 +45,8 @@ bool Bot::IsAnchor(int row, int col, Board& board) {
     return false;
   }
   return (row > 0 && board.IsOccupied(row - 1, col)) ||
-         (row < Board::kHeight - 1 && board.IsOccupied(row+1, col)) ||
-         (col > 0 && board.IsOccupied(row, col -1)) ||
+         (row < Board::kHeight - 1 && board.IsOccupied(row + 1, col)) ||
+         (col > 0 && board.IsOccupied(row, col - 1)) ||
          (col < Board::kWidth - 1 && board.IsOccupied(row, col + 1)) ||
          (row == Board::kStartPosRow && col == Board::kStartPosColumn);
 }
@@ -64,7 +64,8 @@ void Bot::GenerateMoveFromAnchor(int row, int col,
       std::vector<std::vector<Tile>> permutations =
           GeneratePermutations(subset, len);
       for (const auto& permutation : permutations) {
-        for (int offset = -Bot::kMaxOffset; offset <= Bot::kMaxOffset; offset++) {
+        for (int offset = -Bot::kMaxOffset; offset <= Bot::kMaxOffset;
+             offset++) {
           Board::Move move =
               CreateMove(permutation, row, col, horizontal, offset);
           if (!move.empty() && IsValidMove(move, board)) {
@@ -114,14 +115,14 @@ void Bot::GenerateSubsets(const std::vector<Tile>& rack, size_t index,
                           std::vector<Tile>& current,
                           std::vector<std::vector<Tile>>& result) {
   result.push_back(current);
-  for(size_t i = index;i<rack.size();i++) {
+  for (size_t i = index; i < rack.size(); i++) {
     current.push_back(rack[i]);
-    GenerateSubsets(rack, i+1, current, result);
+    GenerateSubsets(rack, i + 1, current, result);
     current.pop_back();
   }
 }
 
-//fail
+// fail
 std::vector<std::vector<Tile>> Bot::GeneratePermutations(
     const std::vector<Tile>& tilesSubset, int length) {
   std::vector<std::vector<Tile>> result;
@@ -154,14 +155,14 @@ Board::Move Bot::CreateMove(const std::vector<Tile>& tiles, int row, int col,
     if (r < 0 || r >= Board::kHeight || c < 0 || c >= Board::kWidth) {
       return {};
     }
-    
-    // Blank tile 
+
+    // Blank tile
     Tile tempTile = tiles[i];
-    if(tempTile.IsBlankTile()) {
-      for(char letter = 'a'; letter <= 'z'; letter++){
+    if (tempTile.IsBlankTile()) {
+      for (char letter = 'a'; letter <= 'z'; letter++) {
         Tile blankTile(tempTile);
         blankTile.UseAs(letter);
-        move.emplace_back(blankTile,r,c);
+        move.emplace_back(blankTile, r, c);
       }
     }
     {

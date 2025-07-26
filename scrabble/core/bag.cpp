@@ -8,7 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "spdlog/spdlog.h"
 #include "tile.hpp"
 
 namespace core {

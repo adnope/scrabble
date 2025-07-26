@@ -6,4 +6,6 @@ bugprone-*,
 google-*,
 readability-*,
 -readability-identifier-length,
--bugprone-easily-swappable-parameters'
+-bugprone-easily-swappable-parameters,
+-readability-magic-numbers,
+-cppcoreguidelines-avoid-magic-numbers'

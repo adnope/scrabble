@@ -22,7 +22,7 @@ Game logic:
 
 	- init first to move player: randomize 1 tile for each player, then determine the first to move -> InitFirstTurn()
 	- init player tiles: foreach player draw(7 tiles)
-	
+
 
 - game loop:
 	- if (tiles in bag = 0 && any player's hand is empty) -> end game
@@ -53,7 +53,7 @@ Game logic:
 	- winner = player with highest final score
 
 
-- bot 
+- bot
 	- get board status, hand's tile
 	- check valid move
 	- get best move
