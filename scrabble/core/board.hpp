@@ -53,7 +53,7 @@ class Board {
 
   MoveValidationResponse ValidateMove(const Move& move, const Lexicon& lexicon);
 
-  std::string GetDisplayFormat();
+  std::string GetDisplayFormat() const;
 
   bool is_first_move() const { return is_first_move_; }
 

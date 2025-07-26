@@ -1,8 +1,5 @@
 #!/usr/bin/env bash
 
-# Source this env to quickly build, clear and run by these aliases
-# Run: source projenv
-
 build() {
   target=$1
   if [ ! -d build ]; then
@@ -35,3 +32,22 @@ test() {
     echo "Error: '$exec_path' not found"
   fi
 }
+
+case "$1" in
+  build)
+    shift
+    build "$@"
+    ;;
+  scrabble)
+    shift
+    scrabble "$@"
+    ;;
+  test)
+    shift
+    test "$@"
+    ;;
+  *)
+    echo "Usage: $0 {build [target]|scrabble [args]|test [args]}"
+    exit 1
+    ;;
+esac

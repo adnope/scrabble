@@ -8,6 +8,7 @@ add_subdirectory(cli)
 target_link_libraries(scrabble PRIVATE
   core
   game
+  cli
   SDL2::SDL2
   SDL2_ttf::SDL2_ttf
   SDL2_image::SDL2_image

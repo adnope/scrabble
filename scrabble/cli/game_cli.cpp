@@ -1,10 +1,13 @@
 #include "game_cli.hpp"
 
 #include <algorithm>
+#include <array>
 #include <cctype>
+#include <ios>
 #include <iostream>
 #include <limits>
 #include <sstream>
+#include <string>
 
 #include "cli/utils.hpp"
 #include "core/player.hpp"
@@ -62,6 +65,24 @@ std::vector<std::string> CLIGame::RequestPlayerNames(const int num_players) {
   return player_names;
 }
 
+void CLIGame::PrintSwappingIndices(const std::vector<int>& indices) {
+  if (indices.size() == 1) {
+    std::cout << game.current_player().deck().at(indices[0]).letter();
+    return;
+  }
+  if (indices.size() == 2) {
+    std::cout << game.current_player().deck().at(indices[0]).letter() << " and "
+              << game.current_player().deck().at(indices[1]).letter();
+    return;
+  }
+  for (size_t i = 0; i < indices.size() - 2; ++i) {
+    std::cout << game.current_player().deck().at(indices[i]).letter() << ", ";
+  }
+  std::cout << game.current_player().deck().at(*(indices.end() - 2)).letter()
+            << " and "
+            << game.current_player().deck().at(*(indices.end() - 1)).letter();
+}
+
 void CLIGame::InitDictionary() {
   int choice = 0;
 
@@ -107,7 +128,7 @@ void CLIGame::InitFirstPlayer() {
   auto game_bag = game.bag();
   auto game_players = game.players();
   std::cout << "Determining first player...\n";
-  for (int i = 0; i < game.NumPlayers(); ++i) {
+  for (int i = 0; i < game.num_players(); ++i) {
     const char letter = game_bag.DrawTile().letter();
     std::cout << game_players[i].name() << ": " << letter << '\n';
 
@@ -126,13 +147,44 @@ void CLIGame::InitFirstPlayer() {
   game.SetFirstPlayer(first_player_index);
 }
 
+void CLIGame::PrintMoveHistory() {
+  const auto move_history = game.move_history();
+  int turn_number = static_cast<int>(move_history.size());
+  for (auto it = move_history.rbegin(); it != move_history.rend();
+       ++it, --turn_number) {
+    const auto& move = *it;
+    std::cout << turn_number << ". ";
+    if (move.type == game::Game::MoveType::kPassing) {
+      std::cout << "PASS: " << move.player_name << " passed their turn\n";
+    }
+    if (move.type == game::Game::MoveType::kSwapping) {
+      std::cout << "SWAP: " << move.player_name << " swapped tiles\n";
+    }
+    if (move.type == game::Game::MoveType::kPlacing) {
+      std::cout << "PLACE: " << move.player_name << " earned " << move.points
+                << " points\nWords formed: ";
+      for (const auto& word : move.words) {
+        std::cout << word.AsString() << " ";
+      }
+      std::cout << '\n';
+    }
+  }
+}
+
 CLIGame::PlayerAction CLIGame::RequestPlayerAction() {
-  std::cout << "Current turn: " << game.GetCurrentPlayer().name() << '\n'
+  game.PrintBoard();
+
+  std::cout << "\nCurrent turn: " << game.current_player().name() << '\n'
             << "Your tiles: ";
-  for (const auto& tile : game.GetCurrentPlayer().deck()) {
+  for (const auto& tile : game.current_player().deck()) {
     std::cout << tile.letter() << tile.points() << " ";
   }
   std::cout << '\n';
+
+  std::cout << "Consecutive passes: " << game.consecutive_passes() << '\n';
+
+  PrintMoveHistory();
+
   auto action = CLIGame::PlayerAction::kPlacing;
 
   int choice = 0;
@@ -177,6 +229,48 @@ CLIGame::PlayerAction CLIGame::RequestPlayerAction() {
 //   }
 // }
 
+bool CLIGame::ValidateSwappingIndicesInput(const std::string& input,
+                                           std::vector<int>& indices) {
+  if (input.empty() || std::all_of(input.begin(), input.end(), ::isspace)) {
+    std::cout << "No tile selected, please try again.\n";
+    return false;
+  }
+
+  std::istringstream iss(input);
+  std::string token;
+  std::vector<int> temp;
+  std::array<bool, 7> seen = {};
+
+  while (iss >> token) {
+    if (!std::all_of(token.begin(), token.end(), ::isdigit)) {
+      std::cout << "Invalid tile: " << token << '\n';
+      return false;
+    }
+
+    int index = std::stoi(token);
+    if (index < 1 || index > 7) {
+      std::cout << "Invalid tile: " << index << '\n';
+      return false;
+    }
+
+    if (game.current_player().deck().at(index - 1).IsEmpty()) {
+      std::cout << "Slot " << index << " is empty.\n";
+      return false;
+    }
+
+    if (seen.at(index - 1)) {
+      std::cout << "Duplicated tile: " << index << '\n';
+      return false;
+    }
+
+    seen.at(index - 1) = true;
+    temp.push_back(index);
+  }
+
+  indices = std::move(temp);
+  return true;
+}
+
 std::vector<int> CLIGame::RequestSwappingIndices() {
   std::cin.ignore();
   std::vector<int> indices;
@@ -186,33 +280,9 @@ std::vector<int> CLIGame::RequestSwappingIndices() {
 
     std::string line;
     std::getline(std::cin, line);
-
-    std::istringstream iss(line);
-    int num = 0;
-    bool valid = true;
-    std::vector<int> temp;
-
-    while (iss >> num) {
-      if (num < 1 || num > core::Player::kMaxDeckSize ||
-          game.GetCurrentPlayer().deck().at(num - 1).IsEmpty()) {
-        std::cout << "Invalid tile: " << num << '\n';
-        valid = false;
-        break;
-      }
-      temp.push_back(num);
-    }
-
-    if (iss.fail() && !iss.eof()) {
-      std::cout << "Invalid input. Please enter integers only.\n";
-      continue;
-    }
-
-    if (valid && !temp.empty()) {
-      indices = std::move(temp);
+    
+    if (ValidateSwappingIndicesInput(line, indices)) {
       break;
-    }
-    if (temp.empty()) {
-      std::cout << "No valid tile chosen. Please try again.\n";
     }
   }
 
@@ -221,30 +291,65 @@ std::vector<int> CLIGame::RequestSwappingIndices() {
 
 void CLIGame::StartGameLoop() {
   while (true) {
-    if (game.IsGameOver()) {
+    if (game.IsOver()) {
       break;
     }
 
-    const auto action = RequestPlayerAction();
-    switch (action) {
-      case CLIGame::PlayerAction::kPlacing: {
-        // game.ExecutePlaceMove(player_move);
-        break;
+    while (true) {
+      bool valid_action = false;
+
+      const auto action = RequestPlayerAction();
+      switch (action) {
+        case CLIGame::PlayerAction::kPlacing: {
+          // game.ExecutePlaceMove(player_move);
+          break;
+        }
+        case CLIGame::PlayerAction::kSwapping: {
+          valid_action = ExecuteSwapMove();
+          break;
+        }
+        case CLIGame::PlayerAction::kPassing: {
+          valid_action = ExecutePassMove();
+          break;
+        }
       }
-      case CLIGame::PlayerAction::kSwapping: {
-        const auto indices = RequestSwappingIndices();
-        game.ExecuteSwapMove(indices);
-        break;
-      }
-      case CLIGame::PlayerAction::kPassing: {
-        std::cout << '\n'
-                  << game.GetCurrentPlayer().name()
-                  << " passed their turn!\n\n";
-        game.ExecutePassMove();
+
+      if (valid_action) {
         break;
       }
     }
   }
+}
+
+bool CLIGame::ExecutePassMove() {
+  std::cout << '\n'
+            << game.current_player().name() << " passed their turn!\n\n";
+  game.ExecutePassMove();
+  return true;
+}
+
+bool CLIGame::ExecuteSwapMove() {
+  const auto indices = RequestSwappingIndices();
+  const auto response = game.ExecuteSwapMove(indices);
+
+  if (!response.sucessful) {
+    std::cout << "There's not enough tiles remaining in bag for the swap!\n";
+    return false;
+  }
+
+  std::cout << "You swapped tiles: ";
+  for (const auto& tile : response.old_tiles) {
+    std::cout << tile << " ";
+  }
+  std::cout << "for ";
+  for (const auto& tile : response.new_tiles) {
+    std::cout << tile << " ";
+  }
+  std::cout << '\n';
+
+  std::cout << "Your tiles now: " << response.deck << "\n\n";
+
+  return true;
 }
 
 void CLIGame::End() {}

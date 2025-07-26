@@ -276,7 +276,7 @@ Board::MoveValidationResponse Board::ValidateMove(const Move& move,
   return {words, move_points, ResponseStatus::kSuccess};
 }
 
-std::string Board::GetDisplayFormat() {
+std::string Board::GetDisplayFormat() const {
   std::string result;
   for (const auto& row : board_grid_) {
     for (const Square& square : row) {

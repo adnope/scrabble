@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <string>
 #include <vector>
 
 #include "core/bag.hpp"
@@ -22,42 +23,46 @@ class Game {
     int points = 0;
   };
 
+  struct SwapResponse {
+    bool sucessful;
+    std::vector<std::string> old_tiles;
+    std::vector<std::string> new_tiles;
+    std::string deck;
+  };
+
   explicit Game(core::Dictionary::DictionaryType dict_type);
 
   void AddPlayer(const std::string& name) { players_.emplace_back(name, 0); }
 
-  int NumPlayers() const { return static_cast<int>(players_.size()); }
-
   void InitPlayerDecks();
 
-  bool IsGameOver();
-
-  void NextTurn();
+  void SetFirstPlayer(const int index) { current_player_index_ = index; }
 
   void ExecutePassMove();
 
-  bool ExecuteSwapMove(const std::vector<int>& indices);
+  SwapResponse ExecuteSwapMove(const std::vector<int>& indices);
 
   core::Board::ResponseStatus ExecutePlaceMove(
       const core::Player::Move& player_move);
 
-  core::Player GetCurrentPlayer() const {
+  void NextTurn();
+
+  bool IsOver();
+
+  core::Bag bag() const { return bag_; }
+  core::Dictionary dictionary() const { return dictionary_; }
+  std::vector<core::Player> players() const { return players_; }
+  int consecutive_passes() const { return consecutive_passes_; }
+  std::vector<Move> move_history() const { return move_history_; }
+  int bag_size() const { return bag_.num_tiles_remanining(); }
+  core::Player winner() const { return winner_; }
+  int num_players() const { return static_cast<int>(players_.size()); }
+  core::Player current_player() const {
     return players_[current_player_index_];
   }
 
-  int GetBagSize() const { return bag_.num_tiles_remanining(); }
-
-  core::Player GetWinner() const { return winner_; }
-
-  std::vector<Move> GetMoveHistory() const { return move_history_; }
-
-  void SetFirstPlayer(const int index) { current_player_index_ = index; }
-
-  core::Bag bag() const { return bag_; }
-
-  std::vector<core::Player> players() const { return players_; }
-
-  void PrintDebugInfo();
+  void PrintBoard() const;
+  void PrintDebugInfo() const;
 
  private:
   std::vector<core::Player> players_;
@@ -72,6 +77,6 @@ class Game {
   core::Player winner_{"", 0};
 
   void EndGame();
-  core::Player& current_player() { return players_[current_player_index_]; }
+  core::Player& current_player_ref() { return players_[current_player_index_]; }
 };
 }  // namespace game

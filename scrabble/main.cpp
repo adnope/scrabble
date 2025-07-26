@@ -3,6 +3,7 @@
 #include "SDL2/SDL.h"
 #include "SDL_image.h"
 #include "SDL_ttf.h"
+#include "cli/game_cli.hpp"
 
 bool test_sdl2_libraries() {
   // Initialize SDL2
@@ -167,7 +168,9 @@ bool test_sdl2_libraries() {
 }
 
 int main() {
-  test_sdl2_libraries();
+  // test_sdl2_libraries();
+  cli::CLIGame cli_game;
+  cli_game.Start();
 
   return 0;
 }
