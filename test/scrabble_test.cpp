@@ -160,15 +160,15 @@ TEST_CASE("Board test") {
   core::Board board;
   core::Lexicon lexicon;
 
-  std::vector<core::Board::Placement> initial_state_move = {
-      {{'V', 4}, 5, 7},  {{'I', 1}, 5, 8}, {{'S', 1}, 5, 9}, {{'I', 1}, 5, 10},
-      {{'T', 1}, 5, 11}, {{'T', 1}, 7, 4}, {{'A', 1}, 7, 5}, {{'N', 1}, 7, 6},
-      {{'N', 1}, 7, 7},  {{'E', 1}, 7, 8}, {{'D', 2}, 7, 9}, {{'P', 3}, 2, 8},
-      {{'R', 1}, 3, 8},  {{'A', 1}, 4, 8}, {{'S', 1}, 6, 8}};
-  for (const auto& placement : initial_state_move) {
-    board.PlaceTile(placement.tile, placement.row, placement.col);
-  }
-  std::cout << board.GetDisplayFormat();
+//   std::vector<core::Board::Placement> initial_state_move = {
+//       {{'V', 4}, 5, 7},  {{'I', 1}, 5, 8}, {{'S', 1}, 5, 9}, {{'I', 1}, 5, 10},
+//       {{'T', 1}, 5, 11}, {{'T', 1}, 7, 4}, {{'A', 1}, 7, 5}, {{'N', 1}, 7, 6},
+//       {{'N', 1}, 7, 7},  {{'E', 1}, 7, 8}, {{'D', 2}, 7, 9}, {{'P', 3}, 2, 8},
+//       {{'R', 1}, 3, 8},  {{'A', 1}, 4, 8}, {{'S', 1}, 6, 8}};
+//   for (const auto& placement : initial_state_move) {
+//     board.PlaceTile(placement.tile, placement.row, placement.col);
+//   }
+//   // std::cout << board.GetDisplayFormat();
 
   std::vector<core::Board::Placement> move = {{{'A', 1}, 6, 9},
                                               {{'T', 1}, 6, 10}};

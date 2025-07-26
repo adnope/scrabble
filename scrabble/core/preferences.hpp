@@ -18,7 +18,9 @@ class Preferences {
     resolution_height_ = height;
   }
 
-  void SetVSyncStatus(const bool vsync_enabled) { vsync_enabled_ = vsync_enabled; }
+  void SetVSyncStatus(const bool vsync_enabled) {
+    vsync_enabled_ = vsync_enabled;
+  }
 
   int GetResolutionWidth() const { return resolution_width_; }
   int GetResolutionHeight() const { return resolution_height_; }

@@ -4,11 +4,16 @@
 #include <string>
 
 #include "core/board.hpp"
-#include "spdlog/spdlog.h"
 
-namespace core {
-Game::Game(Dictionary::DictionaryType dict_type) {
-  dictionary_ = Dictionary(dict_type);
+namespace game {
+Game::Game(core::Dictionary::DictionaryType dict_type) {
+  dictionary_ = core::Dictionary(dict_type);
+}
+
+void Game::InitPlayerDecks() {
+  for (auto& player : players_) {
+    player.DrawNewTiles(bag_);
+  }
 }
 
 bool Game::IsGameOver() {
@@ -75,14 +80,13 @@ void Game::EndGame() {
   }
 
   winner_ = players_[winner_index];
-
-  spdlog::info("[Game] Game ended. Winner: {}", winner_.name());
 }
 
-Board::ResponseStatus Game::ExecutePlaceMove(const Player::Move& player_move) {
+core::Board::ResponseStatus Game::ExecutePlaceMove(
+    const core::Player::Move& player_move) {
   const auto player_response =
       current_player().SubmitMove(player_move, board_, lexicon_);
-  if (player_response.status == Board::ResponseStatus::kSuccess) {
+  if (player_response.status == core::Board::ResponseStatus::kSuccess) {
     Move move;
     move.type = MoveType::kPlacing;
     move.player_name = current_player().name();
@@ -94,4 +98,21 @@ Board::ResponseStatus Game::ExecutePlaceMove(const Player::Move& player_move) {
 
   return player_response.status;
 }
-}  // namespace core
+
+void Game::PrintDebugInfo() {
+  std::cout << "[Players]:\n";
+  for (const auto& player : players_) {
+    std::cout << "Name: " << player.name() << '\n';
+    std::cout << "Score: " << player.score() << '\n';
+    std::cout << "Deck: ";
+    player.PrintDeck();
+    std::cout << "Deck score: " << player.GetDeckScore() << '\n';
+    std::cout << "Deck size: " << player.current_deck_size() << '\n';
+  }
+  bag_.PrintBagInfo();
+  std::cout << board_.GetDisplayFormat();
+
+  std::cout << "current_player_index: " << current_player_index_ << '\n';
+  std::cout << "consecutive_passes: " << consecutive_passes_ << '\n';
+}
+}  // namespace game

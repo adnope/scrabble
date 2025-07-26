@@ -26,6 +26,7 @@ Game logic:
 
 - game loop:
 	- if (tiles in bag = 0 && any player's hand is empty) -> end game
+	- for each player if pass_count >= 2 -> break;
 	- if (is first move) -> ask for player action:
 		- pass turn
 		- perform move:
@@ -33,9 +34,7 @@ Game logic:
 				- if move in center -> place the move & add score
 				- else -> ask for move again
 			- if move is invalid -> ask for move again
-	- for each player if pass_count >= 2 -> break;
 	- players[turn]: if (deck size < 7) draw new tiles
-	
     - player.TakeAction():
 		- pass turn: game.NextTurn()  ->Game function
 		- swap tiles: select indicies of tiles in deck: player.swap(vector<int> tile_indices)

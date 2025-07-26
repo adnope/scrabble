@@ -4,4 +4,5 @@ target_link_libraries(scrabble_test PRIVATE
   core
   external
   game
+  cli
 )

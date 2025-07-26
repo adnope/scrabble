@@ -91,7 +91,7 @@ void Bag::Shuffle() {
 }
 
 void Bag::PrintBagInfo() const {
-  spdlog::info("[Bag]");
+  std::cout << "[Bag]\n";
   std::cout << "Bag content: \n";
   for (const auto& tile : tile_bag_) {
     tile.PrintInfo();
