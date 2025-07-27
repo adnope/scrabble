@@ -5,6 +5,7 @@
 #include "core/board.hpp"
 #include "core/lexicon.hpp"
 #include "core/tile.hpp"
+#include "lexicon.hpp"
 
 namespace core {
 class Bot {

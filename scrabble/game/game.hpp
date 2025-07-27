@@ -10,6 +10,7 @@
 #include "core/lexicon.hpp"
 #include "core/player.hpp"
 #include "core/word.hpp"
+#include "core/bot.hpp"
 
 namespace game {
 class Game {

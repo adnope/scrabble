@@ -12,17 +12,20 @@ namespace core {
 Board::Move Bot::FindBestMove(const std::vector<Tile>& rack, Board& board,
                               const Lexicon& lexicon) {
   std::vector<Board::Move> allMoves = GenerateAllMoves(rack, board);
-  Board::Move bestMove;
-  int maxScore = -1;
+  //Board::Move bestMove;
+  //Init best_Move, maxScore
+  auto best_Move = allMoves[0];
+  auto maxScore = board.ValidateMove(best_Move, lexicon).move_points;
+  //int maxScore = -1;
   for (const auto& move : allMoves) {
     auto [words, score, status] = board.ValidateMove(move, lexicon);
     if (status == Board::ResponseStatus::kSuccess && score > maxScore) {
       maxScore = score;
-      bestMove = move;
+      best_Move = move;
     }
   }
 
-  return bestMove;
+  return best_Move;
 }
 std::vector<Board::Move> Bot::GenerateAllMoves(const std::vector<Tile>& rack,
                                                Board& board) {
@@ -112,17 +115,31 @@ std::vector<std::vector<Tile>> Bot::TilesSubsets(
 }
 
 void Bot::GenerateSubsets(const std::vector<Tile>& rack, size_t index,
-                          std::vector<Tile>& current,
-                          std::vector<std::vector<Tile>>& result) {
-  result.push_back(current);
-  for (size_t i = index; i < rack.size(); i++) {
-    current.push_back(rack[i]);
-    GenerateSubsets(rack, i + 1, current, result);
-    current.pop_back();
+                         std::vector<Tile>& current,
+                         std::vector<std::vector<Tile>>& result) {
+  // Thêm tập con hiện tại vào result
+  if (!current.empty()) {
+    result.push_back(current);
+  }
+
+  for (size_t i = index; i < rack.size(); ++i) {
+    // Blank tile
+    if (rack[i].letter() == '?') {
+      for (char letter = 'A'; letter <= 'Z'; ++letter) {
+        current.push_back(Tile(letter, 0)); 
+        GenerateSubsets(rack, i + 1, current, result);
+        current.pop_back(); // Quay lui
+      }
+    } else {
+      // No blank tiles
+      current.push_back(rack[i]);
+      GenerateSubsets(rack, i + 1, current, result);
+      current.pop_back();
+    }
   }
 }
 
-// fail
+
 std::vector<std::vector<Tile>> Bot::GeneratePermutations(
     const std::vector<Tile>& tilesSubset, int length) {
   std::vector<std::vector<Tile>> result;
@@ -135,6 +152,7 @@ std::vector<std::vector<Tile>> Bot::GeneratePermutations(
   }
   return result;
 }
+
 
 Board::Move Bot::CreateMove(const std::vector<Tile>& tiles, int row, int col,
                             bool horizontal, int offset) {
@@ -154,19 +172,6 @@ Board::Move Bot::CreateMove(const std::vector<Tile>& tiles, int row, int col,
 
     if (r < 0 || r >= Board::kHeight || c < 0 || c >= Board::kWidth) {
       return {};
-    }
-
-    // Blank tile
-    Tile tempTile = tiles[i];
-    if (tempTile.IsBlankTile()) {
-      for (char letter = 'a'; letter <= 'z'; letter++) {
-        Tile blankTile(tempTile);
-        blankTile.UseAs(letter);
-        move.emplace_back(blankTile, r, c);
-      }
-    }
-    {
-      move.emplace_back(tiles[i], r, c);
     }
   }
   return move;

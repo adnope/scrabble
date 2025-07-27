@@ -58,3 +58,5 @@ Game logic:
 	- check valid move
 	- get best move
 	- action like player
+
+	-pending task:neu khong co bestmove -> pass or swap 
