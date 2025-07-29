@@ -5,7 +5,6 @@
 #include <algorithm>
 #include <cctype>
 #include <core/lexicon.hpp>
-#include <fstream>
 #include <memory>
 #include <string>
 
@@ -117,29 +116,6 @@ unsigned int Lexicon::size() const {
     root->size(curr);
   }
   return curr;
-}
-
-void Node::serialize(std::ofstream& ofs) const {
-  ofs << is_word << " " << suffixes.size() << " ";
-  for (const auto& suffix : suffixes) {
-    ofs << suffix.first << " ";
-    if (suffix.second) {
-      suffix.second->serialize(ofs);
-    }
-  }
-}
-
-std::unique_ptr<Node> Node::deserialize(std::ifstream& ifs) {
-  auto node = std::make_unique<Node>();
-  ifs >> node->is_word;
-  size_t suffix_count = 0;
-  ifs >> suffix_count;
-  for (size_t i = 0; i < suffix_count; ++i) {
-    char c = 0;
-    ifs >> c;
-    node->suffixes[c] = Node::deserialize(ifs);
-  }
-  return node;
 }
 
 }  // namespace core

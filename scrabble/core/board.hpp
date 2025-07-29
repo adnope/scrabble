@@ -61,7 +61,7 @@ class Board {
     is_first_move_ = is_first_move;
   }
   bool IsMoveOccupied(const Move& move) const;
-
+ 
   Word GetWordFromPos(int row, int col, bool horizontal, const Move& move);
 
   std::vector<Word> GetWordsFromMove(const Move& move, bool horizontal);
