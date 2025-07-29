@@ -1,7 +1,5 @@
 #include "lexicon.hpp"
 
-#include <sys/types.h>
-
 #include <algorithm>
 #include <cctype>
 #include <core/lexicon.hpp>
@@ -61,6 +59,7 @@ static void GADDAG(const std::string& word, std::vector<std::string>& array) {
 }
 
 void Lexicon::BuildLexiconTree(const core::Dictionary& dictionary) {
+  const auto start = std::chrono::high_resolution_clock::now();
   std::vector<std::string> lexicon;
   std::vector<std::string> words = dictionary.GetWords();
   for (const auto& word : words) {
@@ -73,7 +72,11 @@ void Lexicon::BuildLexiconTree(const core::Dictionary& dictionary) {
     }
     lexicon.clear();
   }
-  spdlog::info("[Lexicon] Lexicon tree built with {} words", size());
+  const auto end = std::chrono::high_resolution_clock::now();
+  const std::chrono::duration<double, std::milli> elapsed = end - start;
+
+  spdlog::info("[Lexicon] Lexicon tree built with {0} words in {1} ms.", size(),
+               elapsed.count());
 }
 
 void Lexicon::PreLoadDictionary(core::Dictionary::DictionaryType type) {
