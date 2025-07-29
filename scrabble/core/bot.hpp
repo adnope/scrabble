@@ -89,7 +89,9 @@ class Bot {
                             MoveGenState& state, Lexicon& lexicon,
                             std::vector<Board::Move>& moves);
 
- 
+ // Swap -> cập nhật MoveGenstate
+ // Điều kiện Swap -> không có bước đi bestMove = rỗng
+ // Swap có lợi hơn pass -> bot spam swáp ;))
 };
 
 };  // namespace core
