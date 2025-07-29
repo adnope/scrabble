@@ -264,7 +264,7 @@ bool CLIGame::ValidateSwappingIndicesInput(const std::string& input,
     }
 
     seen.at(index - 1) = true;
-    temp.push_back(index);
+    temp.push_back(index - 1);
   }
 
   indices = std::move(temp);

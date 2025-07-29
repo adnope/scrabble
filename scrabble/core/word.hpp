@@ -1,5 +1,6 @@
 #pragma once
 
+#include <iostream>
 #include <string>
 #include <utility>
 #include <vector>
@@ -36,6 +37,34 @@ class Word {
   int word_length() const { return static_cast<int>(content_.size()); }
 
   int points() const { return points_; }
+
+  void PrintContent() const {
+    for (const auto& [letter, mult] : content_) {
+      std::cout << "[" << letter << "-";
+      switch (mult) {
+        case Square::Multiplier::kNormal: {
+          std::cout << "1]";
+          break;
+        }
+        case Square::Multiplier::kDoubleLetter: {
+          std::cout << "DL]";
+          break;
+        }
+        case Square::Multiplier::kDoubleWord: {
+          std::cout << "DW]";
+          break;
+        }
+        case Square::Multiplier::kTripleLetter: {
+          std::cout << "TL]";
+          break;
+        }
+        case Square::Multiplier::kTripleWord: {
+          std::cout << "TW]";
+          break;
+        }
+      }
+    }
+  }
 
  private:
   std::vector<std::pair<char, Square::Multiplier>> content_;
