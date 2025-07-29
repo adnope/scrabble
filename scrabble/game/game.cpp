@@ -8,8 +8,8 @@
 #include "core/tile.hpp"
 
 namespace game {
-Game::Game(core::Dictionary::DictionaryType dict_type) {
-  dictionary_ = core::Dictionary(dict_type);
+void Game::LoadDictionary(core::Dictionary::DictionaryType type) {
+  lexicon_.PreloadDictionary(type);
 }
 
 void Game::InitPlayerDecks() {
@@ -122,6 +122,7 @@ core::Board::ResponseStatus Game::ExecutePlaceMove(
 void Game::PrintBoard() const { std::cout << board_.GetDisplayFormat(); }
 
 void Game::PrintDebugInfo() const {
+  std::cout << "[DEBUG]: GAME:\n";
   std::cout << "[Players]:\n";
   for (const auto& player : players_) {
     std::cout << "Name: " << player.name() << '\n';
@@ -132,7 +133,7 @@ void Game::PrintDebugInfo() const {
     std::cout << "Deck size: " << player.current_deck_size() << '\n';
   }
   bag_.PrintBagInfo();
-  std::cout << board_.GetDisplayFormat();
+  // std::cout << board_.GetDisplayFormat();
 
   std::cout << "current_player_index: " << current_player_index_ << '\n';
   std::cout << "consecutive_passes: " << consecutive_passes_ << '\n';

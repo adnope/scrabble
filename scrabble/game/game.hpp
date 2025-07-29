@@ -10,7 +10,6 @@
 #include "core/lexicon.hpp"
 #include "core/player.hpp"
 #include "core/word.hpp"
-#include "core/bot.hpp"
 
 namespace game {
 class Game {
@@ -31,8 +30,8 @@ class Game {
     std::string deck;
   };
 
-  explicit Game(core::Dictionary::DictionaryType dict_type);
-
+  void LoadDictionary(core::Dictionary::DictionaryType type);
+  
   void AddPlayer(const std::string& name) { players_.emplace_back(name, 0); }
 
   void InitPlayerDecks();
@@ -51,7 +50,6 @@ class Game {
   bool IsOver();
 
   core::Bag bag() const { return bag_; }
-  core::Dictionary dictionary() const { return dictionary_; }
   std::vector<core::Player> players() const { return players_; }
   int consecutive_passes() const { return consecutive_passes_; }
   std::vector<Move> move_history() const { return move_history_; }
@@ -69,7 +67,6 @@ class Game {
   std::vector<core::Player> players_;
   core::Bag bag_;
   core::Board board_;
-  core::Dictionary dictionary_;
   core::Lexicon lexicon_;
   std::vector<Move> move_history_;
 

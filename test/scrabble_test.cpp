@@ -16,7 +16,6 @@
 #include "doctest/doctest.h"
 #include "spdlog/spdlog.h"
 
-
 // TEST_CASE("Lexicon contains test") {
 //   core::Lexicon lexicon;
 //   lexicon.AddWord("cat");
@@ -163,7 +162,7 @@ TEST_CASE("Board test") {
   spdlog::info("Board test");
   core::Board board;
   core::Lexicon lexicon;
-  lexicon.PreLoadDictionary(core::Dictionary::CSW);
+  lexicon.PreloadDictionary(core::Dictionary::CSW);
 
   std::vector<core::Board::Placement> initial_state_move = {
       {{'V', 4}, 5, 7},  {{'I', 1}, 5, 8}, {{'S', 1}, 5, 9}, {{'I', 1}, 5, 10},
@@ -200,7 +199,7 @@ TEST_CASE("Board test") {
 //   core::Board board;
 //   core::Lexicon lexicon;
 //   lexicon.PreLoadDictionary(core::Dictionary::DictionaryType::CSW);
-  
+
 
 //   std::vector<core::Board::Placement> initial_state_move = {
 //       {{'V', 4}, 5, 7},  {{'I', 1}, 5, 8}, {{'S', 1}, 5, 9}, {{'I', 1}, 5, 10},
@@ -221,7 +220,7 @@ TEST_CASE("Board test") {
 //     auto best_move = core::Bot::FindBestMove(rack, board, lexicon);
 
 //     //Best move empty ??
-//     if(!best_move.empty()){std::cout<<"Best move should not be empty";} 
+//     if(!best_move.empty()){std::cout<<"Best move should not be empty";}
 
 //     auto response = board.ValidateMove(best_move, lexicon);
 //     CHECK_MESSAGE(response.status == core::Board::ResponseStatus::kSuccess,

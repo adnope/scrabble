@@ -3,7 +3,6 @@
 #include <string>
 #include <vector>
 
-#include "core/dictionary.hpp"
 #include "game/game.hpp"
 
 namespace cli {
@@ -11,14 +10,13 @@ class CLIGame {
  public:
   using PlayerAction = game::Game::MoveType;
 
-  CLIGame() : game(core::Dictionary::TWL) {}
+  CLIGame() {}
 
   void Start() {
     InitDictionary();
     InitPlayers();
     InitFirstPlayer();
     InitPlayerDecks();
-    // game.PrintDebugInfo();
 
     StartGameLoop();
     End();
