@@ -40,6 +40,8 @@ class Lexicon {
   void BuildLexiconTree(const core::Dictionary& dictionary);
 
   unsigned int size() const;
+  Node* getRoot() { return root.get(); }
+  const Node* getRoot() const { return root.get(); }
 
  private:
   std::unique_ptr<Node> root;

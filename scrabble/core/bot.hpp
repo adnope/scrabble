@@ -1,5 +1,6 @@
 #pragma once
 
+#include <map>
 #include <vector>
 
 #include "core/board.hpp"
@@ -8,36 +9,62 @@
 #include "lexicon.hpp"
 
 namespace core {
+
+struct MoveGenState {
+  std::map<char, int> freq;
+  std::string mot;
+  bool orientation;
+  bool plus;
+  std::vector<Tile> rack;
+
+  MoveGenState(std::map<char, int>&& f, std::string&& m, bool o, bool p,
+               std::vector<Tile> r)
+      : freq(std::move(f)),
+        mot(std::move(m)),
+        orientation(o),
+        plus(p),
+        rack(std::move(r)) {}
+};
+
 class Bot {
  public:
-  Bot() = default;
+  Bot() {};
   static constexpr int kMaxOffset = 7;
   static Board::Move FindBestMove(const std::vector<Tile>& rack, Board& board,
-                                  const Lexicon& lexicon);
+                                  Lexicon& lexicon);
+  void addMove(Board::Move& move);
+  std::vector<Board::Move> getMoves() const;
 
  private:
   static std::vector<Board::Move> GenerateAllMoves(
-      const std::vector<Tile>& rack, Board& board);
+      const std::vector<Tile>& rack, Board& board, Lexicon& lexicon);
   static bool IsAnchor(int row, int col, Board& board);
-  static void GenerateMoveFromAnchor(int row, int col,
+  static void GenerateMoveFromAnchor(int row, int col, bool horizontal,
                                      const std::vector<Tile>& rack,
-                                     bool horizontal,
-                                     std::vector<Board::Move>& moves,
-                                     Board& board);
-  static bool IsValidMove(const Board::Move& move, Board& board);
-
-  // Generate all subsets of tiles from the rack - tiles on hand
-  static std::vector<std::vector<Tile>> TilesSubsets(
-      const std::vector<Tile>& rack);
-  static void GenerateSubsets(const std::vector<Tile>& rack, size_t index,
-                              std::vector<Tile>& current,
-                              std::vector<std::vector<Tile>>& result);
-
-  // Generate all permutations of each subset of tiles
-  static std::vector<std::vector<Tile>> GeneratePermutations(
-      const std::vector<Tile>& tilesSubset, int length);
-
-  static Board::Move CreateMove(const std::vector<Tile>& tiles, int row,
-                                int col, bool horizontal, int offset);
+                                     Board& board, Lexicon& lexicon,
+                                     Board::Move& move,
+                                     std::vector<Board::Move>& moves);
+  bool IsValidMove(const Board::Move& move, Board& board) const;
+  static Board::Move CreateMove();
+  static bool VerifyCrossWords(int case_curr, char c, Board& board,
+                               Lexicon& lexicon, const Board::Move& move);
+  static void GenerateWords(Node* node, MoveGenState& state, int case_curr,
+                            Board& board, Lexicon& lexicon,
+                            Board::Move& currentMove, std::vector<Board::Move> moves);
+  std::vector<Board::Move> moves;
+  static void ProcessOccupiedCell(Node* node, MoveGenState& state,
+                                  int case_curr, Board& board,
+                                  Lexicon& lexicon,
+                                  Board::Move& currentMove,
+                                  std::vector<Board::Move>& moves);
+  static void ProcessEmptyCell(Node* node, MoveGenState& state,
+                               int case_curr, Board& board,
+                               Lexicon& lexicon, Board::Move& currentMove,
+                               std::vector<Board::Move>& moves);
+  static void GenerateNextMove(Node* node, MoveGenState& state,
+                               int next_case, Board& board,
+                               Lexicon& lexicon, Board::Move& currentMove,
+                               std::vector<Board::Move>& moves);
 };
+
 };  // namespace core

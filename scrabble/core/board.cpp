@@ -310,4 +310,21 @@ std::string Board::GetDisplayFormat() const {
   }
   return result;
 }
+
+Tile Board::GetTile(int row, int col) const {
+    if (row < 0 || row >= kHeight || col < 0 || col >= kWidth) {
+        throw std::out_of_range("Invalid board position");
+    }
+    return board_grid_.at(row).at(col).tile();
+}
+
+Tile Board::GetTile(int case_curr) const {
+    int row = case_curr / kWidth;
+    int col = case_curr % kWidth;
+    if (row < 0 || row >= kHeight || col < 0 || col >= kWidth) {
+        throw std::out_of_range("Invalid case_curr");
+    }
+   return board_grid_.at(row).at(col).tile();
+}
+
 }  // namespace core

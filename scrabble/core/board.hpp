@@ -62,13 +62,20 @@ class Board {
   }
   bool IsMoveOccupied(const Move& move) const;
 
+  Word GetWordFromPos(int row, int col, bool horizontal, const Move& move);
+
+  std::vector<Word> GetWordsFromMove(const Move& move, bool horizontal);
+
+  Tile GetTile(int row, int col) const;
+  Tile GetTile(int case_curr) const;
+
  private:
   BoardGrid board_grid_;
   bool is_first_move_;
 
-  Word GetWordFromPos(int row, int col, bool horizontal, const Move& move);
+  // Word GetWordFromPos(int row, int col, bool horizontal, const Move& move);
 
-  std::vector<Word> GetWordsFromMove(const Move& move, bool horizontal);
+  // std::vector<Word> GetWordsFromMove(const Move& move, bool horizontal);
 
   static int IsAligned(const Move& move);
 
