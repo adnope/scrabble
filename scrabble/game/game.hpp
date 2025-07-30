@@ -31,7 +31,7 @@ class Game {
   };
 
   void LoadDictionary(core::Dictionary::DictionaryType type);
-  
+
   void AddPlayer(const std::string& name) { players_.emplace_back(name, 0); }
 
   void InitPlayerDecks();

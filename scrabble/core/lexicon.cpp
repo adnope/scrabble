@@ -2,7 +2,7 @@
 
 #include <algorithm>
 #include <cctype>
-#include <core/lexicon.hpp>
+#include <chrono>
 #include <memory>
 #include <string>
 
@@ -10,7 +10,6 @@
 #include "spdlog/spdlog.h"
 
 namespace core {
-
 Node::Node() : is_word(false) {};
 
 Lexicon::Lexicon() : root(std::make_unique<Node>()), length(0) {}
@@ -120,5 +119,4 @@ unsigned int Lexicon::size() const {
   }
   return curr;
 }
-
 }  // namespace core
