@@ -1,0 +1,339 @@
+#include "bot.hpp"
+#include <algorithm>
+#include <string>
+
+namespace core {
+
+// Hàm hỗ trợ: Kiểm tra xem có thể di chuyển từ vị trí (row, col) theo hướng và chiều
+// Tham số:
+// - row, col: Tọa độ ô hiện tại
+// - horizontal: Hướng di chuyển (true: ngang, false: dọc)
+// - plus: Chiều di chuyển (true: tiến, false: lùi)
+// Trả về: True nếu di chuyển hợp lệ
+static bool moves_available(int row, int col, bool horizontal, bool plus) {
+    if (!Board::isValid(row, col)) return false;
+    if (horizontal) {
+        if (plus && col >= 14) return false; // Cột cuối
+        if (!plus && col <= 0) return false; // Cột đầu
+    } else {
+        if (plus && row >= 14) return false; // Hàng cuối
+        if (!plus && row <= 0) return false; // Hàng đầu
+    }
+    return true;
+}
+
+// Hàm hỗ trợ: Cập nhật vị trí (row, col) theo hướng và chiều
+// Tham số:
+// - horizontal: Hướng di chuyển (true: ngang, false: dọc)
+// - plus: Chiều di chuyển (true: tiến, false: lùi)
+// - row, col: Tọa độ được cập nhật
+static void deplacement(bool horizontal, bool plus, int& row, int& col) {
+    if (plus) {
+        if (horizontal) col++;
+        else row++;
+    } else {
+        if (horizontal) col--;
+        else row--;
+    }
+}
+
+// Hàm hỗ trợ: Đảo ngược chuỗi
+// Tham số:
+// - str: Chuỗi cần đảo ngược
+// Trả về: Chuỗi đã đảo ngược
+static std::string reverse_str(const std::string& str) {
+    return std::string(str.rbegin(), str.rend());
+}
+
+// Hàm hỗ trợ: Xóa một ký tự khỏi chuỗi
+// Tham số:
+// - c: Ký tự cần xóa
+// - str: Chuỗi cần chỉnh sửa
+static void remove(char c, std::string& str) {
+    auto it = std::find(str.begin(), str.end(), c);
+    if (it != str.end()) str.erase(it);
+}
+
+// Hàm hỗ trợ: Loại bỏ ký tự trùng lặp trong chuỗi
+// Tham số:
+// - str: Chuỗi cần chỉnh sửa
+static void remove_duplicate(std::string& str) {
+    std::string result;
+    std::sort(str.begin(), str.end());
+    for (char c : str) {
+        if (result.empty() || result.back() != c) result += c;
+    }
+    str = result;
+}
+
+// Hàm hỗ trợ: Điều chỉnh từ theo định dạng GADDAG
+// Tham số:
+// - row, col: Tọa độ bắt đầu, được cập nhật
+// - horizontal: Hướng đặt từ (true: ngang, false: dọc)
+// - mot: Từ cần điều chỉnh (chứa dấu '+')
+static void adapt_word(int& row, int& col, bool horizontal, std::string& mot) {
+    std::string word = "";
+    int r = row, c = col;
+    size_t i = 0;
+    word += mot[i++];
+    while (mot[i] != '+' && moves_available(r, c, horizontal, false)) {
+        word += mot[i++];
+        deplacement(horizontal, false, r, c);
+    }
+    word = reverse_str(word);
+    i++;
+    while (i < mot.size()) {
+        word += mot[i++];
+    }
+    row = r;
+    col = c;
+    mot = word;
+}
+
+// Hàm hỗ trợ: Kiểm tra từ chéo hợp lệ khi đặt một chữ cái
+// Tham số:
+// - c: Chữ cái được đặt
+// - board: Tham chiếu đến bảng
+// - lexicon: Tham chiếu đến từ điển
+// - move: Nước đi đang kiểm tra
+// Trả về: True nếu từ chéo hợp lệ
+static bool VerifyCrossWords(char c, Board& board, Lexicon& lexicon, const Board::Move& move) {
+    int row = move.row, col = move.col;
+    bool horizontal = !move.horizontal; // Hướng ngược lại để kiểm tra từ chéo
+    std::string word = std::string(1, c);
+    int r = row, c = col;
+    // Thu thập chữ cái trước
+    while (moves_available(r, c, horizontal, false)) {
+        deplacement(horizontal, false, r, c);
+        if (board.isEmpty(r, c)) break;
+        word = board.getTile(r, c).letter + word;
+    }
+    if (word.size() > 1) word += "+";
+    r = row, c = col;
+    // Thu thập chữ cái sau
+    while (moves_available(r, c, horizontal, true)) {
+        deplacement(horizontal, true, r, c);
+        if (board.isEmpty(r, c)) break;
+        word += board.getTile(r, c).letter;
+    }
+    return word.empty() || word == "+" || word.size() == 2 || lexicon.contains(word);
+}
+
+// Hàm hỗ trợ: Tính điểm cho một nước đi
+// Tham số:
+// - move: Nước đi cần tính điểm
+// - board: Tham chiếu đến bảng
+// Trả về: Điểm số của nước đi
+static int CalculateMoveScore(const Board::Move& move, Board& board) {
+    int score = 0;
+    int word_factor = 1;
+    for (size_t i = 0; i < move.tiles.size(); i++) {
+        int r = move.horizontal ? move.row : move.row + i;
+        int c = move.horizontal ? move.col + i : move.col;
+        int tile_score = move.tiles[i].is_blank ? 0 : move.tiles[i].points;
+        if (board.isEmpty(r, c)) {
+            tile_score *= board.getSpotBonus(r, c, move.tiles[i]); // Thưởng chữ
+            word_factor *= board.getSpotBonus(r, c, move.tiles[i], true); // Thưởng từ
+        }
+        score += tile_score;
+    }
+    score *= word_factor;
+    if (move.tiles.size() == 7) score += 50; // Thưởng bingo
+    return score;
+}
+
+// Hàm hỗ trợ: Lấy từ từ vị trí (row, col) trên bảng theo hướng
+// Tham số:
+// - row, col: Tọa độ bắt đầu
+// - horizontal: Hướng (true: ngang, false: dọc)
+// - board: Tham chiếu đến bảng
+// Trả về: Vector các Tile tạo thành từ
+static std::vector<Tile> GetWordFromPos(int row, int col, bool horizontal, Board& board) {
+    std::vector<Tile> tiles;
+    int r = row, c = col;
+    while (moves_available(r, c, horizontal, true) && !board.isEmpty(r, c)) {
+        tiles.push_back(board.getTile(r, c));
+        deplacement(horizontal, true, r, c);
+    }
+    return tiles;
+}
+
+// Xử lý ô đã có chữ cái, nối thêm vào từ hiện có (ví dụ: nối vào "sign" để tạo "assignment")
+// Tham số:
+// - node: Nút hiện tại trong GADDAG
+// - state: Trạng thái sinh từ (freq, mot, orientation, plus, rack)
+// - board: Tham chiếu đến bảng
+// - lexicon: Tham chiếu đến từ điển
+// - moves: Vector để lưu các nước đi hợp lệ
+// - row, col: Tọa độ ô hiện tại
+void Bot::ProcessOccupiedCell(Node* node, MoveGenState& state, Board& board, Lexicon& lexicon,
+                             std::vector<Board::Move>& moves, int row, int col) {
+    // Lấy chữ cái tại ô hiện tại
+    char c = board.getTile(row, col).letter;
+    if (node->suffixes.count(c) == 0) return; // Không có đường đi trong GADDAG
+
+    // Cập nhật từ và trạng thái
+    state.mot += c;
+    Node* next_node = node->suffixes[c];
+
+    // Kiểm tra từ hợp lệ (phải dùng ít nhất 1 Tile từ rack)
+    if (next_node->isWord && state.rack.size() < 7) {
+        Board::Move move;
+        move.row = row;
+        move.col = col;
+        move.horizontal = state.orientation;
+        move.word = state.mot;
+        move.tiles = state.rack;
+        move.score = CalculateMoveScore(move, board);
+        // Kiểm tra tính hợp lệ (từ chéo và kết nối)
+        if (VerifyCrossWords(c, board, lexicon, move)) {
+            moves.push_back(move);
+        }
+    }
+
+    // Tiếp tục di chuyển tới ô tiếp theo
+    int next_row = row + (state.orientation ? 0 : 1);
+    int next_col = col + (state.orientation ? 1 : 0);
+    if (moves_available(next_row, next_col, state.orientation, true)) {
+        GenerateWords(next_node, state, board, lexicon, moves, next_row, next_col);
+    }
+
+    // Thử dấu '+' để chuyển sang hậu tố (ví dụ: từ ASS+IGNMENT)
+    if (node->suffixes.count('+') > 0) {
+        MoveGenState new_state = state;
+        new_state.mot += "+";
+        new_state.plus = true;
+        int start_row = row, start_col = col;
+        adapt_word(start_row, start_col, state.orientation, new_state.mot);
+        GenerateWords(node->suffixes['+'], new_state, board, lexicon, moves, start_row, start_col);
+    }
+}
+
+// Xử lý ô trống, điền tự do từ rack tại điểm neo
+// Tham số:
+// - node: Nút hiện tại trong GADDAG
+// - state: Trạng thái sinh từ
+// - board: Tham chiếu đến bảng
+// - lexicon: Tham chiếu đến từ điển
+// - moves: Vector để lưu các nước đi hợp lệ
+// - row, col: Tọa độ ô hiện tại
+void Bot::ProcessEmptyCell(Node* node, MoveGenState& state, Board& board, Lexicon& lexicon,
+                          std::vector<Board::Move>& moves, int row, int col) {
+    // Lấy tilesData từ vị trí hiện tại (có thể rỗng nếu không có từ)
+    std::vector<Tile> tiles_data = GetWordFromPos(row, col, state.orientation, board);
+
+    // Gọi NormalTileCase và BlankTileCase để xử lý các trường hợp
+    NormalTileCase(node, tiles_data, state, lexicon, moves, row, col);
+    BlankTileCase(node, tiles_data, state, lexicon, moves, row, col);
+}
+
+// Xử lý trường hợp không có joker, sử dụng các Tile thật từ rack
+// Tham số:
+// - node: Nút hiện tại trong GADDAG
+// - tiles_data: Danh sách Tile hiện có trên bảng (ví dụ: S, I, G, N từ "sign")
+// - state: Trạng thái sinh từ
+// - lexicon: Tham chiếu đến từ điển
+// - moves: Vector để lưu các nước đi hợp lệ
+// - row, col: Tọa độ ô hiện tại
+void Bot::NormalTileCase(Node* node, const std::vector<Tile>& tiles_data, MoveGenState& state,
+                        Lexicon& lexicon, std::vector<Board::Move>& moves, int row, int col) {
+    // Lấy danh sách ký tự duy nhất từ rack
+    std::string unique_chars = "";
+    for (const auto& tile : state.rack) {
+        if (!tile.is_blank) unique_chars += tile.letter;
+    }
+    remove_duplicate(unique_chars);
+    if (!state.plus) unique_chars += "+"; // Thêm dấu '+' nếu chưa chuyển hướng
+
+    for (char c : unique_chars) {
+        if (node->suffixes.count(c) == 0) continue; // Không có đường đi trong GADDAG
+
+        MoveGenState new_state = state;
+        new_state.mot += c;
+        if (c != '+') {
+            // Cập nhật freq và rack
+            new_state.freq[c]--;
+            auto it = std::find_if(new_state.rack.begin(), new_state.rack.end(),
+                [c](const Tile& t) { return t.letter == c; });
+            if (it != new_state.rack.end()) new_state.rack.erase(it);
+        }
+
+        if (c == '+') {
+            // Chuyển sang hậu tố, điều chỉnh từ và vị trí
+            new_state.plus = true;
+            int start_row = row, start_col = col;
+            adapt_word(start_row, start_col, state.orientation, new_state.mot);
+            GenerateWords(node->suffixes['+'], new_state, board, lexicon, moves, start_row, start_col);
+        } else if (VerifyCrossWords(c, board, lexicon, {row, col, state.orientation, {}, new_state.mot})) {
+            // Kiểm tra từ hợp lệ
+            if (node->suffixes[c]->isWord && new_state.rack.size() < 7) {
+                Board::Move move;
+                move.row = row;
+                move.col = col;
+                move.horizontal = state.orientation;
+                move.word = new_state.mot;
+                move.tiles = state.rack;
+                move.score = CalculateMoveScore(move, board);
+                if (VerifyCrossWords(c, board, lexicon, move)) {
+                    moves.push_back(move);
+                }
+            }
+            // Tiếp tục di chuyển
+            int next_row = row + (state.orientation ? 0 : 1);
+            int next_col = col + (state.orientation ? 1 : 0);
+            if (moves_available(next_row, next_col, state.orientation, true)) {
+                GenerateWords(node->suffixes[c], new_state, board, lexicon, moves, next_row, next_col);
+            }
+        }
+    }
+}
+
+// Xử lý trường hợp có joker, thử thay thế bằng các chữ cái từ A-Z
+// Tham số:
+// - node: Nút hiện tại trong GADDAG
+// - tiles_data: Danh sách Tile hiện có trên bảng (ví dụ: S, I, G, N từ "sign")
+// - state: Trạng thái sinh từ
+// - lexicon: Tham chiếu đến từ điển
+// - moves: Vector để lưu các nước đi hợp lệ
+// - row, col: Tọa độ ô hiện tại
+void Bot::BlankTileCase(Node* node, const std::vector<Tile>& tiles_data, MoveGenState& state,
+                       Lexicon& lexicon, std::vector<Board::Move>& moves, int row, int col) {
+    if (state.freq['?'] == 0) return; // Không có joker
+
+    // Thử từng chữ cái từ A-Z cho joker
+    for (char c = 'A'; c <= 'Z'; c++) {
+        if (node->suffixes.count(c) == 0) continue;
+        if (VerifyCrossWords(c, board, lexicon, {row, col, state.orientation, {}, state.mot})) {
+            MoveGenState new_state = state;
+            new_state.mot += c;
+            new_state.freq['?']--;
+            // Xóa joker khỏi rack
+            auto it = std::find_if(new_state.rack.begin(), new_state.rack.end(),
+                [](const Tile& t) { return t.is_blank; });
+            if (it != new_state.rack.end()) new_state.rack.erase(it);
+
+            // Kiểm tra từ hợp lệ
+            if (node->suffixes[c]->isWord && new_state.rack.size() < 7) {
+                Board::Move move;
+                move.row = row;
+                move.col = col;
+                move.horizontal = state.orientation;
+                move.word = new_state.mot;
+                move.tiles = state.rack;
+                move.score = CalculateMoveScore(move, board);
+                if (VerifyCrossWords(c, board, lexicon, move)) {
+                    moves.push_back(move);
+                }
+            }
+
+            // Tiếp tục di chuyển
+            int next_row = row + (state.orientation ? 0 : 1);
+            int next_col = col + (state.orientation ? 1 : 0);
+            if (moves_available(next_row, next_col, state.orientation, true)) {
+                GenerateWords(node->suffixes[c], new_state, board, lexicon, moves, next_row, next_col);
+            }
+        }
+    }
+}
+
+} // namespace core

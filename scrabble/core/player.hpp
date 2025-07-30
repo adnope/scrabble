@@ -60,12 +60,12 @@ class Player {
   int score() const { return player_score_; }
   std::array<Tile, kMaxDeckSize> deck() { return deck_; }
   int current_deck_size() const;
+  void SwapTile(int index, Bag &bag);
 
  private:
   std::string player_name_;
   std::array<Tile, kMaxDeckSize> deck_;
   int player_score_;
 
-  void SwapTile(int index, Bag &bag);
 };
 }  // namespace core

@@ -1,97 +1,68 @@
 #pragma once
 
 #include <map>
+#include <utility>
 #include <vector>
-
+#include "bag.hpp"
 #include "core/board.hpp"
 #include "core/lexicon.hpp"
 #include "core/tile.hpp"
-#include "lexicon.hpp"
-
+#include "player.hpp"
 namespace core {
 
 struct MoveGenState {
-  std::map<char, int> freq;
-  std::string mot;
-  bool orientation;
-  bool plus;
-  std::vector<Tile> rack;
+  std::map<char, int> freq;  // Tần suất chữ cái
+  std::string mot;           // Từ đang xây dựng
+  bool orientation;          // Hướng: true (ngang), false (dọc)
+  bool plus;                 // Hướng di chuyển trong GADDAG
+  std::vector<Tile> rack;    // Các Tile trên tay
+  std::vector<int> tile_indices;
 
   MoveGenState(std::map<char, int>&& f, std::string&& m, bool o, bool p,
-               std::vector<Tile> r)
+               std::vector<Tile> r, std::vector<int> idx)
       : freq(std::move(f)),
         mot(std::move(m)),
         orientation(o),
         plus(p),
-        rack(std::move(r)) {}
+        rack(std::move(r)),
+        tile_indices(std::move(idx)) {}
 };
 
-class Bot {
- public:
-  Bot() {};
-  static constexpr int kMaxOffset = 7;
-  static Board::Move FindBestMove(const std::vector<Tile>& rack, Board& board,
-                                  Lexicon& lexicon);
-  void addMove(Board::Move& move);
-  std::vector<Board::Move> getMoves() const;
+class Bot : public Player {
+public:
+    explicit Bot(const std::string& player_name, int score = 0);
 
- private:
-  static std::vector<Board::Move> GenerateAllMoves(
-      const std::vector<Tile>& rack, Board& board, Lexicon& lexicon);
-  static bool IsAnchor(int row, int col, Board& board);
+    // Phương thức từ Player
+    void addMove(Player::Move& move, Board& board);
+    std::vector<Player::Move> getMoves() const;
+    Player::Move SwapTiles(Bag& bag);
+    Player::Move PassMove();
+    Player::Move FindBestMove(Board& board, Lexicon& lexicon, Bag &bag);
 
-  //Sinh từ từ điểm neo
-  // Cần hàm lấy giá tọa độ trong Board lấy từng tile cộng vào tile đang có
-  //Gọi ProcessOccupiedCell và ProcessEmptyCell trong các trường hợp tương ứng
-  static void GenerateMoveFromAnchor(bool horizontal,
-                                     const std::vector<Tile>& rack,
-                                     Board& board, Lexicon& lexicon, 
-                                     std::vector<Board::Move>& moves);
-  bool IsValidMove(const Board::Move& move, Board& board) const;
-  static bool VerifyCrossWords(char c, Board& board,
-                               Lexicon& lexicon, const Board::Move& move);
-  static void GenerateWords(Node* node, MoveGenState& state,
-                            Board& board, Lexicon& lexicon,
-                            std::vector<Board::Move>& moves);
-  std::vector<Board::Move> moves;
-  //ProcessOccupiedCell
-  //ProcessEmptyCell
-  //Gọi cả 2 hàm xử lý NormalTileCase (không blank tile trên tay), BlankTileCase(có 1-2 blank tile trên tay)
-
-
-  //1 dãy có nghĩa, nối thêm vào dãy này
-  // sử dụng GetWordFromPos lấy từ -> truyền cho tileData trước khi gọi các hàm con
-  static void ProcessOccupiedCell(Node* node, MoveGenState& state,
-                                  Board& board, Lexicon& lexicon,
-                                  std::vector<Board::Move>& moves);
-
-  //Điền tự do, có điểm neo
-  static void ProcessEmptyCell(Node* node, MoveGenState& state,
-                               Board& board, Lexicon& lexicon,
-                               std::vector<Board::Move>& moves);
-
-  // Sinh từ từ tilesData(từ có nghĩa sẵn) + state.rack =  tile trên tay
-  // vd data = sign; rack =  a m e n t -> asignment 
-  // tuong tu rack = a ? e n t
-  // tileData rỗng -> ProcessEmptyCell gọi tới 
-  // tileData có du lieu -> ProcessOccupiedCell goi toi
-
-  // No blank tile
-  static void NormalTileCase(Node* node, const std::vector<Tile>& tilesData,
-                             MoveGenState& state, Lexicon& lexicon,
-                             std::vector<Board::Move>& moves);
-
-
-  // With blank tile 
-  // đẩy các tile '?' xuống cuối cùng , sử dụng NormalTileCase() cho các chữ thật ->sau đó truy vấn node cho các '?'
-  // -:> giảm truy vấn tree
-  static void BlankTileCase(Node* node, const std::vector<Tile>& tilesData,
-                            MoveGenState& state, Lexicon& lexicon,
-                            std::vector<Board::Move>& moves);
-
- // Swap -> cập nhật MoveGenstate
- // Điều kiện Swap -> không có bước đi bestMove = rỗng
- // Swap có lợi hơn pass -> bot spam swáp ;))
+    // Các phương thức hỗ trợ cho logic AI
+    std::vector<Player::Move> GenerateAllMoves(Board& board, Lexicon& lexicon);
+    static bool IsAnchor(int row, int col, Board& board);
+    void GenerateMoveFromAnchor(bool horizontal, Board& board, Lexicon& lexicon,
+                               std::vector<Player::Move>& moves);
+    bool IsValidMove(const Player::Move& move, Board& board);
+    void GenerateWords(Node* node, MoveGenState& state, Board& board, Lexicon& lexicon,
+                       std::vector<Player::Move>& moves, int row, int col);
+    void ProcessOccupiedCell(Node* node, MoveGenState& state, Board& board, Lexicon& lexicon,
+                            std::vector<Player::Move>& moves, int row, int col);
+    void ProcessEmptyCell(Node* node, MoveGenState& state, Board& board, Lexicon& lexicon,
+                         std::vector<Player::Move>& moves, int &row, int &col);
+    void NormalTileCase(Node* node, MoveGenState& state, Board &board,
+                        Lexicon& lexicon, std::vector<Player::Move>& moves, int &row, int &col);
+    void BlankTileCase(Node* node, MoveGenState& state, Board &board,
+                       Lexicon& lexicon, std::vector<Player::Move>& moves, int &row, int &col);
+    void AddValidMove(Node* node, MoveGenState& state, Board &board, Lexicon& lexicon,
+                      std::vector<Player::Move>& moves, int &row, int &col, int &tile_index);
+private:
+    std::vector<Player::Move> moves_; // Kế thừa từ Player
+    Lexicon* lexicon_; // Lưu trữ con trỏ tới lexicon để sử dụng trong IsValidMove
+    void BuildCrossWordSegment(Board& board, const Board::Move& move, int& r, int& c,
+                                 bool cross_horizontal, bool forward, std::string& word);
+    char FindMoveLetter(const Board::Move& move, int row, int col, bool& found) const;
 };
 
 };  // namespace core
