@@ -36,7 +36,7 @@ class Lexicon {
   void AddWord(const std::string& word);
   bool Contains(std::string word) const;
   bool ContainsPrefix(const std::string& prefix) const;
-  void PreLoadDictionary(core::Dictionary::DictionaryType type);
+  void PreloadDictionary(core::Dictionary::DictionaryType type);
   void BuildLexiconTree(const core::Dictionary& dictionary);
 
   unsigned int size() const;

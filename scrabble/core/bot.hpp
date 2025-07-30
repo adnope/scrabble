@@ -9,7 +9,6 @@
 #include "core/tile.hpp"
 #include "player.hpp"
 namespace core {
-
 struct MoveGenState {
   std::map<char, int> freq;  // Tần suất chữ cái
   std::string mot;           // Từ đang xây dựng
@@ -64,5 +63,4 @@ private:
                                  bool cross_horizontal, bool forward, std::string& word);
     char FindMoveLetter(const Board::Move& move, int row, int col, bool& found) const;
 };
-
 };  // namespace core

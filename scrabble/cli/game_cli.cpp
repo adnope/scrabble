@@ -88,8 +88,8 @@ void CLIGame::InitDictionary() {
 
   while (true) {
     std::cout << "Choose a dictionary for the game:\n";
-    std::cout << "[1] CSW\n";
-    std::cout << "[2] TWL\n";
+    std::cout << "[1] CSW (Collins Scrabble Words, more words)\n";
+    std::cout << "[2] TWL (Tournament Word List, lightweight)\n";
     std::cout << "Enter your choice (1 or 2): ";
 
     std::cin >> choice;
@@ -105,11 +105,11 @@ void CLIGame::InitDictionary() {
 
   if (choice == 1) {
     std::cout << "Dictionary: CSW\n\n";
-    game = game::Game(core::Dictionary::CSW);
+    game.LoadDictionary(core::Dictionary::CSW);
   }
   if (choice == 2) {
     std::cout << "Dictionary: TWL\n\n";
-    game = game::Game(core::Dictionary::TWL);
+    game.LoadDictionary(core::Dictionary::TWL);
   }
 }
 
@@ -280,7 +280,7 @@ std::vector<int> CLIGame::RequestSwappingIndices() {
 
     std::string line;
     std::getline(std::cin, line);
-    
+
     if (ValidateSwappingIndicesInput(line, indices)) {
       break;
     }
@@ -315,6 +315,7 @@ void CLIGame::StartGameLoop() {
       }
 
       if (valid_action) {
+        game.PrintDebugInfo();
         break;
       }
     }
