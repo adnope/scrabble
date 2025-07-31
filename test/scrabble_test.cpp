@@ -1,6 +1,4 @@
-#include "core/word.hpp"
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-
 #include <iostream>
 #include <string>
 
@@ -13,57 +11,31 @@
 #include "core/player.hpp"
 #include "core/square.hpp"
 #include "core/tile.hpp"
+#include "core/word.hpp"
 #include "doctest/doctest.h"
 #include "spdlog/spdlog.h"
 
-// TEST_CASE("Lexicon contains test") {
-//   core::Lexicon lexicon;
-//   lexicon.AddWord("cat");
-//   lexicon.AddWord("car");
-//   lexicon.AddWord("dog");
+TEST_CASE("Lexicon contains test") {
+  core::Lexicon lexicon;
+  lexicon.AddWord("cat");
+  lexicon.AddWord("car");
+  lexicon.AddWord("dog");
 
-//   SUBCASE("Lexicon size") { CHECK(lexicon.size() == 8); }
+  SUBCASE("Lexicon size") { CHECK(lexicon.size() == 8); }
 
-//   SUBCASE("Lexicon contains words") {
-//     CHECK(lexicon.Contains("cat") == true);
-//     CHECK(lexicon.Contains("car") == true);
-//     CHECK(lexicon.Contains("dog") == true);
-//   }
+  SUBCASE("Lexicon contains words") {
+    CHECK(lexicon.Contains("cat") == true);
+    CHECK(lexicon.Contains("car") == true);
+    CHECK(lexicon.Contains("dog") == true);
+  }
 
-//   SUBCASE("Lexicon contains prefixes") {
-//     CHECK(lexicon.ContainsPrefix("ca") == true);
-//     CHECK(lexicon.ContainsPrefix("do") == true);
-//     CHECK(lexicon.ContainsPrefix("fi") == false);
-//     CHECK(lexicon.ContainsPrefix("bi") == false);
-//   }
-// }
-
-// TEST_CASE("Lexicon preload test") {
-//   core::Lexicon lexicon;
-
-//   SUBCASE("Random word check with CSW dictionary") {
-//     lexicon.PreLoadDictionary(core::Dictionary::DictionaryType::CSW);
-//     CHECK(lexicon.Contains("aalii") == true);
-//     CHECK(lexicon.Contains("abactinally") == true);
-//     CHECK(lexicon.Contains("avitaminosis") == true);
-
-//     CHECK(lexicon.Contains("avifaunaszz") == false);
-//     CHECK(lexicon.Contains("axiomatizationsp") == false);
-//     CHECK(lexicon.Contains("penicillationsss") == false);
-//   }
-
-//   SUBCASE("Random word check with TWL dictionary") {
-//     lexicon.PreLoadDictionary(core::Dictionary::DictionaryType::TWL);
-//     CHECK(lexicon.Contains("aasvogel") == true);
-//     CHECK(lexicon.Contains("aasvogels") == true);
-//     CHECK(lexicon.Contains("trailheads") == true);
-//     CHECK(lexicon.Contains("traditionalists") == true);
-
-//     CHECK(lexicon.Contains("avifaunaszz") == false);
-//     CHECK(lexicon.Contains("axiomatizationsp") == false);
-//     CHECK(lexicon.Contains("penicillationsss") == false);
-//   }
-// }
+  SUBCASE("Lexicon contains prefixes") {
+    CHECK(lexicon.ContainsPrefix("ca") == true);
+    CHECK(lexicon.ContainsPrefix("do") == true);
+    CHECK(lexicon.ContainsPrefix("fi") == false);
+    CHECK(lexicon.ContainsPrefix("bi") == false);
+  }
+}
 
 // TEST_CASE("Player test") {
 //   using core::Bag;
@@ -119,7 +91,7 @@
 void PrintBoardResponse(const core::Board::MoveValidationResponse& response) {
   std::cout << "[Move response]: \nWords: \n";
   for (const auto& word : response.words) {
-    const auto content =  word.content();
+    const auto content = word.content();
     for (const auto& [letter, mult] : content) {
       std::string multiplier;
       if (mult == core::Square::Multiplier::kDoubleLetter) {
@@ -176,7 +148,7 @@ TEST_CASE("Board test") {
   std::vector<core::Board::Placement> move = {{{'A', 1}, 6, 9},
                                               {{'T', 1}, 6, 10}};
   const auto board_response = board.ValidateMove(move, lexicon);
-  for (const core::Word &word : board_response.words) {
+  for (const core::Word& word : board_response.words) {
     word.PrintContent();
     std::cout << "-" << word.points() << "points" << " ";
   }
@@ -185,7 +157,7 @@ TEST_CASE("Board test") {
 
   std::vector<core::Board::Placement> move2 = {{{'P', 3}, 4, 10}};
   const auto board_response2 = board.ValidateMove(move2, lexicon);
-  for (const core::Word &word : board_response2.words) {
+  for (const core::Word& word : board_response2.words) {
     word.PrintContent();
     std::cout << "-" << word.points() << "points" << " ";
   }
@@ -200,16 +172,17 @@ TEST_CASE("Board test") {
 //   core::Lexicon lexicon;
 //   lexicon.PreLoadDictionary(core::Dictionary::DictionaryType::CSW);
 
-
 //   std::vector<core::Board::Placement> initial_state_move = {
-//       {{'V', 4}, 5, 7},  {{'I', 1}, 5, 8}, {{'S', 1}, 5, 9}, {{'I', 1}, 5, 10},
-//       {{'T', 1}, 5, 11}, {{'T', 1}, 7, 4}, {{'A', 1}, 7, 5}, {{'N', 1}, 7, 6},
-//       {{'N', 1}, 7, 7},  {{'E', 1}, 7, 8}, {{'D', 2}, 7, 9}, {{'P', 3}, 2, 8},
+//       {{'V', 4}, 5, 7},  {{'I', 1}, 5, 8}, {{'S', 1}, 5, 9}, {{'I', 1}, 5,
+//       10},
+//       {{'T', 1}, 5, 11}, {{'T', 1}, 7, 4}, {{'A', 1}, 7, 5}, {{'N', 1}, 7,
+//       6},
+//       {{'N', 1}, 7, 7},  {{'E', 1}, 7, 8}, {{'D', 2}, 7, 9}, {{'P', 3}, 2,
+//       8},
 //       {{'R', 1}, 3, 8},  {{'A', 1}, 4, 8}, {{'S', 1}, 6, 8}};
 //   for (const auto& placement : initial_state_move) {
 //     board.PlaceTile(placement.tile, placement.row, placement.col);
 //   }
-
 
 //   core::Bot bot;
 //   SUBCASE("No blank tile: A, T, E, S, P, R, O") {
@@ -311,7 +284,8 @@ TEST_CASE("Board test") {
 //     }
 //     CHECK_MESSAGE(found_OPERATE, "Best move should form word 'OPERATE'");
 
-//     // Kiểm tra điểm số: OPERATE (O=0 from ?, P=3*3=9, E=1, R=1, A=1, T=1, E=1)
+//     // Kiểm tra điểm số: OPERATE (O=0 from ?, P=3*3=9, E=1, R=1, A=1, T=1,
+//     E=1)
 //     // = 14
 //     CHECK_MESSAGE(response.move_points == 14,
 //                   "Best move should score 14 points");
@@ -388,7 +362,8 @@ TEST_CASE("Board test") {
 //     CHECK_MESSAGE(response.move_points == 13,
 //                   "Best move should score 13 points");
 
-//     // Kiểm tra vị trí: ?(4,10) as O, P(4,11), E(4,12), ?(4,13) as R, A(4,14),
+//     // Kiểm tra vị trí: ?(4,10) as O, P(4,11), E(4,12), ?(4,13) as R,
+//     A(4,14),
 //     // T(4,15), E(4,16)
 //     bool found_positions[7] = {false};
 //     bool found_blank_1 = false;
