@@ -7,9 +7,9 @@
 #include "SDL_error.h"
 #include "SDL_image.h"
 #include "SDL_ttf.h"
-#include "create_new_game.hpp"
-#include "gui/settings.hpp"
+#include "select_num_players.hpp"
 #include "main_menu.hpp"
+#include "settings.hpp"
 
 namespace gui {
 GUI::GUI() { current_state_ = std::make_unique<MainMenuState>(this); }
@@ -47,20 +47,30 @@ bool GUI::Init() {
 
   window_ = SDL_CreateWindow(
       "Scrabble", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, window_width_,
-      window_height_, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
+      window_height_,
+      SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
   if (window_ == nullptr) {
     std::cerr << "Window could not be created! SDL_Error: " << SDL_GetError()
               << '\n';
     return false;
   }
   SDL_SetWindowMinimumSize(window_, 1280, 720);
-  SDL_SetWindowMaximumSize(window_, 2560, 1440);
+  SDL_SetWindowMaximumSize(window_, 1920, 1080);
 
   renderer_ = SDL_CreateRenderer(window_, -1, SDL_RENDERER_ACCELERATED);
   if (renderer_ == nullptr) {
     std::cerr << "Renderer could not be created! SDL_Error: " << SDL_GetError()
               << '\n';
     return false;
+  }
+
+  aptos32_ = TTF_OpenFont("assets/fonts/Aptos.ttf", 32);
+  if (aptos32_ == nullptr) {
+    SDL_Log("Failed to load font: %s", TTF_GetError());
+  }
+  jersey32_ = TTF_OpenFont("assets/fonts/Jersey.ttf", 32);
+  if (jersey32_ == nullptr) {
+    SDL_Log("Failed to load font: %s", TTF_GetError());
   }
 
   return true;
@@ -76,11 +86,11 @@ void GUI::ChangeState(GUI::GameStateType state_type) {
     case GameStateType::MainMenu:
       current_state_ = std::make_unique<MainMenuState>(this);
       break;
-    case GameStateType::CreateNewGame:
-      current_state_ = std::make_unique<CreateNewGameState>(this);
+    case GameStateType::SelectNumPlayers:
+      current_state_ = std::make_unique<SelectNumPlayersState>(this);
       break;
     case GameStateType::Settings:
-      current_state_ = std::make_unique<Settings>(this);
+      current_state_ = std::make_unique<SettingsState>(this);
       break;
     case GameStateType::EndGame:
       break;
@@ -96,10 +106,10 @@ void GUI::Start() {
   }
 
   SDL_Event e;
-  while (!quit) {
+  while (!quit_) {
     while (SDL_PollEvent(&e) != 0) {
       if (e.type == SDL_QUIT) {
-        quit = true;
+        quit_ = true;
       } else if (e.type == SDL_WINDOWEVENT) {
         if (e.window.event == SDL_WINDOWEVENT_RESIZED) {
           window_width_ = e.window.data1;
@@ -114,8 +124,9 @@ void GUI::Start() {
 
     current_state_->Render(renderer_);
     SDL_RenderPresent(renderer_);
-
-    SDL_Delay(8);
+    if (!vsync_) {
+      SDL_Delay(8);
+    }
   }
 }
 }  // namespace gui

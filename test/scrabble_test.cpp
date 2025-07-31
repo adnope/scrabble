@@ -130,6 +130,7 @@ void PrintBoardResponse(const core::Board::MoveValidationResponse& response) {
   }
 }
 
+
 TEST_CASE("Board test") {
   spdlog::info("Board test");
   core::Board board;

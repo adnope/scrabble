@@ -4,7 +4,7 @@
 
 #include "SDL_image.h"
 #include "SDL_mouse.h"
-#include "gui/gui.hpp"
+#include "gui.hpp"
 
 namespace gui {
 void MainMenuState::HandleButtonEvent(SDL_Event& event) {
@@ -28,12 +28,15 @@ void MainMenuState::HandleButtonEvent(SDL_Event& event) {
         event.type == SDL_MOUSEBUTTONDOWN &&
         event.button.button == SDL_BUTTON_LEFT) {
       if (is_hovering_newgame) {
-        gui_->ChangeState(GUI::GameStateType::CreateNewGame);
+        SDL_SetCursor(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW));
+        gui_->ChangeState(GUI::GameStateType::SelectNumPlayers);
       }
       if (is_hovering_settings) {
+        SDL_SetCursor(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW));
         gui_->ChangeState(GUI::GameStateType::Settings);
       }
       if (is_hovering_quit) {
+        SDL_SetCursor(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW));
         gui_->Quit();
       }
     }
@@ -55,7 +58,7 @@ void MainMenuState::Render(SDL_Renderer* renderer) {
   RenderImage(renderer, "assets/textures/mainmenu_background.png",
               {0, 0, gui_->window_width(), gui_->window_height()});
 
-  newgame_button_.w = static_cast<int>(w_width / 10);
+  newgame_button_.w = static_cast<int>(w_width / 6.4);
   newgame_button_.h = static_cast<int>(w_height / 10);
   settings_button_.w = newgame_button_.w;
   settings_button_.h = newgame_button_.h;
@@ -71,12 +74,10 @@ void MainMenuState::Render(SDL_Renderer* renderer) {
   settings_button_.y = newgame_button_.y + newgame_button_.h + gap;
   quit_button_.y = settings_button_.y + settings_button_.h + gap;
 
-  RenderImage(renderer, "assets/textures/newgame_button.png", newgame_button_);
-  RenderImage(renderer, "assets/textures/settings_button.png",
+  RenderImage(renderer, "assets/textures/button_newgame.png", newgame_button_);
+  RenderImage(renderer, "assets/textures/button_settings.png",
               settings_button_);
-  RenderImage(renderer, "assets/textures/quit_button.png", quit_button_);
-
-  SDL_RenderPresent(renderer);
+  RenderImage(renderer, "assets/textures/button_quit.png", quit_button_);
 }
 
 void MainMenuState::RenderImage(SDL_Renderer* renderer,

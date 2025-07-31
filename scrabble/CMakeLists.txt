@@ -16,4 +16,4 @@ target_include_directories(scrabble PRIVATE
   ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-target_compile_definitions(gui PRIVATE SDL_MAIN_HANDLED)
+target_compile_definitions(scrabble PRIVATE SDL_MAIN_HANDLED)
