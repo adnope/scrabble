@@ -12,7 +12,6 @@ class SettingsState : public IGameState {
  public:
   struct Option {
     std::string label;
-    SDL_Rect label_area;
     SDL_Rect rightarrow_area;
     SDL_Rect leftarrow_area;
     SDL_Rect option_area;
@@ -25,9 +24,9 @@ class SettingsState : public IGameState {
   };
 
   explicit SettingsState(GUI* gui) : gui_(gui) {
-    AddOption("Dictionary", {"CSW", "TWL"});
-    AddOption("Resolution", {"1280x720", "1920x1080"});
-    AddOption("VSync", {"On", "Off"});
+    AddOption("Dictionary",{"CSW", "TWL"});
+    AddOption("Resolution",{"1280x720", "1920x1080"});
+    AddOption("VSync",{"On", "Off"});
   }
 
   void HandleEvent(SDL_Event& event) override;
@@ -39,8 +38,10 @@ class SettingsState : public IGameState {
  private:
   GUI* gui_;
   std::vector<Option> option_list_;
-  SDL_Rect settings_box_{};
-  SDL_Rect back_button_{};
+  SDL_Rect savesetting_{};
+  SDL_Rect home_button_{};
+  SDL_Rect setting_{};
+  SDL_Rect setting_box_{};
 
   static void RenderImage(SDL_Renderer* renderer, const std::string& image_path,
                           SDL_Rect area);
@@ -49,8 +50,7 @@ class SettingsState : public IGameState {
 
   void RenderOption(SDL_Renderer* renderer, Option& option);
 
-  void AddOption(const std::string& label,
-                 const std::vector<std::string>& options);
+  void AddOption(const std::string& label, const std::vector<std::string>& options);
 
   void UpdateOptionPosition(int index);
 };

@@ -54,8 +54,9 @@ bool GUI::Init() {
               << '\n';
     return false;
   }
-  SDL_SetWindowMinimumSize(window_, 1280, 720);
-  SDL_SetWindowMaximumSize(window_, 1920, 1080);
+  SetSize(GetScreenWidth(), GetScreenHeight());
+  SDL_SetWindowMinimumSize(window_, kInitialWindowWidth, kInitialWindowHeight);
+  SDL_SetWindowMaximumSize(window_, window_width_, window_height_);
 
   renderer_ = SDL_CreateRenderer(window_, -1, SDL_RENDERER_ACCELERATED);
   if (renderer_ == nullptr) {
@@ -104,7 +105,6 @@ void GUI::Start() {
               << IMG_GetError() << '\n'
               << TTF_GetError() << '\n';
   }
-
   SDL_Event e;
   while (!quit_) {
     while (SDL_PollEvent(&e) != 0) {
@@ -116,7 +116,9 @@ void GUI::Start() {
           window_height_ = e.window.data2;
         }
       }
-
+      
+      SDL_SetRenderDrawColor(renderer_, 235, 252, 255, 255);
+      SDL_RenderClear(renderer_);
       current_state_->HandleEvent(e);
     }
 

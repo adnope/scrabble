@@ -194,21 +194,19 @@ void SettingsState::UpdateOptionPosition(int index) {
     option.rightarrow_area.x = (w_width / 2) + (option.option_area.w / 2)+400 ;
     option.leftarrow_area.x = (w_width / 2) - (option.option_area.w / 2)+100 ;
     
-    option.rightarrow_area.y = (w_height * (0.3 + index * 0.1)) - 
+    option.rightarrow_area.y = (w_height * (0.3 + index * 0.18)) - 
                               (option.rightarrow_area.h / 2);
 
     option.leftarrow_area.y = option.rightarrow_area.y;
 
-    option.option_area.x = option.rightarrow_area.x - option.option_area.w - ;
-    
-    option.option_area.y = (w_height * (0.3 + index * 0.1)) - 
+    option.option_area.x = (option.rightarrow_area.x  + option.leftarrow_area.x)/2;
+
+    option.option_area.y = (w_height * (0.3 + index * 0.18)) - 
                           (option.option_area.h / 2);
   }
 void SettingsState::RenderOption(SDL_Renderer* renderer, Option& option) {
-  SDL_Color text_color = {0, 255, 0, 255}; // Green color for text
   TTF_Font* font = gui_->aptos32();
-
-
+  SDL_Color text_color = {0, 255, 0, 255}; // Green color for text
 
   // Render the current option
   SDL_Surface* option_surface = TTF_RenderText_Solid(font, option.current_option().c_str(), text_color);

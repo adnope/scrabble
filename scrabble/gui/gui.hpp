@@ -18,8 +18,22 @@ class GUI {
     EndGame
   };
 
-  static constexpr int kInitialWindowWidth = 1280;
-  static constexpr int kInitialWindowHeight = 720;
+  static int GetScreenWidth() {
+    SDL_DisplayMode dm;
+    if (SDL_GetCurrentDisplayMode(0, &dm) == 0) {
+      return dm.w;
+    }
+  }
+
+  static int GetScreenHeight() {
+    SDL_DisplayMode dm;
+    if (SDL_GetCurrentDisplayMode(0, &dm) == 0) {
+      return dm.h;
+    }
+  }
+
+  const int kInitialWindowWidth = 1200;
+  const int kInitialWindowHeight =780;
 
   GUI();
 
