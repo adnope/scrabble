@@ -7,8 +7,8 @@
 #include "SDL_error.h"
 #include "SDL_image.h"
 #include "SDL_ttf.h"
-#include "select_num_players.hpp"
 #include "main_menu.hpp"
+#include "select_num_players.hpp"
 #include "settings.hpp"
 
 namespace gui {
@@ -46,17 +46,17 @@ bool GUI::Init() {
   }
 
   window_ = SDL_CreateWindow(
-      "Scrabble", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, window_width_,
-      window_height_,
+      "Scrabble", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+      kInitialWindowWidth, kInitialWindowHeight,
       SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
   if (window_ == nullptr) {
     std::cerr << "Window could not be created! SDL_Error: " << SDL_GetError()
               << '\n';
     return false;
   }
-  SetSize(GetScreenWidth(), GetScreenHeight());
+
   SDL_SetWindowMinimumSize(window_, kInitialWindowWidth, kInitialWindowHeight);
-  SDL_SetWindowMaximumSize(window_, window_width_, window_height_);
+  SDL_SetWindowMaximumSize(window_, 2560, 1440);
 
   renderer_ = SDL_CreateRenderer(window_, -1, SDL_RENDERER_ACCELERATED);
   if (renderer_ == nullptr) {
@@ -116,7 +116,7 @@ void GUI::Start() {
           window_height_ = e.window.data2;
         }
       }
-      
+
       SDL_SetRenderDrawColor(renderer_, 235, 252, 255, 255);
       SDL_RenderClear(renderer_);
       current_state_->HandleEvent(e);

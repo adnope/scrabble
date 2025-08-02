@@ -23,6 +23,7 @@ class GUI {
     if (SDL_GetCurrentDisplayMode(0, &dm) == 0) {
       return dm.w;
     }
+    return 0;
   }
 
   static int GetScreenHeight() {
@@ -30,10 +31,11 @@ class GUI {
     if (SDL_GetCurrentDisplayMode(0, &dm) == 0) {
       return dm.h;
     }
+    return 0;
   }
 
-  const int kInitialWindowWidth = 1200;
-  const int kInitialWindowHeight =780;
+  static constexpr int kInitialWindowWidth = 1280;
+  static constexpr int kInitialWindowHeight = 780;
 
   GUI();
 

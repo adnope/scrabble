@@ -56,7 +56,7 @@ void SettingsState::HandleEvent(SDL_Event& event) {
     mouse_pos.x = event.motion.x;
     mouse_pos.y = event.motion.y;
 
-    bool is_hovering_back = SDL_PointInRect(&mouse_pos, &home_button_);
+    bool is_hovering_back = SDL_PointInRect(&mouse_pos, &back_button_);
 
     if (is_hovering_back) {
       SDL_SetCursor(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_HAND));
@@ -96,67 +96,26 @@ void SettingsState::RenderImage(SDL_Renderer* renderer,
 }
 
 void SettingsState::Render(SDL_Renderer* renderer) {
+  SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
   SDL_RenderClear(renderer);
+
+  RenderImage(renderer, "assets/textures/settings_background.png",
+              {0, 0, gui_->window_width(), gui_->window_height()});
 
   const double w_width = static_cast<double>(gui_->window_width());
   const double w_height = static_cast<double>(gui_->window_height());
-  // load setting letter
-  SDL_Surface* setting_surface =
-IMG_Load("assets/textures/Setting.png");
-  if (setting_surface) {
-    setting_.w = setting_surface->w;
-    setting_.h = setting_surface->h;
-    SDL_FreeSurface(setting_surface);
-  } else {
-    setting_.w = w_width / 6.4;
-    setting_.h = w_height / 10;
-  }
-  setting_.x = w_width/ 2 - (setting_.w / 2);
-  setting_.y = 0;
-  RenderImage(renderer, "assets/textures/Setting.png", setting_);
 
-  // load settings box (edit.png)
-  SDL_Surface* settings_box_surface = IMG_Load("assets/textures/edit.png");
-  if (settings_box_surface) {
-    setting_box_.w = settings_box_surface->w;
-    setting_box_.h = settings_box_surface->h;
-    SDL_FreeSurface(settings_box_surface);
-  } else {
-    setting_box_.w = std::max(400.0, std::min(w_width / 1.6, w_width - 40));
-    setting_box_.h = std::max(300.0, std::min(w_height / 1.6, w_height - 40));
-  }
-  setting_box_.x = (w_width / 2) - (setting_box_.w / 2);
-  setting_box_.y = w_height * 0.5 - setting_box_.h / 2;
-  RenderImage(renderer, "assets/textures/edit.png", setting_box_);
-  // Load the settings box image to get its actual size, similar to home button
-  SDL_Surface* settings_img_surface = IMG_Load("assets/textures/savesetting.png");
-  if (settings_img_surface) {
-    savesetting_.w = settings_img_surface->w;
-    savesetting_.h = settings_img_surface->h;
-    SDL_FreeSurface(settings_img_surface);
-  } else {
-    // Fallback to proportional sizing if image fails to load
-    savesetting_.w = std::max(400.0, std::min(w_width / 1.6, w_width - 40));
-    savesetting_.h = std::max(300.0, std::min(w_height / 1.6, w_height - 40));
-  }
-  savesetting_.x = (w_width / 2) - (savesetting_.w / 2);
-  savesetting_.y = w_height * 0.85;
-  RenderImage(renderer, "assets/textures/savesetting.png", savesetting_);
+  settings_box_.w = w_width / 1.6;
+  settings_box_.h = w_height / 1.6;
+  settings_box_.x = (w_width / 2) - (settings_box_.w / 2);
+  settings_box_.y = w_height / 4.5;
+  RenderImage(renderer, "assets/textures/settings_box.png", settings_box_);
 
-  // Load the back button image to get its actual size
-  SDL_Surface* back_img_surface = IMG_Load("assets/textures/home.png");
-  if (back_img_surface) {
-    home_button_.w = back_img_surface->w;
-    home_button_.h = back_img_surface->h;
-    SDL_FreeSurface(back_img_surface);
-  } else {
-    // Fallback to previous sizing if image fails to load
-    home_button_.w = w_width / 6.4;
-    home_button_.h = w_height / 10;
-  }
-  home_button_.x = 0;
-  home_button_.y = 0;
-  RenderImage(renderer, "assets/textures/home.png", home_button_);
+  back_button_.w = w_width / 6.4;
+  back_button_.h = w_height / 10;
+  back_button_.x = (w_width / 2) - (back_button_.w / 2);
+  back_button_.y = settings_box_.y + settings_box_.h + w_height / 24;
+  RenderImage(renderer, "assets/textures/button_back.png", back_button_);
 
   for (size_t i = 0; i < option_list_.size(); ++i) {
     UpdateOptionPosition(i);
@@ -164,7 +123,8 @@ IMG_Load("assets/textures/Setting.png");
   }
 }
 
-void SettingsState::AddOption(const std::string& label, const std::vector<std::string>& options) {
+void SettingsState::AddOption(const std::string& label,
+                              const std::vector<std::string>& options) {
   Option option;
   option.label = label;
   option.options = options;
@@ -177,46 +137,66 @@ void SettingsState::AddOption(const std::string& label, const std::vector<std::s
 }
 
 void SettingsState::UpdateOptionPosition(int index) {
-    Option& option = option_list_[index];
-    const double w_width = static_cast<double>(gui_->window_width());
-    const double w_height = static_cast<double>(gui_->window_height());
+  const int gap = settings_box_.h / 20;
+  const int option_height = settings_box_.h / 10;
 
-    // Set arrow sizes for best look (slightly larger and proportional)
-    option.rightarrow_area.w = w_width / 18;
-    option.rightarrow_area.h = w_height / 16;
-    option.leftarrow_area.w = w_width / 18;
-    option.leftarrow_area.h = w_height / 16;
+  option_list_[index].label_area.h = option_height;
+  option_list_[index].option_area.h = option_height;
+  option_list_[index].leftarrow_area.h = option_height;
+  option_list_[index].leftarrow_area.w = option_height;
+  option_list_[index].rightarrow_area.h = option_height;
+  option_list_[index].rightarrow_area.w = option_height;
 
-    // Set option area size for better appearance
-    option.option_area.w = 150;
-    option.option_area.h = 150;
-
-    option.rightarrow_area.x = (w_width / 2) + (option.option_area.w / 2)+400 ;
-    option.leftarrow_area.x = (w_width / 2) - (option.option_area.w / 2)+100 ;
-    
-    option.rightarrow_area.y = (w_height * (0.3 + index * 0.18)) - 
-                              (option.rightarrow_area.h / 2);
-
-    option.leftarrow_area.y = option.rightarrow_area.y;
-
-    option.option_area.x = (option.rightarrow_area.x  + option.leftarrow_area.x)/2;
-
-    option.option_area.y = (w_height * (0.3 + index * 0.18)) - 
-                          (option.option_area.h / 2);
-  }
-void SettingsState::RenderOption(SDL_Renderer* renderer, Option& option) {
-  TTF_Font* font = gui_->aptos32();
-  SDL_Color text_color = {0, 255, 0, 255}; // Green color for text
-
-  // Render the current option
-  SDL_Surface* option_surface = TTF_RenderText_Solid(font, option.current_option().c_str(), text_color);
-  SDL_Texture* option_texture = SDL_CreateTextureFromSurface(renderer, option_surface);
-  SDL_RenderCopy(renderer, option_texture, nullptr, &option.option_area);
-  SDL_FreeSurface(option_surface);
-  SDL_DestroyTexture(option_texture);
-
-  // Render arrows
-  RenderImage(renderer, "assets/textures/right-arrow.png", option.rightarrow_area);
-  RenderImage(renderer, "assets/textures/left-arrow.png", option.leftarrow_area);
+  option_list_[index].label_area.x = settings_box_.x + settings_box_.w / 15;
+  option_list_[index].option_area.x = option_list_[index].label_area.x;
+  option_list_[index].leftarrow_area.x = option_list_[index].label_area.x;
+  option_list_[index].rightarrow_area.x = option_list_[index].label_area.x;
+  option_list_[index].label_area.y =
+      settings_box_.y + gap + index * (option_height + gap);
+  option_list_[index].option_area.y = option_list_[index].label_area.y;
+  option_list_[index].leftarrow_area.y = option_list_[index].label_area.y;
+  option_list_[index].rightarrow_area.y = option_list_[index].label_area.y;
 }
-} // namespace gui
+
+void SettingsState::RenderOption(SDL_Renderer* renderer, Option& option) {
+  // Render the label
+  SDL_Surface* label_surface = TTF_RenderUTF8_Solid(
+      gui_->jersey32(), option.label.c_str(), {255, 255, 255, 255});
+  SDL_Texture* label_texture =
+      SDL_CreateTextureFromSurface(renderer, label_surface);
+  option.label_area.w =
+      label_surface->w *
+      static_cast<int>(static_cast<double>(option.label_area.h) /
+                       label_surface->h);
+  SDL_FreeSurface(label_surface);
+  SDL_RenderCopy(renderer, label_texture, nullptr, &option.label_area);
+  SDL_DestroyTexture(label_texture);
+
+  // Render the current choice
+  const int current_option_x =
+      settings_box_.x + static_cast<double>(settings_box_.w) * 0.7;
+  SDL_Surface* current_option_surface = TTF_RenderUTF8_Solid(
+      gui_->jersey32(), option.current_option().c_str(), {255, 255, 255, 255});
+  SDL_Texture* current_option_texture =
+      SDL_CreateTextureFromSurface(renderer, current_option_surface);
+  option.option_area.w =
+      current_option_surface->w *
+      static_cast<int>(static_cast<double>(option.option_area.h) /
+                       current_option_surface->h);
+  SDL_FreeSurface(current_option_surface);
+  option.option_area.x = current_option_x - option.option_area.w / 2;
+  SDL_RenderCopy(renderer, current_option_texture, nullptr,
+                 &option.option_area);
+  SDL_DestroyTexture(current_option_texture);
+
+  option.leftarrow_area.x = option.option_area.x -
+                            double(option.option_area.w) / 4 -
+                            option.leftarrow_area.w;
+  RenderImage(renderer, "assets/textures/left-arrow.png",
+              option.leftarrow_area);
+  option.rightarrow_area.x =
+      option.option_area.x + double(option.option_area.w) * 1.25;
+  RenderImage(renderer, "assets/textures/right-arrow.png",
+              option.rightarrow_area);
+}
+}  // namespace gui

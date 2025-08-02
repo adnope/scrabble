@@ -11,11 +11,13 @@ void SelectNumPlayersState::HandleEvent(SDL_Event& event) {
     mouse_pos.x = event.motion.x;
     mouse_pos.y = event.motion.y;
 
-    bool is_hovering_back = SDL_PointInRect(&mouse_pos, &back_button_);
-    bool is_hovering_two = SDL_PointInRect(&mouse_pos, &two_players_button_);
+    bool is_hovering_back = SDL_PointInRect(&mouse_pos, &back_button_) == 1;
+    bool is_hovering_two =
+        SDL_PointInRect(&mouse_pos, &two_players_button_) == 1;
     bool is_hovering_three =
-        SDL_PointInRect(&mouse_pos, &three_players_button_);
-    bool is_hovering_four = SDL_PointInRect(&mouse_pos, &four_players_button_);
+        SDL_PointInRect(&mouse_pos, &three_players_button_) == 1;
+    bool is_hovering_four =
+        SDL_PointInRect(&mouse_pos, &four_players_button_) == 1;
 
     if (is_hovering_back || is_hovering_two || is_hovering_three ||
         is_hovering_four) {
@@ -27,13 +29,10 @@ void SelectNumPlayersState::HandleEvent(SDL_Event& event) {
           gui_->ChangeState(GUI::GameStateType::MainMenu);
         }
         if (is_hovering_two) {
-          
         }
         if (is_hovering_three) {
-
         }
         if (is_hovering_four) {
-
         }
       }
     } else {
@@ -72,19 +71,14 @@ void SelectNumPlayersState::Render(SDL_Renderer* renderer) {
   const double w_width = static_cast<double>(gui_->window_width());
   const double w_height = static_cast<double>(gui_->window_height());
 
-  SDL_Surface* chooseplayer_surface = IMG_Load("assets/textures/chooseplayer.png");
-  int chooseplayer_width = 0, chooseplayer_height = 0;
-  if (chooseplayer_surface) {
-    chooseplayer_width = chooseplayer_surface->w;
-    chooseplayer_height = chooseplayer_surface->h;
-    SDL_FreeSurface(chooseplayer_surface);
-  } else {
-    SDL_Log("IMG_Load failed for chooseplayer.png: %s", IMG_GetError());
-  }
+  int logo_w = static_cast<int>(w_width / 1.5);
+  int logo_h = static_cast<int>(w_height / 6);
+  int logo_x = w_width / 2 - (static_cast<double>(logo_w) / 2);
+  int logo_y = static_cast<int>(w_height / 10);
   RenderImage(renderer, "assets/textures/chooseplayer.png",
-              {0, 0, chooseplayer_width, chooseplayer_height});
+              {logo_x, logo_y, logo_w, logo_h});
 
-  int button_size = static_cast<int>(w_height / 3);
+  int button_size = static_cast<int>(w_height / 4);
   int button_y = (w_height / 2) - (static_cast<double>(button_size) / 2);
   int gap = (w_width - 3 * button_size) / 4;
   two_players_button_ = {gap, button_y, button_size, button_size};
@@ -92,23 +86,15 @@ void SelectNumPlayersState::Render(SDL_Renderer* renderer) {
                            button_size};
   four_players_button_ = {(gap * 3) + (2 * button_size), button_y, button_size,
                           button_size};
+
+  back_button_.w = w_height / 12;
+  back_button_.h = w_height / 12;
+  back_button_.x = w_width / 50;
+  back_button_.y = w_width / 50;
+
   RenderImage(renderer, "assets/textures/2.png", two_players_button_);
   RenderImage(renderer, "assets/textures/3.png", three_players_button_);
   RenderImage(renderer, "assets/textures/4.png", four_players_button_);
-
-  // Load the back button image to get its actual size
-  SDL_Surface* back_surface = IMG_Load("assets/textures/home.png");
-  if (back_surface) {
-    back_button_.w = back_surface->w;
-    back_button_.h = back_surface->h;
-    SDL_FreeSurface(back_surface);
-  } else {
-    SDL_Log("IMG_Load failed for home.png: %s", IMG_GetError());
-    back_button_.w = static_cast<int>(w_width / 6.4);
-    back_button_.h = static_cast<int>(w_height / 10);
-  }
-  back_button_.x = 0;
-  back_button_.y = 0;
   RenderImage(renderer, "assets/textures/home.png", back_button_);
 }
 }  // namespace gui
