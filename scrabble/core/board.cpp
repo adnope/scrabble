@@ -276,38 +276,39 @@ Board::MoveValidationResponse Board::ValidateMove(const Move& move,
   return {words, move_points, ResponseStatus::kSuccess};
 }
 
-std::string Board::GetDisplayFormat() const {
-  std::string result;
-  for (const auto& row : board_grid_) {
-    for (const Square& square : row) {
+std::array<std::array<std::string, 15>, 15> Board::GetDisplayFormat() const {
+  std::array<std::array<std::string, 15>, 15> result;
+  for (int row = 0; row < 15; ++row) {
+    for (int col = 0; col < 15; ++col) {
+      auto square = board_grid_.at(row).at(col);
       if (square.IsOccupied()) {
-        result += std::string{square.tile_letter()} + "  ";
+        result.at(row).at(col) = square.tile_letter();
       } else {
         Square::Symbol symbol = square.symbol();
         switch (symbol) {
           case Square::Symbol::kNormal:
-            result += ".  ";
+            result.at(row).at(col) = ".";
             break;
           case Square::Symbol::kStart:
-            result += "*  ";
+            result.at(row).at(col) = "*";
             break;
           case Square::Symbol::kDoubleLetter:
-            result += "DL ";
+            result.at(row).at(col) = "DL";
             break;
           case Square::Symbol::kDoubleWord:
-            result += "DW ";
+            result.at(row).at(col) = "DW";
             break;
           case Square::Symbol::kTripleLetter:
-            result += "TL ";
+            result.at(row).at(col) = "TL";
             break;
           case Square::Symbol::kTripleWord:
-            result += "TW ";
+            result.at(row).at(col) = "TW";
             break;
         }
       }
     }
-    result += '\n';
   }
+
   return result;
 }
 

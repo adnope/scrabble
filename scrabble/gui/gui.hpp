@@ -2,37 +2,32 @@
 
 #include <cstdint>
 #include <memory>
+#include <vector>
 
+#include "SDL_mouse.h"
 #include "SDL_render.h"
 #include "SDL_ttf.h"
 #include "SDL_video.h"
-#include "game_state.hpp"
+#include "core/dictionary.hpp"
+#include "i_game_state.hpp"
+#include "resource_manager.hpp"
 
 namespace gui {
+bool InitSDL2();
+
 class GUI {
  public:
   enum class GameStateType : uint8_t {
     MainMenu,
-    SelectNumPlayers,
     Settings,
+    SelectNumPlayers,
+    InputNames,
+    Ingame,
     EndGame
   };
 
-  static int GetScreenWidth() {
-    SDL_DisplayMode dm;
-    if (SDL_GetCurrentDisplayMode(0, &dm) == 0) {
-      return dm.w;
-    }
-    return 0;
-  }
-
-  static int GetScreenHeight() {
-    SDL_DisplayMode dm;
-    if (SDL_GetCurrentDisplayMode(0, &dm) == 0) {
-      return dm.h;
-    }
-    return 0;
-  }
+  static void RenderText(SDL_Renderer* renderer, const std::string& text,
+                         TTF_Font* font, int x, int y, SDL_Color color);
 
   static constexpr int kInitialWindowWidth = 1280;
   static constexpr int kInitialWindowHeight = 780;
@@ -48,15 +43,24 @@ class GUI {
 
   void Start();
 
+  void RenderImage(SDL_Renderer* renderer, const std::string& image_path,
+                   SDL_Rect area);
+
   void ChangeState(GameStateType state_type);
+  void ChangeState(GameStateType state_type, int num_players);
+  void ChangeState(GameStateType state_type,
+                   core::Dictionary::DictionaryType dict_type,
+                   const std::vector<std::string>& player_names);
 
   void Quit() { quit_ = true; }
 
   int window_width() const { return window_width_; }
   int window_height() const { return window_height_; }
   bool vsync() const { return vsync_; }
-  TTF_Font* aptos32() const { return aptos32_; }
-  TTF_Font* jersey32() const { return jersey32_; }
+  TTF_Font* jersey32() const { return resources_.jersey32(); }
+  SDL_Cursor* cursor(SDL_SystemCursor cursor) {
+    return resources_.GetSystemCursor(cursor);
+  }
 
   void SetSize(const int width, const int height) {
     window_width_ = width, window_height_ = height;
@@ -73,13 +77,14 @@ class GUI {
   int window_height_ = kInitialWindowHeight;
   SDL_Window* window_{};
   SDL_Renderer* renderer_{};
-  TTF_Font* aptos32_{};
-  TTF_Font* jersey32_{};
-  bool quit_ = false;
-  bool vsync_ = false;
-
   std::unique_ptr<IGameState> current_state_;
   GameStateType current_state_type_ = GUI::GameStateType::MainMenu;
+
+  bool quit_ = false;
+  bool vsync_ = false;
+  core::Dictionary::DictionaryType dictionary_ = core::Dictionary::CSW;
+
+  ResourceManager resources_;
 
   bool Init();
 };

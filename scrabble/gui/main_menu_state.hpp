@@ -2,8 +2,8 @@
 
 #include "SDL_events.h"
 #include "SDL_rect.h"
-#include "game_state.hpp"
 #include "gui.hpp"
+#include "i_game_state.hpp"
 
 namespace gui {
 class MainMenuState : public IGameState {
@@ -22,10 +22,5 @@ class MainMenuState : public IGameState {
   SDL_Rect newgame_button_{};
   SDL_Rect settings_button_{};
   SDL_Rect quit_button_{};
-
-  static void RenderImage(SDL_Renderer* renderer, const std::string& image_path,
-                          SDL_Rect button);
-
-  void HandleButtonEvent(SDL_Event& event);
 };
 }  // namespace gui

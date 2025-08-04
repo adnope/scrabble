@@ -7,12 +7,79 @@
 #include "SDL_error.h"
 #include "SDL_image.h"
 #include "SDL_ttf.h"
-#include "main_menu.hpp"
-#include "select_num_players.hpp"
-#include "settings.hpp"
+#include "core/dictionary.hpp"
+#include "ingame_state.hpp"
+#include "input_names_state.hpp"
+#include "main_menu_state.hpp"
+#include "resource_manager.hpp"
+#include "select_num_players_state.hpp"
+#include "settings_state.hpp"
 
 namespace gui {
-GUI::GUI() { current_state_ = std::make_unique<MainMenuState>(this); }
+bool InitSDL2() {
+  if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+    std::cerr << "SDL could not initialize! SDL_Error: " << SDL_GetError()
+              << '\n';
+    return false;
+  }
+  if ((IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG) == 0) {
+    std::cerr << "SDL_image could not initialize! IMG_Error: " << IMG_GetError()
+              << '\n';
+    return false;
+  }
+  if (TTF_Init() == -1) {
+    std::cerr << "SDL_ttf could not initialize! TTF_Error: " << TTF_GetError()
+              << '\n';
+    return false;
+  }
+  return true;
+}
+
+void GUI::RenderImage(SDL_Renderer* renderer, const std::string& image_path,
+                      SDL_Rect area) {
+  SDL_Texture* texture = resources_.GetTexture(image_path);
+  SDL_RenderCopy(renderer, texture, nullptr, &area);
+}
+
+void GUI::RenderText(SDL_Renderer* renderer, const std::string& text,
+                     TTF_Font* font, int x, int y, SDL_Color color) {
+  SDL_Surface* surface = TTF_RenderUTF8_Blended(font, text.c_str(), color);
+  if (surface == nullptr) {
+    std::cerr << "Failed to render text surface: " << SDL_GetError() << '\n';
+    return;
+  }
+
+  SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+  if (texture == nullptr) {
+    std::cerr << "Failed to create texture from surface: " << SDL_GetError()
+              << '\n';
+    SDL_FreeSurface(surface);
+    return;
+  }
+
+  SDL_Rect dst = {x, y, surface->w, surface->h};
+  SDL_RenderCopy(renderer, texture, nullptr, &dst);
+
+  SDL_FreeSurface(surface);
+  SDL_DestroyTexture(texture);
+}
+
+GUI::GUI() {
+  if (!Init()) {
+    std::cerr << "Init SDL failed! Error: \n"
+              << SDL_GetError() << '\n'
+              << IMG_GetError() << '\n'
+              << TTF_GetError() << '\n';
+  }
+
+  resources_.SetRenderer(renderer_);
+
+  // current_state_ = std::make_unique<MainMenuState>(this);
+  current_state_type_ = GameStateType::Ingame;
+  std::vector<std::string> player_names = {"duy1", "duy2", "duy3"};
+  current_state_ =
+      std::make_unique<IngameState>(this, dictionary_, player_names);
+}
 
 GUI::~GUI() {
   if (renderer_ != nullptr) {
@@ -27,24 +94,6 @@ GUI::~GUI() {
 }
 
 bool GUI::Init() {
-  if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-    std::cerr << "SDL could not initialize! SDL_Error: " << SDL_GetError()
-              << '\n';
-    return false;
-  }
-
-  if ((IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG) == 0) {
-    std::cerr << "SDL_image could not initialize! IMG_Error: " << IMG_GetError()
-              << '\n';
-    return false;
-  }
-
-  if (TTF_Init() == -1) {
-    std::cerr << "SDL_ttf could not initialize! TTF_Error: " << TTF_GetError()
-              << '\n';
-    return false;
-  }
-
   window_ = SDL_CreateWindow(
       "Scrabble", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
       kInitialWindowWidth, kInitialWindowHeight,
@@ -65,15 +114,6 @@ bool GUI::Init() {
     return false;
   }
 
-  aptos32_ = TTF_OpenFont("assets/fonts/Aptos.ttf", 32);
-  if (aptos32_ == nullptr) {
-    SDL_Log("Failed to load font: %s", TTF_GetError());
-  }
-  jersey32_ = TTF_OpenFont("assets/fonts/Jersey.ttf", 32);
-  if (jersey32_ == nullptr) {
-    SDL_Log("Failed to load font: %s", TTF_GetError());
-  }
-
   return true;
 }
 
@@ -81,30 +121,44 @@ void GUI::ChangeState(GUI::GameStateType state_type) {
   if (state_type == current_state_type_) {
     return;
   }
-  current_state_type_ = state_type;
 
-  switch (state_type) {
-    case GameStateType::MainMenu:
-      current_state_ = std::make_unique<MainMenuState>(this);
-      break;
-    case GameStateType::SelectNumPlayers:
-      current_state_ = std::make_unique<SelectNumPlayersState>(this);
-      break;
-    case GameStateType::Settings:
-      current_state_ = std::make_unique<SettingsState>(this);
-      break;
-    case GameStateType::EndGame:
-      break;
+  current_state_type_ = state_type;
+  if (state_type == GameStateType::MainMenu) {
+    current_state_ = std::make_unique<MainMenuState>(this);
+  } else if (state_type == GameStateType::SelectNumPlayers) {
+    current_state_ = std::make_unique<SelectNumPlayersState>(this);
+  } else if (state_type == GameStateType::Settings) {
+    current_state_ = std::make_unique<SettingsState>(this);
+  } else if (state_type == GameStateType::EndGame) {
+  }
+}
+
+void GUI::ChangeState(GUI::GameStateType state_type, int num_players) {
+  if (state_type == current_state_type_) {
+    return;
+  }
+
+  current_state_type_ = state_type;
+  if (state_type == GameStateType::InputNames) {
+    current_state_ = std::make_unique<InputNamesState>(this, num_players);
+  }
+}
+
+void GUI::ChangeState(GameStateType state_type,
+                      core::Dictionary::DictionaryType dict_type,
+                      const std::vector<std::string>& player_names) {
+  if (state_type == current_state_type_) {
+    return;
+  }
+
+  current_state_type_ = state_type;
+  if (state_type == GameStateType::Ingame) {
+    current_state_ =
+        std::make_unique<IngameState>(this, dict_type, player_names);
   }
 }
 
 void GUI::Start() {
-  if (!Init()) {
-    std::cerr << "Init SDL failed! Error: \n"
-              << SDL_GetError() << '\n'
-              << IMG_GetError() << '\n'
-              << TTF_GetError() << '\n';
-  }
   SDL_Event e;
   while (!quit_) {
     while (SDL_PollEvent(&e) != 0) {
@@ -127,7 +181,7 @@ void GUI::Start() {
     current_state_->Render(renderer_);
     SDL_RenderPresent(renderer_);
     if (!vsync_) {
-      SDL_Delay(8);
+      SDL_Delay(2);
     }
   }
 }

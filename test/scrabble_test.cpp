@@ -164,7 +164,7 @@ TEST_CASE("Board test") {
   }
   std::cout << "\n";
   CHECK(board_response2.status == core::Board::ResponseStatus::kSuccess);
-  std::cout << board.GetDisplayFormat();
+  // std::cout << board.GetDisplayFormat();
 }
 
 // TEST_CASE("Bot player find best move") {

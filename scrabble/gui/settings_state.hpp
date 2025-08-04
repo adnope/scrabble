@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "SDL_rect.h"
-#include "game_state.hpp"
+#include "i_game_state.hpp"
 #include "gui.hpp"
 
 namespace gui {
@@ -41,9 +41,6 @@ class SettingsState : public IGameState {
   std::vector<Option> option_list_;
   SDL_Rect settings_box_{};
   SDL_Rect back_button_{};
-
-  static void RenderImage(SDL_Renderer* renderer, const std::string& image_path,
-                          SDL_Rect area);
 
   void HandleArrows(SDL_Event& event);
 

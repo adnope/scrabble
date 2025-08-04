@@ -1,7 +1,7 @@
 #pragma once
 
 #include "SDL_rect.h"
-#include "game_state.hpp"
+#include "i_game_state.hpp"
 #include "gui.hpp"
 
 namespace gui {
@@ -21,8 +21,5 @@ class SelectNumPlayersState : public IGameState {
   SDL_Rect three_players_button_{};
   SDL_Rect four_players_button_{};
   SDL_Rect back_button_{};
-
-  void RenderImage(SDL_Renderer* renderer, const std::string& image_path,
-                   SDL_Rect area);
 };
 }  // namespace gui

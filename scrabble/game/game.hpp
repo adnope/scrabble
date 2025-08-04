@@ -30,6 +30,11 @@ class Game {
     std::string deck;
   };
 
+  Game() {}
+
+  Game(core::Dictionary::DictionaryType dict_type,
+       const std::vector<std::string>& player_names);
+
   void LoadDictionary(core::Dictionary::DictionaryType type);
 
   void AddPlayer(const std::string& name) { players_.emplace_back(name, 0); }
@@ -50,6 +55,7 @@ class Game {
   bool IsOver();
 
   core::Bag bag() const { return bag_; }
+  core::Board board() const { return board_; }
   std::vector<core::Player> players() const { return players_; }
   int consecutive_passes() const { return consecutive_passes_; }
   std::vector<Move> move_history() const { return move_history_; }

@@ -1,7 +1,10 @@
 add_library(gui STATIC
-  main_menu.cpp
-  settings.cpp
-  select_num_players.cpp
+  main_menu_state.cpp
+  settings_state.cpp
+  select_num_players_state.cpp
+  input_names_state.cpp
+  ingame_state.cpp
+  resource_manager.cpp
   gui.cpp
 )
 

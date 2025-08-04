@@ -8,6 +8,14 @@
 #include "core/tile.hpp"
 
 namespace game {
+Game::Game(core::Dictionary::DictionaryType dict_type,
+           const std::vector<std::string>& player_names) {
+  // lexicon_.PreloadDictionary(dict_type);
+  for (const auto& name : player_names) {
+    AddPlayer(name);
+  }
+}
+
 void Game::LoadDictionary(core::Dictionary::DictionaryType type) {
   lexicon_.PreloadDictionary(type);
 }
@@ -118,8 +126,6 @@ core::Board::ResponseStatus Game::ExecutePlaceMove(
 
   return player_response.status;
 }
-
-void Game::PrintBoard() const { std::cout << board_.GetDisplayFormat(); }
 
 void Game::PrintDebugInfo() const {
   std::cout << "[DEBUG]: GAME:\n";

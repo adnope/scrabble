@@ -1,13 +1,12 @@
-#include "main_menu.hpp"
+#include "main_menu_state.hpp"
 
 #include <string>
 
-#include "SDL_image.h"
 #include "SDL_mouse.h"
 #include "gui.hpp"
 
 namespace gui {
-void MainMenuState::HandleButtonEvent(SDL_Event& event) {
+void MainMenuState::HandleEvent(SDL_Event& event) {
   SDL_Point mouse_pos;
 
   if (event.type == SDL_MOUSEMOTION || event.type == SDL_MOUSEBUTTONDOWN) {
@@ -19,43 +18,39 @@ void MainMenuState::HandleButtonEvent(SDL_Event& event) {
     bool is_hovering_quit = SDL_PointInRect(&mouse_pos, &quit_button_);
 
     if (is_hovering_newgame || is_hovering_settings || is_hovering_quit) {
-      SDL_SetCursor(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_HAND));
+      SDL_SetCursor(gui_->cursor(SDL_SYSTEM_CURSOR_HAND));
     } else {
-      SDL_SetCursor(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW));
+      SDL_SetCursor(gui_->cursor(SDL_SYSTEM_CURSOR_ARROW));
     }
 
     if ((is_hovering_newgame || is_hovering_settings || is_hovering_quit) &&
         event.type == SDL_MOUSEBUTTONDOWN &&
         event.button.button == SDL_BUTTON_LEFT) {
       if (is_hovering_newgame) {
-        SDL_SetCursor(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW));
+        SDL_SetCursor(gui_->cursor(SDL_SYSTEM_CURSOR_ARROW));
         gui_->ChangeState(GUI::GameStateType::SelectNumPlayers);
       }
       if (is_hovering_settings) {
-        SDL_SetCursor(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW));
+        SDL_SetCursor(gui_->cursor(SDL_SYSTEM_CURSOR_ARROW));
         gui_->ChangeState(GUI::GameStateType::Settings);
       }
       if (is_hovering_quit) {
-        SDL_SetCursor(SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW));
+        SDL_SetCursor(gui_->cursor(SDL_SYSTEM_CURSOR_ARROW));
         gui_->Quit();
       }
     }
   }
 }
 
-void MainMenuState::HandleEvent(SDL_Event& event) { HandleButtonEvent(event); }
-
 void MainMenuState::Update() {
   // e.g. animate background
 }
 
 void MainMenuState::Render(SDL_Renderer* renderer) {
-  SDL_RenderClear(renderer);
-
   const double w_width = static_cast<double>(gui_->window_width());
   const double w_height = static_cast<double>(gui_->window_height());
-  RenderImage(renderer, "assets/textures/MainmenuScene.png",
-              {0, 0, gui_->window_width(), gui_->window_height()});
+  gui_->RenderImage(renderer, "assets/textures/mainmenu_background.png",
+                    {0, 0, gui_->window_width(), gui_->window_height()});
 
   newgame_button_.w = static_cast<int>(w_width / 3);
   newgame_button_.h = static_cast<int>(w_height / 12);
@@ -75,27 +70,10 @@ void MainMenuState::Render(SDL_Renderer* renderer) {
   newgame_button_.y = static_cast<int>(w_height / 1.8);
   quit_button_.y = newgame_button_.y + newgame_button_.h + gap;
 
-  RenderImage(renderer, "assets/textures/startbutton.png", newgame_button_);
-  RenderImage(renderer, "assets/textures/settingicon.png", settings_button_);
-  RenderImage(renderer, "assets/textures/quitgamebutton.png", quit_button_);
-}
-
-void MainMenuState::RenderImage(SDL_Renderer* renderer,
-                                const std::string& image_path, SDL_Rect area) {
-  SDL_Surface* surface = IMG_Load(image_path.c_str());
-  if (surface == nullptr) {
-    SDL_Log("IMG_Load failed for %s: %s", image_path.c_str(), IMG_GetError());
-    return;
-  }
-  SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
-  SDL_FreeSurface(surface);
-
-  if (texture == nullptr) {
-    SDL_Log("SDL_CreateTextureFromSurface failed: %s", SDL_GetError());
-    return;
-  }
-
-  SDL_RenderCopy(renderer, texture, nullptr, &area);
-  SDL_DestroyTexture(texture);
+  gui_->RenderImage(renderer, "assets/textures/button_newgame.png",
+                    newgame_button_);
+  gui_->RenderImage(renderer, "assets/textures/icon_settings.png",
+                    settings_button_);
+  gui_->RenderImage(renderer, "assets/textures/button_quit.png", quit_button_);
 }
 }  // namespace gui
