@@ -125,4 +125,19 @@ int Player::current_deck_size() const {
   }
   return count;
 }
+
+Board::Move Player::ConvertToBoardMove(Player& player ,const Player::Move &player_move) {
+    Board::Move board_move;
+    const auto& handtiles = player.deck();
+    for (const auto& placement : player_move) {
+        if (placement.tile_index >= 0 &&
+            static_cast<size_t>(placement.tile_index) < handtiles.size() &&
+            !handtiles.at(placement.tile_index).IsEmpty()) {
+            board_move.push_back(
+                {handtiles.at(placement.tile_index), placement.row, placement.col});
+        }
+    }
+    return board_move;
+}
+
 }  // namespace core

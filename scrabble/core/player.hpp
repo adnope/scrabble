@@ -61,6 +61,7 @@ class Player {
   std::array<Tile, kMaxDeckSize> deck() { return deck_; }
   int current_deck_size() const;
   void SwapTile(int index, Bag &bag);
+  static Board::Move ConvertToBoardMove(Player& player, const Player::Move &player_move);
 
  private:
   std::string player_name_;

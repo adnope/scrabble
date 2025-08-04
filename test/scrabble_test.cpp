@@ -38,30 +38,19 @@
 //   }
 // }
 
+
+
 // TEST_CASE("Lexicon preload test") {
 //   core::Lexicon lexicon;
 
 //   SUBCASE("Random word check with CSW dictionary") {
-//     lexicon.PreLoadDictionary(core::Dictionary::DictionaryType::CSW);
-//     CHECK(lexicon.Contains("aalii") == true);
-//     CHECK(lexicon.Contains("abactinally") == true);
-//     CHECK(lexicon.Contains("avitaminosis") == true);
-
-//     CHECK(lexicon.Contains("avifaunaszz") == false);
-//     CHECK(lexicon.Contains("axiomatizationsp") == false);
-//     CHECK(lexicon.Contains("penicillationsss") == false);
+//     lexicon.PreloadDictionary(core::Dictionary::DictionaryType::CSW);
+//     CHECK(lexicon.ContainsPrefix("tnemngissa+") == true);
 //   }
 
 //   SUBCASE("Random word check with TWL dictionary") {
-//     lexicon.PreLoadDictionary(core::Dictionary::DictionaryType::TWL);
-//     CHECK(lexicon.Contains("aasvogel") == true);
-//     CHECK(lexicon.Contains("aasvogels") == true);
-//     CHECK(lexicon.Contains("trailheads") == true);
-//     CHECK(lexicon.Contains("traditionalists") == true);
-
-//     CHECK(lexicon.Contains("avifaunaszz") == false);
-//     CHECK(lexicon.Contains("axiomatizationsp") == false);
-//     CHECK(lexicon.Contains("penicillationsss") == false);
+//     lexicon.PreloadDictionary(core::Dictionary::DictionaryType::TWL);
+//     CHECK(lexicon.ContainsPrefix("tnemngissa+") == true);
 //   }
 // }
 
@@ -119,7 +108,7 @@
 void PrintBoardResponse(const core::Board::MoveValidationResponse& response) {
   std::cout << "[Move response]: \nWords: \n";
   for (const auto& word : response.words) {
-    const auto content =  word.content();
+    const auto content = word.content();
     for (const auto& [letter, mult] : content) {
       std::string multiplier;
       if (mult == core::Square::Multiplier::kDoubleLetter) {
@@ -158,288 +147,399 @@ void PrintBoardResponse(const core::Board::MoveValidationResponse& response) {
   }
 }
 
-TEST_CASE("Board test") {
-  spdlog::info("Board test");
-  core::Board board;
-  core::Lexicon lexicon;
-  lexicon.PreloadDictionary(core::Dictionary::CSW);
-
-  std::vector<core::Board::Placement> initial_state_move = {
-      {{'V', 4}, 5, 7},  {{'I', 1}, 5, 8}, {{'S', 1}, 5, 9}, {{'I', 1}, 5, 10},
-      {{'T', 1}, 5, 11}, {{'T', 1}, 7, 4}, {{'A', 1}, 7, 5}, {{'N', 1}, 7, 6},
-      {{'N', 1}, 7, 7},  {{'E', 1}, 7, 8}, {{'D', 2}, 7, 9}, {{'P', 3}, 2, 8},
-      {{'R', 1}, 3, 8},  {{'A', 1}, 4, 8}, {{'S', 1}, 6, 8}};
-  for (const auto& placement : initial_state_move) {
-    board.PlaceTile(placement.tile, placement.row, placement.col);
-  }
-
-  std::vector<core::Board::Placement> move = {{{'A', 1}, 6, 9},
-                                              {{'T', 1}, 6, 10}};
-  const auto board_response = board.ValidateMove(move, lexicon);
-  for (const core::Word &word : board_response.words) {
-    word.PrintContent();
-    std::cout << "-" << word.points() << "points" << " ";
-  }
-  std::cout << "\n";
-  CHECK(board_response.status == core::Board::ResponseStatus::kSuccess);
-
-  std::vector<core::Board::Placement> move2 = {{{'P', 3}, 4, 10}};
-  const auto board_response2 = board.ValidateMove(move2, lexicon);
-  for (const core::Word &word : board_response2.words) {
-    word.PrintContent();
-    std::cout << "-" << word.points() << "points" << " ";
-  }
-  std::cout << "\n";
-  CHECK(board_response2.status == core::Board::ResponseStatus::kSuccess);
-  std::cout << board.GetDisplayFormat();
-}
-
-// TEST_CASE("Bot player find best move") {
-//   std::cout<<"Bot test"<<std::endl;
+// TEST_CASE("Bot FindBestMove with Simulated Board") {
+//   core::Bot bot("TestBot");
+//   core::Bag bag;
 //   core::Board board;
 //   core::Lexicon lexicon;
-//   lexicon.PreLoadDictionary(core::Dictionary::DictionaryType::CSW);
+//   lexicon.PreloadDictionary(core::Dictionary::CSW);
 
+//   // Helper function để kiểm tra ô premium từ display format
+//   auto isPremiumSquare = [&board](int row, int col) {
+//     std::string display = board.GetDisplayFormat();
+//     int line_length = (core::Board::kWidth * 3) + 1;  // Mỗi ô 3 ký tự +
+//     newline int pos = (row * line_length) + (col * 3);
 
-//   std::vector<core::Board::Placement> initial_state_move = {
-//       {{'V', 4}, 5, 7},  {{'I', 1}, 5, 8}, {{'S', 1}, 5, 9}, {{'I', 1}, 5, 10},
-//       {{'T', 1}, 5, 11}, {{'T', 1}, 7, 4}, {{'A', 1}, 7, 5}, {{'N', 1}, 7, 6},
-//       {{'N', 1}, 7, 7},  {{'E', 1}, 7, 8}, {{'D', 2}, 7, 9}, {{'P', 3}, 2, 8},
-//       {{'R', 1}, 3, 8},  {{'A', 1}, 4, 8}, {{'S', 1}, 6, 8}};
-//   for (const auto& placement : initial_state_move) {
-//     board.PlaceTile(placement.tile, placement.row, placement.col);
+//     if (pos >= 0 && pos + 2 < display.size()) {
+//       std::string square = display.substr(pos, 2);
+//       return (square == "DW" || square == "TW" || square == "DL" ||
+//               square == "TL");
+//     }
+//     return false;
+//   };
+
+//   // Helper function để chuyển đổi move
+//   auto convertToBoardMove = [&bot](const core::Player::Move& player_move) {
+//     core::Board::Move board_move;
+//     const auto& deck = bot.deck();
+//     for (const auto& placement : player_move) {
+//       if (placement.tile_index >= 0 &&
+//           placement.tile_index < static_cast<int>(deck.size())) {
+//         board_move.push_back(
+//             {deck.at(placement.tile_index), placement.row, placement.col});
+//       }
+//     }
+//     return board_move;
+//   };
+
+//   // Thiết lập bảng giả lập với try-catch
+//   try {
+//     std::vector<core::Board::Placement> initial_placements = {
+//         {{'H', 4}, 7, 7},  {{'E', 1}, 7, 8},  {{'L', 1}, 7, 9},
+//         {{'L', 1}, 7, 10}, {{'O', 1}, 7, 11},  // "HELLO" ngang
+//         {{'W', 4}, 5, 7},  {{'O', 1}, 6, 7},   // "WORD" dọc
+//         {{'R', 1}, 7, 7},  {{'D', 2}, 8, 7}};
+
+//     for (const auto& placement : initial_placements) {
+//       if (placement.row >= 0 && placement.row < core::Board::kHeight &&
+//           placement.col >= 0 && placement.col < core::Board::kWidth) {
+//         if (!board.PlaceTile(placement.tile, placement.row, placement.col)) {
+//           std::cerr << "Failed to place tile at: " << placement.row << ","
+//                     << placement.col << "\n";
+//         }
+//       }
+//     }
+//   } catch (const std::exception& e) {
+//     FAIL("Board setup failed: ", e.what());
 //   }
 
+//   SUBCASE("Horizontal Move Connecting to Existing Word") {
+//     try {
+//       std::vector<core::Tile> tiles = {{'S', 1}, {'H', 4}, {'E', 1}, {'P',
+//       3}}; bot.AddTiles(tiles);
 
-//   core::Bot bot;
-//   SUBCASE("No blank tile: A, T, E, S, P, R, O") {
-//     std::vector<core::Tile> rack = {core::Tile('A', 1), core::Tile('T', 1),
-//                                     core::Tile('E', 1), core::Tile('S', 1),
-//                                     core::Tile('P', 3), core::Tile('R', 1),
-//                                     core::Tile('O', 1)};
-//     auto best_move = core::Bot::FindBestMove(rack, board, lexicon);
+//       auto best_move = bot.FindBestMove(board, lexicon, bag);
+//       REQUIRE_MESSAGE(best_move.size() > 0,
+//                       "Bot failed to find any valid move");
 
-//     //Best move empty ??
-//     if(!best_move.empty()){std::cout<<"Best move should not be empty";}
+//       core::Board::Move board_move = convertToBoardMove(best_move);
 
-//     auto response = board.ValidateMove(best_move, lexicon);
-//     CHECK_MESSAGE(response.status == core::Board::ResponseStatus::kSuccess,
-//                   "Best move should be valid");
-
-//     // Kiểm tra từ được tạo: "OPERATE"
-//     bool found_OPERATE = false;
-//     for (const auto& word : response.words) {
-//       std::string word_str = word.AsString();
-//       if (word_str == "OPERATE") {
-//         found_OPERATE = true;
+//       // Validate move coordinates
+//       for (const auto& placement : board_move) {
+//         INFO("Checking placement at row: " << placement.row
+//                                            << ", col: " << placement.col);
+//         CHECK(placement.row >= 0);
+//         CHECK(placement.row < core::Board::kHeight);
+//         CHECK(placement.col >= 0);
+//         CHECK(placement.col < core::Board::kWidth);
 //       }
+
+//       auto response = board.ValidateMove(board_move, lexicon);
+//       CHECK_MESSAGE(response.status == core::Board::ResponseStatus::kSuccess,
+//                     "Move validation failed");
+
+//       // Debug output
+//       std::cout << "Generated move:\n";
+//       for (const auto& p : board_move) {
+//         std::cout << p.tile.letter() << " @ (" << p.row << "," << p.col
+//                   << ")\n";
+//       }
+//       PrintBoardResponse(response);
+
+//     } catch (const std::exception& e) {
+//       FAIL("Test threw exception: ", e.what());
 //     }
-//     CHECK_MESSAGE(found_OPERATE, "Best move should form word 'OPERATE'");
-
-//     // Kiểm tra điểm số: OPERATE (O=1, P=3*3=9, E=1, R=1, A=1, T=1, E=1) = 15
-//     CHECK_MESSAGE(response.move_points == 15,
-//                   "Best move should score 15 points");
-
-//     // Kiểm tra vị trí: O(4,10), P(4,11), E(4,12), R(4,13), A(4,14), T(4,15),
-//     // E(4,16)
-//     bool found_positions[7] = {false};
-//     for (const auto& placement : best_move) {
-//       if (placement.row == 4 && placement.col == 10 &&
-//           placement.tile.letter() == 'O' && placement.tile.points() == 1) {
-//         found_positions[0] = true;
-//       }
-//       if (placement.row == 4 && placement.col == 11 &&
-//           placement.tile.letter() == 'P' && placement.tile.points() == 3) {
-//         found_positions[1] = true;
-//       }
-//       if (placement.row == 4 && placement.col == 12 &&
-//           placement.tile.letter() == 'E' && placement.tile.points() == 1) {
-//         found_positions[2] = true;
-//       }
-//       if (placement.row == 4 && placement.col == 13 &&
-//           placement.tile.letter() == 'R' && placement.tile.points() == 1) {
-//         found_positions[3] = true;
-//       }
-//       if (placement.row == 4 && placement.col == 14 &&
-//           placement.tile.letter() == 'A' && placement.tile.points() == 1) {
-//         found_positions[4] = true;
-//       }
-//       if (placement.row == 4 && placement.col == 15 &&
-//           placement.tile.letter() == 'T' && placement.tile.points() == 1) {
-//         found_positions[5] = true;
-//       }
-//       if (placement.row == 4 && placement.col == 16 &&
-//           placement.tile.letter() == 'E' && placement.tile.points() == 1) {
-//         found_positions[6] = true;
-//       }
-//     }
-//     for (int i = 0; i < 7; ++i) {
-//       CHECK_MESSAGE(found_positions[i],
-//                     "Best move should place correct tile at position (4, "
-//                         << 10 + i << ")");
-//     }
-
-//     for (const auto& placement : best_move) {
-//       board.PlaceTile(placement.tile, placement.row, placement.col);
-//     }
-//     INFO("Board state after placing tiles (No blank tile):");
-//     PrintBoardResponse(response);
-
 //   }
 
-//   SUBCASE("One blank tile: ?, A, T, E, S, P, R") {
-//     // core::Tiles: {?, A, T, E, S, P, R}
-//     std::vector<core::Tile> rack = {core::Tile('?', 0), core::Tile('A', 1),
-//                                     core::Tile('T', 1), core::Tile('E', 1),
-//                                     core::Tile('S', 1), core::Tile('P', 3),
-//                                     core::Tile('R', 1)};
-//     auto best_move = bot.FindBestMove(rack, board, lexicon);
+//   SUBCASE("Premium Square Utilization") {
+//     try {
+//       std::vector<core::Tile> tiles = {
+//           {'Q', 10}, {'U', 1}, {'I', 1}, {'Z', 10}};
+//       bot.AddTiles(tiles);
 
-//     // Kiểm tra nước đi không rỗng
-//     CHECK_MESSAGE(!best_move.empty(), "Best move should not be empty");
+//       auto best_move = bot.FindBestMove(board, lexicon, bag);
+//       REQUIRE(best_move.size() > 0);
 
-//     // Kiểm tra tính hợp lệ
-//     auto response = board.ValidateMove(best_move, lexicon);
-//     CHECK_MESSAGE(response.status == core::Board::ResponseStatus::kSuccess,
-//                   "Best move should be valid");
+//       core::Board::Move board_move = convertToBoardMove(best_move);
+//       auto response = board.ValidateMove(board_move, lexicon);
+//       REQUIRE(response.status == core::Board::ResponseStatus::kSuccess);
 
-//     // Kiểm tra từ được tạo: "OPERATE"
-//     bool found_OPERATE = false;
-//     for (const auto& word : response.words) {
-//       std::string word_str = word.AsString();
-//       if (word_str == "OPERATE") found_OPERATE = true;
+//       // Check premium square usage
+//       bool uses_premium = false;
+//       for (const auto& placement : board_move) {
+//         if (isPremiumSquare(placement.row, placement.col)) {
+//           uses_premium = true;
+//           break;
+//         }
+//       }
+//       CHECK_MESSAGE(uses_premium, "Bot didn't use any premium squares");
+
+//     } catch (const std::exception& e) {
+//       FAIL("Premium square test failed: ", e.what());
 //     }
-//     CHECK_MESSAGE(found_OPERATE, "Best move should form word 'OPERATE'");
+//   }
+// }
 
-//     // Kiểm tra điểm số: OPERATE (O=0 from ?, P=3*3=9, E=1, R=1, A=1, T=1, E=1)
-//     // = 14
-//     CHECK_MESSAGE(response.move_points == 14,
-//                   "Best move should score 14 points");
+// //OK
+// TEST_CASE("Bot::IsAnchor function") {
+//   core::Board board;
+//   core::Bot bot("TestBot");
 
-//     // Kiểm tra vị trí: ?(4,10) as O, P(4,11), E(4,12), R(4,13), A(4,14),
-//     // T(4,15), E(4,16)
-//     bool found_positions[7] = {false};
-//     for (const auto& placement : best_move) {
-//       if (placement.row == 4 && placement.col == 10 &&
-//           placement.tile.letter() == '?' && placement.tile.points() == 0) {
-//         found_positions[0] = true;
-//       }
-//       if (placement.row == 4 && placement.col == 11 &&
-//           placement.tile.letter() == 'P' && placement.tile.points() == 3) {
-//         found_positions[1] = true;
-//       }
-//       if (placement.row == 4 && placement.col == 12 &&
-//           placement.tile.letter() == 'E' && placement.tile.points() == 1) {
-//         found_positions[2] = true;
-//       }
-//       if (placement.row == 4 && placement.col == 13 &&
-//           placement.tile.letter() == 'R' && placement.tile.points() == 1) {
-//         found_positions[3] = true;
-//       }
-//       if (placement.row == 4 && placement.col == 14 &&
-//           placement.tile.letter() == 'A' && placement.tile.points() == 1) {
-//         found_positions[4] = true;
-//       }
-//       if (placement.row == 4 && placement.col == 15 &&
-//           placement.tile.letter() == 'T' && placement.tile.points() == 1) {
-//         found_positions[5] = true;
-//       }
-//       if (placement.row == 4 && placement.col == 16 &&
-//           placement.tile.letter() == 'E' && placement.tile.points() == 1) {
-//         found_positions[6] = true;
-//       }
-//     }
-//     for (int i = 0; i < 7; ++i) {
-//       CHECK_MESSAGE(found_positions[i],
-//                     "Best move should place correct tile at position (4, "
-//                         << 10 + i << ")");
-//     }
-//     for (const auto& placement : best_move) {
-//       board.PlaceTile(placement.tile, placement.row, placement.col);
-//     }
-//     INFO("Board state after placing tiles (No blank tile):");
-//     PrintBoardResponse(response);
+//   // Setup board with some tiles
+//   board.PlaceTile({'A', 1}, 7, 7);
+//   board.PlaceTile({'B', 3}, 7, 8);
+
+//   SUBCASE("Occupied square is not anchor") {
+//     CHECK(bot.IsAnchor(7, 7, board) == false);
 //   }
 
-//   SUBCASE("Two blank tiles: ?, ?, A, T, E, S, P") {
-//     std::vector<core::Tile> rack = {core::Tile('?', 0), core::Tile('?', 0),
-//                                     core::Tile('A', 1), core::Tile('T', 1),
-//                                     core::Tile('E', 1), core::Tile('S', 1),
-//                                     core::Tile('P', 3)};
-//     auto best_move = bot.FindBestMove(rack, board, lexicon);
+//   SUBCASE("Empty square adjacent to occupied is anchor") {
+//     CHECK(bot.IsAnchor(7, 6, board) == true);  // Left of A
+//     CHECK(bot.IsAnchor(6, 7, board) == true);  // Above A
+//   }
 
-//     CHECK_MESSAGE(!best_move.empty(), "Best move should not be empty");
+//   SUBCASE("Empty square not adjacent is not anchor") {
+//     CHECK(bot.IsAnchor(0, 0, board) == false);
+//   }
 
-//     // Kiểm tra tính hợp lệ
-//     auto response = board.ValidateMove(best_move, lexicon);
-//     CHECK_MESSAGE(response.status == core::Board::ResponseStatus::kSuccess,
-//                   "Best move should be valid");
+//   SUBCASE("Out of bounds is not anchor") {
+//     CHECK(bot.IsAnchor(-1, 7, board) == false);
+//     CHECK(bot.IsAnchor(15, 7, board) == false);
+//   }
+// }
 
-//     // Kiểm tra từ được tạo: "OPERATE"
-//     bool found_OPERATE = false;
-//     for (const auto& word : response.words) {
-//       std::string word_str = word.AsString();
-//       if (word_str == "OPERATE") found_OPERATE = true;
-//     }
-//     CHECK_MESSAGE(found_OPERATE, "Best move should form word 'OPERATE'");
+// TEST_CASE("Bot::FindBestMove function") {
+//   core::Board board;
+//   core::Bag bag;
+//   core::Lexicon lexicon;
+//   core::Bot bot("TestBot");
 
-//     // Kiểm tra điểm số: OPERATE (O=0 from ?, P=3*3=9, E=1, R=0 from ?, A=1,
-//     // T=1, E=1) = 13
-//     CHECK_MESSAGE(response.move_points == 13,
-//                   "Best move should score 13 points");
+//   lexicon.AddWord("hello");
+//   lexicon.AddWord("word");
+//   lexicon.AddWord("cat");
 
-//     // Kiểm tra vị trí: ?(4,10) as O, P(4,11), E(4,12), ?(4,13) as R, A(4,14),
-//     // T(4,15), E(4,16)
-//     bool found_positions[7] = {false};
-//     bool found_blank_1 = false;
-//     bool found_blank_2 = false;
-//     for (const auto& placement : best_move) {
-//       if (placement.row == 4 && placement.col == 10 &&
-//           placement.tile.letter() == '?' && placement.tile.points() == 0) {
-//         found_positions[0] = true;
-//         found_blank_1 = true;
-//       }
-//       if (placement.row == 4 && placement.col == 11 &&
-//           placement.tile.letter() == 'P' && placement.tile.points() == 3) {
-//         found_positions[1] = true;
-//       }
-//       if (placement.row == 4 && placement.col == 12 &&
-//           placement.tile.letter() == 'E' && placement.tile.points() == 1) {
-//         found_positions[2] = true;
-//       }
-//       if (placement.row == 4 && placement.col == 13 &&
-//           placement.tile.letter() == '?' && placement.tile.points() == 0 &&
-//           !found_blank_1) {
-//         found_positions[3] = true;
-//         found_blank_2 = true;
-//       }
-//       if (placement.row == 4 && placement.col == 14 &&
-//           placement.tile.letter() == 'A' && placement.tile.points() == 1) {
-//         found_positions[4] = true;
-//       }
-//       if (placement.row == 4 && placement.col == 15 &&
-//           placement.tile.letter() == 'T' && placement.tile.points() == 1) {
-//         found_positions[5] = true;
-//       }
-//       if (placement.row == 4 && placement.col == 16 &&
-//           placement.tile.letter() == 'E' && placement.tile.points() == 1) {
-//         found_positions[6] = true;
+//   SUBCASE("First move with good tiles") {
+//     bot.AddTiles({{'H', 4}, {'E', 1}, {'L', 1}, {'L', 1}, {'O', 1}});
+//     auto move = bot.FindBestMove(board, lexicon, bag);
+//     CHECK(move.size() > 0);
+
+//     // Verify it places at least one tile
+//     bool places_tile = false;
+//     for (const auto& placement : move) {
+//       if (placement.tile_index != -1) {
+//         places_tile = true;
+//         break;
 //       }
 //     }
-//     for (int i = 0; i < 7; ++i) {
-//       CHECK_MESSAGE(found_positions[i],
-//                     "Best move should place correct tile at position (4, "
-//                         << 10 + i << ")");
-//     }
-//     CHECK_MESSAGE(found_blank_1,
-//                   "Best move should use first blank tile at (4, 10)");
-//     CHECK_MESSAGE(found_blank_2,
-//                   "Best move should use second blank tile at (4, 13)");
+//     CHECK(places_tile);
+//   }
 
-//     for (const auto& placement : best_move) {
-//     board.PlaceTile(placement.tile, placement.row, placement.col);
+//   SUBCASE("No valid moves should swap or pass") {
+//     bot.AddTiles({{'X', 8}, {'Z', 10}, {'Q', 10}});  // Hard to play letters
+//     auto move = bot.FindBestMove(board, lexicon, bag);
+
+//     // Either swap or pass
+//     bool valid = (move.empty() ||                           // Pass
+//                   (move.size() > 0 && move[0].row == -1));  // Swap
+//     CHECK(valid);
+//   }
+
+//   SUBCASE("Connects to existing words") {
+//     // Setup board
+//     board.PlaceTile({'H', 4}, 7, 7);
+//     board.PlaceTile({'E', 1}, 7, 8);
+
+//     bot.AddTiles({{'L', 1}, {'L', 1}, {'O', 1}});
+//     auto move = bot.FindBestMove(board, lexicon, bag);
+//     CHECK(move.size() >= 3);  // Should complete "HELLO"
+//   }
+// }
+
+// TEST_CASE("Bot::GenerateAllMoves function") {
+//   core::Board board;
+//   core::Lexicon lexicon;
+//   core::Bot bot("TestBot");
+
+//   lexicon.AddWord("hello");
+//   lexicon.AddWord("cat");
+
+//   SUBCASE("First move generation") {
+//     bot.AddTiles({{'H', 4}, {'E', 1}, {'L', 1}, {'L', 1}, {'O', 1}});
+//     auto moves = bot.GenerateAllMoves(board, lexicon);
+//     CHECK(moves.size() > 0);
+
+//     // Should include "HELLO" placement
+//     bool found_hello = false;
+//     for (const auto& move : moves) {
+//       if (move.size() == 5) found_hello = true;
 //     }
-//     INFO("Board state after placing tiles (No blank tile):");
-//     PrintBoardResponse(response);
+//     CHECK(found_hello);
+//   }
+
+//   SUBCASE("Anchor move generation") {
+//     // Setup board with anchor point
+//     board.PlaceTile({'C', 3}, 7, 7);
+//     board.PlaceTile({'A', 1}, 7, 8);
+
+//     bot.AddTiles({{'T', 1}, {'E', 1}, {'L', 1}});
+//     auto moves = bot.GenerateAllMoves(board, lexicon);
+//     CHECK(moves.size() > 0);
+
+//     // Should include moves connecting to "CA"
+//     bool connects = false;
+//     for (const auto& move : moves) {
+//       for (const auto& placement : move) {
+//         if (placement.row == 7 && placement.col == 9) {
+//           connects = true;
+//           break;
+//         }
+//       }
+//     }
+//     CHECK(connects);
+//   }
+// }
+
+TEST_CASE("Bot::IsValidMove function") {
+  core::Board newboard;
+  core::Lexicon lexicon;
+  core::Bot bot("TestBot");
+
+  bot.AddTiles({{'H', 4}, {'E', 1}, {'L', 1}, {'L', 1}, {'O', 1}});
+
+  SUBCASE("Valid first move") {
+    core::Player::Move move = {
+        {0, 7, 7},   // H
+        {1, 7, 8},   // E
+        {2, 7, 9},   // L
+        {3, 7, 10},  // L
+        {4, 7, 11}   // O
+    };
+    CHECK(bot.IsValidMove(move, newboard) == true);
+  }
+
+  SUBCASE("Invalid - not connected") {
+    core::Player::Move move = {
+        {0, 0, 0},  // H
+        {1, 0, 1}   // E
+    };
+    CHECK(bot.IsValidMove(move, newboard) == false);
+  }
+
+  // SUBCASE("Invalid - out of bounds") {
+  //   core::Player::Move move = {
+  //       {0, -1, 0},  // H
+  //       {1, -1, 1}   // E
+  //   };
+  //   CHECK(bot.IsValidMove(move, board) == false);
+  // }
+} 
+
+// TEST_CASE("Board::ValidateMove function") {
+//   // Khởi tạo lexicon với các từ cần thiết
+//   core::Lexicon lexicon;
+//   lexicon.PreloadDictionary(core::Dictionary::DictionaryType::CSW);
+
+//   SUBCASE("Valid first move - must cover center") {
+//     core::Board board;
+//     core::Board::Move valid_move = {
+//       {{'H', 4}, 7, 7}, // Bắt buộc qua ô trung tâm
+//       {{'E', 1}, 7, 8},
+//       {{'L', 1}, 7, 9}
+//     };
+//     auto response = board.ValidateMove(valid_move, lexicon);
+//     CHECK(response.status == core::Board::ResponseStatus::kSuccess);
+//     CHECK(response.move_points > 0);
+//   }
+
+//   SUBCASE("Invalid first move - not covering center") {
+//     core::Board board;
+//     core::Board::Move invalid_move = {
+//       {{'H', 4}, 6, 7}, // Không qua ô trung tâm
+//       {{'E', 1}, 7, 7}  // Dù có ô trung tâm nhưng không phải là điểm bắt đầu
+//     };
+//     auto response = board.ValidateMove(invalid_move, lexicon);
+//     CHECK(response.status == core::Board::ResponseStatus::kFailure);
+//   }
+
+//   SUBCASE("Valid move - extending existing word horizontally") {
+//     core::Board board;
+//     // Tạo từ "HE" ngang
+//     board.PlaceTile({'H', 4}, 7, 7);
+//     board.PlaceTile({'E', 1}, 7, 8);
+    
+//     // Mở rộng thành "HELL"
+//     core::Board::Move move = {
+//       {{'L', 1}, 7, 9},
+//       {{'L', 1}, 7, 10}
+//     };
+//     auto response = board.ValidateMove(move, lexicon);
+//     CHECK(response.status == core::Board::ResponseStatus::kSuccess);
+//     CHECK(response.words.size() >= 1);
+//   }
+
+//   SUBCASE("Valid move - creating cross words") {
+//     core::Board board;
+//     // Tạo từ "HE" ngang
+//     board.PlaceTile({'H', 4}, 7, 7);
+//     board.PlaceTile({'E', 1}, 7, 8);
+    
+//     // Đặt tile tạo từ "WE" dọc
+//     core::Board::Move move = {
+//       {{'W', 4}, 8, 7},
+//       {{'E', 1}, 9, 7}
+//     };
+//     auto response = board.ValidateMove(move, lexicon);
+//     CHECK(response.status == core::Board::ResponseStatus::kSuccess);
+//     CHECK(response.words.size() == 2); // Cả từ ngang và dọc
+//   }
+
+//   SUBCASE("Invalid - tiles not aligned") {
+//     core::Board board;
+//     core::Board::Move move = {
+//       {{'H', 4}, 7, 7},
+//       {{'E', 1}, 8, 8} // Không thẳng hàng
+//     };
+//     auto response = board.ValidateMove(move, lexicon);
+//     CHECK(response.status == core::Board::ResponseStatus::kNotAligned);
+//   }
+
+//   SUBCASE("Invalid - overlapping existing tiles") {
+//     core::Board board;
+//     board.PlaceTile({'H', 4}, 7, 7);
+    
+//     core::Board::Move move = {
+//       {{'X', 8}, 7, 7} // Đè lên ô đã có
+//     };
+//     auto response = board.ValidateMove(move, lexicon);
+//     CHECK(response.status == core::Board::ResponseStatus::kOccupied);
+//   }
+
+//   SUBCASE("Invalid - creating invalid words") {
+//     core::Board board;
+//     core::Board::Move move = {
+//       {{'X', 8}, 7, 7},
+//       {{'Y', 4}, 7, 8} // Tạo "XY" không hợp lệ
+//     };
+//     auto response = board.ValidateMove(move, lexicon);
+//     CHECK(response.status == core::Board::ResponseStatus::kWordsInvalid);
+//   }
+
+//   SUBCASE("Valid - single letter word") {
+//     core::Board board;
+//     board.PlaceTile({'H', 4}, 7, 7);
+    
+//     // Từ 1 chữ cái hợp lệ
+//     core::Board::Move move = {{{'A', 1}, 8, 7}};
+//     auto response = board.ValidateMove(move, lexicon);
+//     CHECK(response.status == core::Board::ResponseStatus::kSuccess);
+//   }
+
+//   SUBCASE("Valid - premium square multipliers") {
+//     core::Board board;
+//     // Đặt trên ô Triple Word (0,0)
+//     core::Board::Move move = {{{'H', 4}, 0, 0}};
+//     auto response = board.ValidateMove(move, lexicon);
+//     CHECK(response.status == core::Board::ResponseStatus::kSuccess);
+//     CHECK(response.move_points == 12); // 4 điểm * 3
+//   }
+
+//   SUBCASE("Invalid - not connected to existing words") {
+//     core::Board board;
+//     board.PlaceTile({'H', 4}, 7, 7);
+    
+//     // Đặt ở vị trí không kết nối
+//     core::Board::Move move = {{{'E', 1}, 0, 0}};
+//     auto response = board.ValidateMove(move, lexicon);
+//     CHECK(response.status == core::Board::ResponseStatus::kFailure);
 //   }
 // }

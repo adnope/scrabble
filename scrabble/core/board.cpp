@@ -5,7 +5,6 @@
 #include <sstream>
 #include <string>
 #include <vector>
-
 #include "square.hpp"
 #include "tile.hpp"
 
@@ -86,7 +85,7 @@ bool Board::PlaceTile(const Tile& tile, const int row, const int col) {
   return false;
 }
 
-// Return the points of the word to parameter 'points'
+// // Return the points of the word to parameter 'points'
 Word Board::GetWordFromPos(int row, int col, const bool horizontal,
                            const Move& move) {
   // Go backward to find start
@@ -112,7 +111,6 @@ Word Board::GetWordFromPos(int row, int col, const bool horizontal,
     const char letter = square.tile_letter();
     const auto multiplier = square.multiplier();
     int points = square.tile_points();
-
     // Add the letter and its multiplier to the word's content
     word.AddToContent(letter, Square::Multiplier::kNormal);
 
@@ -239,41 +237,147 @@ bool Board::AreInDictionary(const std::vector<std::string>& words,
   return true;
 }
 
+// Board::MoveValidationResponse Board::ValidateMove(const Move& move,
+//                                                  const Lexicon& lexicon) {
+//     // 1. Kiểm tra move không rỗng
+//     if (move.empty()) {
+//         return {{}, 0, ResponseStatus::kFailure};
+//     }
+
+//     // 2. Kiểm tra vị trí hợp lệ
+//     for (const auto& [tile, row, col] : move) {
+//         if (row < 0 || row >= kHeight || col < 0 || col >= kWidth) {
+//             return {{}, 0, ResponseStatus::kFailure};
+//         }
+//     }
+
+//     // 3. Kiểm tra ô trống
+//     if (IsMoveOccupied(move)) {
+//         return {{}, 0, ResponseStatus::kOccupied};
+//     }
+
+//     // 4. Kiểm tra nước đi đầu tiên phải qua trung tâm
+//     if (is_first_move_) {
+//         bool covers_center = false;
+//         for (const auto& [tile, row, col] : move) {
+//             if (row == kStartPosRow && col == kStartPosColumn) {
+//                 covers_center = true;
+//                 break;
+//             }
+//         }
+//         if (!covers_center) {
+//             return {{}, 0, ResponseStatus::kFailure};
+//         }
+//     }
+
+//     // 5. Kiểm tra thẳng hàng
+//     int alignment = IsAligned(move);
+//     if (alignment == -1) {
+//         return {{}, 0, ResponseStatus::kNotAligned};
+//     }
+//     bool is_horizontal = (alignment == 1);
+
+//     // 6. Kiểm tra kết nối với từ hiện có (nếu không phải nước đi đầu)
+//     if (!is_first_move_ && !IsConnected(move)) {
+//         return {{}, 0, ResponseStatus::kNotConnected};
+//     }
+
+//     // 7. Lấy tất cả các từ được tạo thành
+//     auto words = GetWordsFromMove(move, is_horizontal);
+//     if (words.empty()) {
+//         return {{}, 0, ResponseStatus::kWordsInvalid};
+//     }
+
+//     // 8. Kiểm tra từ điển
+//     std::vector<std::string> word_contents;
+//     for (const auto& word : words) {
+//         std::string content = word.AsString();
+//         if (content.size() > 1 && !lexicon.Contains(content)) {
+//             return {words, 0, ResponseStatus::kWordsInvalid};
+//         }
+//         word_contents.push_back(content);
+//     }
+
+//     // 9. Tính điểm
+//     int total_points = 0;
+//     for (const auto& word : words) {
+//         total_points += word.points();
+//     }
+
+//     // 10. Đánh dấu đã qua nước đi đầu tiên
+//     if (is_first_move_) {
+//         is_first_move_ = false;
+//     }
+
+//     return {words, total_points, ResponseStatus::kSuccess};
+// }
 Board::MoveValidationResponse Board::ValidateMove(const Move& move,
-                                                  const Lexicon& lexicon) {
-  // Check if any placement is performed on occupied square
-  if (IsMoveOccupied(move)) {
-    return {{}, 0, ResponseStatus::kOccupied};
-  }
+                                                const Lexicon& lexicon) {
+    // 1. Kiểm tra move không rỗng
+    if (move.empty()) {
+        return {{}, 0, ResponseStatus::kFailure};
+    }
 
-  // Checking placements alignment
-  int horizontal = IsAligned(move);
-  if (horizontal == -2) {
-    return {{}, 0, ResponseStatus::kNotAligned};
-  }
+    // 2. Kiểm tra vị trí hợp lệ
+    for (const auto& [tile, row, col] : move) {
+        if (row < 0 || row >= kHeight || col < 0 || col >= kWidth) {
+            return {{}, 0, ResponseStatus::kFailure};
+        }
+    }
 
-  // Checking words validity
-  const auto words = GetWordsFromMove(move, static_cast<bool>(horizontal));
-  std::vector<std::string> word_list;
-  word_list.reserve(words.size());
-  for (const auto& word : words) {
-    word_list.push_back(word.AsString());
-  }
-  if (!AreInDictionary(word_list, lexicon)) {
-    return {words, 0, ResponseStatus::kWordsInvalid};
-  }
+    // 3. Kiểm tra ô trống
+    if (IsMoveOccupied(move)) {
+        return {{}, 0, ResponseStatus::kOccupied};
+    }
 
-  int move_points = 0;
-  for (const auto& word : words) {
-    move_points += word.points();
-  }
+    // 4. Kiểm tra nước đi đầu tiên phải qua trung tâm
+    if (is_first_move_) {
+        bool covers_center = false;
+        for (const auto& [tile, row, col] : move) {
+            if (row == kStartPosRow && col == kStartPosColumn) {
+                covers_center = true;
+                break;
+            }
+        }
+        if (!covers_center) {
+            return {{}, 0, ResponseStatus::kFailure};
+        }
+    }
 
-  // Place the move after checking errors
-  for (const auto& [tile, row, col] : move) {
-    PlaceTile(tile, row, col);
-  }
+    // 5. Kiểm tra thẳng hàng
+    int alignment = IsAligned(move);
+    if (alignment == -1) {
+        return {{}, 0, ResponseStatus::kNotAligned};
+    }
 
-  return {words, move_points, ResponseStatus::kSuccess};
+    // 6. Kiểm tra kết nối với từ hiện có (nếu không phải nước đi đầu)
+    if (!is_first_move_ && !IsConnected(move)) {
+        return {{}, 0, ResponseStatus::kFailure};
+    }
+
+    // 7. Lấy tất cả các từ được tạo thành
+    auto words = GetWordsFromMove(move, alignment == 1);
+    
+    // 8. Kiểm tra từ điển
+    for (const auto& word : words) {
+        std::string content = word.AsString();
+        if (content.size() > 1 && !lexicon.Contains(content)) {
+            return {words, 0, ResponseStatus::kWordsInvalid};
+        }
+    }
+
+    // 9. Tính điểm
+    int total_points = 0;
+    for (const auto& word : words) {
+        total_points += word.points();
+    }
+
+    // 10. Đánh dấu đã qua nước đi đầu tiên
+    if (is_first_move_) {
+        is_first_move_ = false;
+    }
+
+    return {words, total_points, ResponseStatus::kSuccess};
 }
 
 std::string Board::GetDisplayFormat() const {
@@ -327,4 +431,29 @@ Tile Board::GetTile(int case_curr) const {
   return board_grid_.at(row).at(col).tile();
 }
 
-}  // namespace core
+bool Board::IsConnected(const Move& move) const {
+    // Nếu là nước đi đầu tiên thì luôn connected (vì phải qua trung tâm)
+    if (is_first_move_) return true;
+    
+    // Kiểm tra từng tile trong move
+    for (const auto& [tile, row, col] : move) {
+        // Kiểm tra 4 hướng
+        constexpr int directions[4][2] = {{-1,0}, {1,0}, {0,-1}, {0,1}};
+        for (const auto& dir : directions) {
+            int new_row = row + dir[0];
+            int new_col = col + dir[1];
+            
+            if (new_row >= 0 && new_row < kHeight && 
+                new_col >= 0 && new_col < kWidth) {
+                if (IsOccupied(new_row, new_col)) {
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
+
+
+};  // namespace core

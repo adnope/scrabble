@@ -5,9 +5,7 @@
 #include <chrono>
 #include <memory>
 #include <string>
-
 #include "dictionary.hpp"
-#include "spdlog/spdlog.h"
 
 namespace core {
 Node::Node() : is_word(false) {};
@@ -50,7 +48,7 @@ static std::string reverse_str(const std::string& str) {
 }
 
 // Done
-static void GADDAG(const std::string& word, std::vector<std::string>& array) {
+void GADDAG(const std::string& word, std::vector<std::string>& array) {
   for (unsigned int i = 0; i < word.size(); i++) {
     std::pair<std::string, std::string> p = split_string(word, i);
     array.push_back(reverse_str(p.first) + "+" + p.second);

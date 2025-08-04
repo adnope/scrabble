@@ -22,7 +22,9 @@ class Board {
     kSuccess,
     kOccupied,
     kNotAligned,
-    kWordsInvalid
+    kWordsInvalid,
+    kFailure, 
+    kNotConnected
   };
 
   struct Placement {
@@ -69,6 +71,10 @@ class Board {
 
   Tile GetTile(int row, int col) const;
   Tile GetTile(int case_curr) const;
+
+  // Kiểm tra sự thẳng hàng của các nước đi
+  //int CheckAlignment(const Move& move) const;
+  bool IsConnected(const Move& move) const;
 
  private:
   BoardGrid board_grid_;

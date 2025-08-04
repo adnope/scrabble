@@ -35,7 +35,7 @@ public:
     void addMove(Player::Move& move, Board& board);
     std::vector<Player::Move> getMoves() const;
     Player::Move SwapTiles(Bag& bag);
-    Player::Move PassMove();
+    static Player::Move PassMove();
     Player::Move FindBestMove(Board& board, Lexicon& lexicon, Bag &bag);
 
     // Các phương thức hỗ trợ cho logic AI
@@ -56,6 +56,8 @@ public:
                        Lexicon& lexicon, std::vector<Player::Move>& moves, int &row, int &col);
     void AddValidMove(Node* node, MoveGenState& state, Board &board, Lexicon& lexicon,
                       std::vector<Player::Move>& moves, int &row, int &col, int &tile_index);
+    void AutoPlaceTile(Board& board, Lexicon& lexicon, Bag& bag);
+
 private:
     std::vector<Player::Move> moves_; // Kế thừa từ Player
     Lexicon* lexicon_; // Lưu trữ con trỏ tới lexicon để sử dụng trong IsValidMove
