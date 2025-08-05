@@ -10,7 +10,7 @@
 namespace game {
 Game::Game(core::Dictionary::DictionaryType dict_type,
            const std::vector<std::string>& player_names) {
-  // lexicon_.PreloadDictionary(dict_type);
+  lexicon_.PreloadDictionary(dict_type);
   for (const auto& name : player_names) {
     AddPlayer(name);
   }
@@ -110,7 +110,7 @@ void Game::EndGame() {
   winner_ = players_[winner_index];
 }
 
-core::Board::ResponseStatus Game::ExecutePlaceMove(
+core::Player::MoveSubmissionResponse Game::ExecutePlaceMove(
     const core::Player::Move& player_move) {
   const auto player_response =
       current_player_ref().SubmitMove(player_move, board_, lexicon_);
@@ -124,7 +124,7 @@ core::Board::ResponseStatus Game::ExecutePlaceMove(
     NextTurn();
   }
 
-  return player_response.status;
+  return player_response;
 }
 
 void Game::PrintDebugInfo() const {

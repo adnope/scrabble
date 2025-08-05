@@ -1,5 +1,6 @@
 #include "board.hpp"
 
+#include <algorithm>
 #include <array>
 #include <iostream>
 #include <sstream>
@@ -206,6 +207,15 @@ bool Board::IsMoveOccupied(const Move& move) const {
   return false;
 }
 
+bool Board::IsInStartingSquare(const Move& move) const {
+  if (is_first_move_) {
+    return std::any_of(move.begin(), move.end(), [](const Placement& p) {
+      return p.row == kStartPosRow && p.col == kStartPosColumn;
+    });
+  }
+  return true;
+}
+
 int Board::IsAligned(const Move& move) {
   int anchor_row = move[0].row;
   int anchor_col = move[0].col;
@@ -230,7 +240,8 @@ int Board::IsAligned(const Move& move) {
 
 bool Board::AreInDictionary(const std::vector<std::string>& words,
                             const Lexicon& lexicon) {
-  for (const auto& word : words) {
+  for (auto word : words) {
+    std::transform(word.begin(), word.end(), word.begin(), tolower);
     if (!lexicon.Contains(word)) {
       std::cout << "Invalid word: " << word << '\n';
       return false;
@@ -241,6 +252,12 @@ bool Board::AreInDictionary(const std::vector<std::string>& words,
 
 Board::MoveValidationResponse Board::ValidateMove(const Move& move,
                                                   const Lexicon& lexicon) {
+  // Check if first move is on the starting square
+  if (!IsInStartingSquare(move)) {
+    std::cout << "First move is not on start square\n";
+    return {{}, 0, ResponseStatus::kNotInStartingSquare};
+  }
+
   // Check if any placement is performed on occupied square
   if (IsMoveOccupied(move)) {
     return {{}, 0, ResponseStatus::kOccupied};
@@ -269,6 +286,7 @@ Board::MoveValidationResponse Board::ValidateMove(const Move& move,
   }
 
   // Place the move after checking errors
+  is_first_move_ = false;
   for (const auto& [tile, row, col] : move) {
     PlaceTile(tile, row, col);
   }

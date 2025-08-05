@@ -81,7 +81,7 @@ void SettingsState::Render(SDL_Renderer* renderer) {
   SDL_RenderClear(renderer);
 
   gui_->RenderImage(renderer, "assets/textures/settings_background.png",
-                   {0, 0, gui_->window_width(), gui_->window_height()});
+                    {0, 0, gui_->window_width(), gui_->window_height()});
 
   const double w_width = static_cast<double>(gui_->window_width());
   const double w_height = static_cast<double>(gui_->window_height());
@@ -90,7 +90,8 @@ void SettingsState::Render(SDL_Renderer* renderer) {
   settings_box_.h = w_height / 1.6;
   settings_box_.x = (w_width / 2) - (settings_box_.w / 2);
   settings_box_.y = w_height / 4.5;
-  gui_->RenderImage(renderer, "assets/textures/settings_box.png", settings_box_);
+  gui_->RenderImage(renderer, "assets/textures/settings_box.png",
+                    settings_box_);
 
   back_button_.w = w_width / 6.4;
   back_button_.h = w_height / 10;
@@ -140,51 +141,23 @@ void SettingsState::UpdateOptionPosition(int index) {
 }
 
 void SettingsState::RenderOption(SDL_Renderer* renderer, Option& option) {
-  // Render the label
-  // SDL_Surface* label_surface = TTF_RenderUTF8_Solid(
-  //     gui_->jersey32()(), option.label.c_str(), {255, 255, 255, 255});
-  // SDL_Texture* label_texture =
-  //     SDL_CreateTextureFromSurface(renderer, label_surface);
-  // option.label_area.w =
-  //     label_surface->w *
-  //     static_cast<int>(static_cast<double>(option.label_area.h) /
-  //                      label_surface->h);
-  // SDL_FreeSurface(label_surface);
-  // SDL_RenderCopy(renderer, label_texture, nullptr, &option.label_area);
-  // SDL_DestroyTexture(label_texture);
-
-  GUI::RenderText(renderer, option.label, gui_->jersey32(), option.label_area.x,
+  GUI::RenderText(renderer, option.label, gui_->jersey64(), option.label_area.x,
                   option.label_area.y, {255, 255, 255, 255});
 
   // Render the current choice
-  const int current_option_x =
-      settings_box_.x + static_cast<double>(settings_box_.w) * 0.7;
+  const int current_option_x = settings_box_.x + (settings_box_.w / 10 * 7);
   option.option_area.x = current_option_x - option.option_area.w / 2;
-  GUI::RenderText(renderer, option.current_option(), gui_->jersey32(),
+  GUI::RenderText(renderer, option.current_option(), gui_->jersey64(),
                   option.option_area.x, option.option_area.y,
                   {255, 255, 255, 255});
-  // SDL_Surface* current_option_surface = TTF_RenderUTF8_Solid(
-  //     gui_->jersey32()(), option.current_option().c_str(), {255, 255, 255,
-  //     255});
-  // SDL_Texture* current_option_texture =
-  //     SDL_CreateTextureFromSurface(renderer, current_option_surface);
-  // option.option_area.w =
-  //     current_option_surface->w *
-  //     static_cast<int>(static_cast<double>(option.option_area.h) /
-  //                      current_option_surface->h);
-  // SDL_FreeSurface(current_option_surface);
-  // SDL_RenderCopy(renderer, current_option_texture, nullptr,
-  //                &option.option_area);
-  // SDL_DestroyTexture(current_option_texture);
 
-  option.leftarrow_area.x = option.option_area.x -
-                            double(option.option_area.w) / 4 -
-                            option.leftarrow_area.w;
+  option.leftarrow_area.x =
+      option.option_area.x - option.option_area.w / 4 - option.leftarrow_area.w;
   gui_->RenderImage(renderer, "assets/textures/left_arrow.png",
-                   option.leftarrow_area);
+                    option.leftarrow_area);
   option.rightarrow_area.x =
-      option.option_area.x + double(option.option_area.w) * 1.25;
+      option.option_area.x + option.option_area.w * 5 / 4;
   gui_->RenderImage(renderer, "assets/textures/right_arrow.png",
-                   option.rightarrow_area);
+                    option.rightarrow_area);
 }
 }  // namespace gui

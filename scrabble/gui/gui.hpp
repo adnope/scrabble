@@ -58,6 +58,8 @@ class GUI {
   int window_height() const { return window_height_; }
   bool vsync() const { return vsync_; }
   TTF_Font* jersey32() const { return resources_.jersey32(); }
+  TTF_Font* jersey48() const { return resources_.jersey48(); }
+  TTF_Font* jersey64() const { return resources_.jersey64(); }
   SDL_Cursor* cursor(SDL_SystemCursor cursor) {
     return resources_.GetSystemCursor(cursor);
   }

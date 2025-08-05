@@ -20,6 +20,7 @@ class Board {
 
   enum class ResponseStatus : uint8_t {
     kSuccess,
+    kNotInStartingSquare,
     kOccupied,
     kNotAligned,
     kWordsInvalid
@@ -77,6 +78,8 @@ class Board {
   // Word GetWordFromPos(int row, int col, bool horizontal, const Move& move);
 
   // std::vector<Word> GetWordsFromMove(const Move& move, bool horizontal);
+
+  bool IsInStartingSquare(const Move& move) const;
 
   static int IsAligned(const Move& move);
 

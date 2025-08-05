@@ -47,7 +47,7 @@ class Game {
 
   SwapResponse ExecuteSwapMove(const std::vector<int>& indices);
 
-  core::Board::ResponseStatus ExecutePlaceMove(
+  core::Player::MoveSubmissionResponse ExecutePlaceMove(
       const core::Player::Move& player_move);
 
   void NextTurn();

@@ -42,8 +42,10 @@ class IngameState : public IGameState {
   GUI* gui_;
   game::Game game_;
 
-  std::array<std::array<SDL_Rect, kBoardSize>, kBoardSize> board_grid_{};
-  std::array<SDL_Rect, 7> deck_{};
+  std::array<std::array<SDL_Rect, kBoardSize>, kBoardSize>
+      board_display_grid_{};
+  std::array<std::array<bool, kBoardSize>, kBoardSize> board_occupied{};
+  std::array<SDL_Rect, 7> deck_display_{};
   std::vector<PlayerInfoBox> player_infos_;
   std::vector<HistoryEntry> movehistory_;
 
@@ -52,6 +54,14 @@ class IngameState : public IGameState {
   SDL_Rect pass_button_{};
 
   SDL_Rect movehistory_box_{};
+
+  bool dragging_tile_ = false;
+  int dragged_tile_index_ = -1;
+  SDL_Point drag_offset_{};
+  SDL_Rect dragged_tile_rect_{};
+  core::Player::Move player_move_;
+
+  void ClearPendingPlayerMove();
 
   void InitFirstPlayer();
   void InitPlayerDecks();
@@ -71,6 +81,12 @@ class IngameState : public IGameState {
   void UpdateMoveHistorySize();
   void RenderMoveHistory(SDL_Renderer* renderer);
 
+  void RenderDraggedTile(SDL_Renderer* renderer);
+
   void HandleTileDrag(SDL_Event& event);
+  void HandleBoardSquareClick(SDL_Event& event);
+  void HandleActionButtons(SDL_Event& event);
+
+  void SubmitMove();
 };
 }  // namespace gui
