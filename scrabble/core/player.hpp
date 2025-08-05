@@ -13,6 +13,7 @@ class Player {
  public:
   struct Placement {
     int tile_index = 0;
+    char use = 0; // if the tile is a blank tile
     int row = 0;
     int col = 0;
   };
@@ -60,6 +61,8 @@ class Player {
   int score() const { return player_score_; }
   std::array<Tile, kMaxDeckSize> deck() { return deck_; }
   int current_deck_size() const;
+
+  void SetTile(int index, Tile tile) { deck_.at(index) = tile; }
 
  private:
   std::string player_name_;

@@ -14,6 +14,7 @@ Game::Game(core::Dictionary::DictionaryType dict_type,
   for (const auto& name : player_names) {
     AddPlayer(name);
   }
+  players_.at(0).SetTile(0, core::Tile('?', 0));
 }
 
 void Game::LoadDictionary(core::Dictionary::DictionaryType type) {

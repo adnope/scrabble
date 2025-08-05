@@ -61,6 +61,23 @@ class IngameState : public IGameState {
   SDL_Rect dragged_tile_rect_{};
   core::Player::Move player_move_;
 
+  bool show_swap_popup_ = false;
+  bool no_tile_selected_error = false;
+  std::vector<int> selected_swap_indices_;
+  std::array<SDL_Rect, 7> swap_deck_{};
+  SDL_Rect swap_popup_box_{};
+  SDL_Rect swap_confirm_button_{};
+  SDL_Rect swap_cancel_button_{};
+
+  bool show_select_for_blank_popup = false;
+  int selected_letter_index_ = -1;
+  char blank_tile_use_ = '?';
+  int blank_tile_index_ = -1;
+  int blank_tile_row_ = -1;
+  int blank_tile_col_ = -1;
+  std::array<SDL_Rect, 26> letter_rects_{};
+  SDL_Rect select_for_blank_box_{};
+
   void ClearPendingPlayerMove();
 
   void InitFirstPlayer();
@@ -83,9 +100,14 @@ class IngameState : public IGameState {
 
   void RenderDraggedTile(SDL_Renderer* renderer);
 
+  void RenderSwapPopup(SDL_Renderer* renderer);
+  void RenderBlankSelectPopup(SDL_Renderer* renderer);
+
   void HandleTileDrag(SDL_Event& event);
   void HandleBoardSquareClick(SDL_Event& event);
   void HandleActionButtons(SDL_Event& event);
+  void HandleSwapPopupEvent(SDL_Event& event);
+  void HandleBlankSelectPopupEvent(SDL_Event& event);
 
   void SubmitMove();
 };

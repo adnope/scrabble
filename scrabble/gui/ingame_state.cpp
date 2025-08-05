@@ -24,7 +24,7 @@ IngameState::IngameState(GUI* gui, core::Dictionary::DictionaryType dict_type,
 }
 
 void IngameState::ClearPendingPlayerMove() {
-  for (const auto& [i, row, col] : player_move_) {
+  for (const auto& [i, use, row, col] : player_move_) {
     board_occupied.at(row).at(col) = false;
   }
   player_move_.clear();
@@ -112,14 +112,15 @@ void IngameState::RenderBoard(SDL_Renderer* renderer) {
       }
     }
   }
+
   // Display tiles in pending placements
   const auto& deck = game_.current_player().deck();
-  for (const auto& [tile_index, row, col] : player_move_) {
+  for (const auto& [tile_index, use, row, col] : player_move_) {
     std::string image_path = "assets/textures/board/";
     std::string letter = std::string{deck.at(tile_index).letter()};
 
-    if (letter == "?") {
-      letter = "blank";
+    if (deck.at(tile_index).IsBlankTile()) {
+      letter = use;
     }
 
     std::transform(letter.begin(), letter.end(), letter.begin(), tolower);
@@ -146,7 +147,7 @@ void IngameState::UpdateDeckSize() {
     int x = offset_x + (i * (tile_w + gap));
     deck_display_.at(i) = {x, y, tile_w, tile_h};
   }
-  for (const auto& [j, row, col] : player_move_) {
+  for (const auto& [j, use, row, col] : player_move_) {
     deck_display_.at(j).h = 0;
     deck_display_.at(j).w = 0;
   }
@@ -234,8 +235,6 @@ void IngameState::RenderMoveHistory(SDL_Renderer* renderer) {
 }
 
 void IngameState::UpdateActionButtonsSize() {
-  // const int y = board_display_grid_.at(14).at(0).y +
-  //               (board_display_grid_.at(6).at(0).h * 2);
   const int deck_bottom_edge =
       board_display_grid_.at(14).at(0).y +
       (board_display_grid_.at(6).at(0).h * 2) +
@@ -280,6 +279,166 @@ void IngameState::RenderDraggedTile(SDL_Renderer* renderer) {
   }
 }
 
+void IngameState::RenderSwapPopup(SDL_Renderer* renderer) {
+  if (!show_swap_popup_) {
+    return;
+  }
+
+  // Modal box
+  int modal_w = gui_->window_width() / 2;
+  int modal_h = gui_->window_height() / 2;
+  swap_popup_box_ = {(gui_->window_width() - modal_w) / 2,
+                     (gui_->window_height() - modal_h) / 2, modal_w, modal_h};
+
+  gui_->RenderImage(renderer,
+                    "assets/textures/ingame/swap_popup_background.png",
+                    swap_popup_box_);
+
+  // Confirm button
+  const int button_w = modal_w / 5;
+  const int button_h = modal_h / 6;
+  const int button_x = swap_popup_box_.x + ((modal_w - button_w) / 2);
+
+  const int confirm_button_y = swap_popup_box_.y + (modal_h / 4);
+  swap_confirm_button_ = {button_x, confirm_button_y, button_w, button_h};
+  gui_->RenderImage(renderer, "assets/textures/ingame/button_confirm.png",
+                    swap_confirm_button_);
+
+  // Cancel button
+  const int cancel_button_y = confirm_button_y + button_h + (modal_h / 30);
+  swap_cancel_button_ = {button_x, cancel_button_y, button_w, button_h};
+  gui_->RenderImage(renderer, "assets/textures/ingame/button_cancel.png",
+                    swap_cancel_button_);
+
+  // Draw deck tiles inside modal
+  const auto& deck = game_.current_player().deck();
+  const int text_padding = modal_w / 20;
+  int tile_h = modal_w / 10;
+  int start_x = swap_popup_box_.x + text_padding;
+  int y = cancel_button_y + button_h +
+          ((swap_popup_box_.y + modal_h - (cancel_button_y + button_h)) / 5);
+  int gap = modal_w / 50;
+  int tile_w = (modal_w - (2 * text_padding + 6 * gap)) / 7;
+
+  if (no_tile_selected_error) {
+    const int error_w = button_w * 2;
+    const int error_h = button_h / 2;
+    const int error_x = swap_popup_box_.x + ((modal_w - error_w) / 2);
+    const int error_y = cancel_button_y + button_h + (modal_h / 40);
+    y += error_h + modal_h / 40;
+    gui_->RenderImage(renderer,
+                      "assets/textures/ingame/swap_error_no_tile_selected.png",
+                      {error_x, error_y, error_w, error_h});
+  }
+
+  for (int i = 0; i < static_cast<int>(deck.size()); ++i) {
+    swap_deck_.at(i) = {start_x + (i * (tile_w + gap)), y, tile_w, tile_h};
+
+    // Highlight if selected
+    bool selected =
+        std::find(selected_swap_indices_.begin(), selected_swap_indices_.end(),
+                  i) != selected_swap_indices_.end();
+    if (selected) {
+      SDL_Rect outline = {swap_deck_.at(i).x - 2, swap_deck_.at(i).y - 2,
+                          swap_deck_.at(i).w + 4, swap_deck_.at(i).h + 4};
+      gui_->RenderImage(renderer,
+                        "assets/textures/ingame/selected_tile_background.png",
+                        outline);
+    }
+
+    // Draw tile image
+    std::string image_path = "assets/textures/board/";
+    std::string letter = (deck.at(i).letter() == '?')
+                             ? "blank"
+                             : std::string{deck.at(i).letter()};
+    std::transform(letter.begin(), letter.end(), letter.begin(), tolower);
+    image_path += letter + ".png";
+    gui_->RenderImage(renderer, image_path, swap_deck_.at(i));
+  }
+}
+
+void IngameState::RenderBlankSelectPopup(SDL_Renderer* renderer) {
+  if (!show_select_for_blank_popup) {
+    return;
+  }
+
+  // Modal box
+  const int modal_w = gui_->window_width() / 2;
+  const int modal_h = gui_->window_height() / 11 * 10;
+  select_for_blank_box_ = {(gui_->window_width() - modal_w) / 2,
+                           (gui_->window_height() - modal_h) / 2, modal_w,
+                           modal_h};
+
+  gui_->RenderImage(
+      renderer, "assets/textures/ingame/select_tile_for_blank_background.png",
+      select_for_blank_box_);
+
+  const int padding = modal_w / 20;
+  const int start_x = select_for_blank_box_.x + padding;
+  const int gap_x = modal_w / 40;
+  const int gap_y = modal_h / 40;
+  const int letter_w = (modal_w - 2 * padding - 5 * gap_x) / 6;
+  const int letter_h = ((modal_h * 7 / 9) - padding - 4 * gap_y) / 5;
+  const int y1 = modal_h * 5 / 18;
+  const int y2 = y1 + letter_h + gap_y;
+  const int y3 = y2 + letter_h + gap_y;
+  const int y4 = y3 + letter_h + gap_y;
+  const int y5 = y4 + letter_h + gap_y;
+  for (auto& rect : letter_rects_) {
+    rect.w = letter_w;
+    rect.h = letter_h;
+  }
+  for (int i = 0; i < 26; ++i) {
+    if (i >= 0 && i <= 5) {
+      for (int j = 0; j <= 5; ++j) {
+        letter_rects_.at(j).x = start_x + j * (gap_x + letter_w);
+        letter_rects_.at(j).y = y1;
+      }
+    }
+    if (i >= 6 && i <= 11) {
+      for (int j = 6; j <= 11; ++j) {
+        letter_rects_.at(j).x = letter_rects_.at(j - 6).x;
+        letter_rects_.at(j).y = y2;
+      }
+    }
+    if (i >= 12 && i <= 17) {
+      for (int j = 12; j <= 17; ++j) {
+        letter_rects_.at(j).x = letter_rects_.at(j - 6).x;
+        letter_rects_.at(j).y = y3;
+      }
+    }
+    if (i >= 18 && i <= 23) {
+      for (int j = 18; j <= 23; ++j) {
+        letter_rects_.at(j).x = letter_rects_.at(j - 6).x;
+        letter_rects_.at(j).y = y4;
+      }
+    }
+    if (i == 24 || i == 25) {
+      letter_rects_.at(i).y = y5;
+      if (i == 24) {
+        letter_rects_.at(i).x = letter_rects_.at(2).x;
+      }
+      if (i == 25) {
+        letter_rects_.at(i).x = letter_rects_.at(3).x;
+      }
+    }
+
+    bool selected = selected_letter_index_ == i;
+    if (selected) {
+      SDL_Rect outline = {letter_rects_.at(i).x - 2, letter_rects_.at(i).y - 2,
+                          letter_rects_.at(i).w + 4, letter_rects_.at(i).h + 4};
+      gui_->RenderImage(renderer,
+                        "assets/textures/ingame/selected_tile_background.png",
+                        outline);
+    }
+  }
+
+  for (char c = 'a'; c <= 'z'; ++c) {
+    std::string image_path = "assets/textures/board/" + std::string{c} + ".png";
+    gui_->RenderImage(renderer, image_path, letter_rects_.at(c - 'a'));
+  }
+}
+
 void IngameState::Render(SDL_Renderer* renderer) {
   UpdateBoardSize();
   RenderBoard(renderer);
@@ -293,6 +452,9 @@ void IngameState::Render(SDL_Renderer* renderer) {
   RenderMoveHistory(renderer);
 
   RenderDraggedTile(renderer);
+
+  RenderSwapPopup(renderer);
+  RenderBlankSelectPopup(renderer);
 }
 
 void IngameState::SubmitMove() {
@@ -346,14 +508,23 @@ void IngameState::HandleTileDrag(SDL_Event& event) {
         if (SDL_PointInRect(&mouse_pos, &board_display_grid_.at(row).at(col)) ==
                 1 &&
             !board_occupied.at(row).at(col)) {
-          // Place tile in game logic
-          std::cout << "Tile placed at " << row << " " << col << '\n';
-          board_occupied.at(row).at(col) = true;
-          player_move_.push_back({dragged_tile_index_, row, col});
-          for (const auto& [tindex, prow, pcol] : player_move_) {
-            std::cout << tindex << " " << prow << " " << pcol << '\n';
+          if (!game_.current_player()
+                   .deck()
+                   .at(dragged_tile_index_)
+                   .IsBlankTile()) {
+            std::cout << "Tile placed at " << row << " " << col << '\n';
+            board_occupied.at(row).at(col) = true;
+            player_move_.push_back({dragged_tile_index_, 0, row, col});
+            placed = true;
+          } else {
+            board_occupied.at(row).at(col) = true;
+            placed = true;
+            blank_tile_index_ = dragged_tile_index_;
+            blank_tile_row_ = row;
+            blank_tile_col_ = col;
+            show_select_for_blank_popup = true;
+            selected_letter_index_ = -1;
           }
-          placed = true;
         }
       }
     }
@@ -425,15 +596,85 @@ void IngameState::HandleActionButtons(SDL_Event& event) {
         std::cout << game_.current_player().name() << " passed their turn\n";
       }
       if (is_hovering_swap) {
+        show_swap_popup_ = true;
+        selected_swap_indices_.clear();
       }
       if (is_hovering_submit) {
-        SubmitMove();
+        if (!player_move_.empty()) {
+          SubmitMove();
+        }
+      }
+    }
+  }
+}
+
+void IngameState::HandleSwapPopupEvent(SDL_Event& event) {
+  if (!show_swap_popup_) {
+    return;
+  }
+
+  SDL_Point mouse_pos{event.button.x, event.button.y};
+
+  if (event.type == SDL_MOUSEBUTTONDOWN &&
+      event.button.button == SDL_BUTTON_LEFT) {
+    for (int i = 0; i < 7; ++i) {
+      if (SDL_PointInRect(&mouse_pos, &swap_deck_.at(i)) == 1) {
+        no_tile_selected_error = false;
+        auto it = std::find(selected_swap_indices_.begin(),
+                            selected_swap_indices_.end(), i);
+        if (it == selected_swap_indices_.end()) {
+          selected_swap_indices_.push_back(i);
+        } else {
+          selected_swap_indices_.erase(it);
+        }
+      }
+    }
+
+    if (SDL_PointInRect(&mouse_pos, &swap_confirm_button_) == 1) {
+      if (!selected_swap_indices_.empty()) {
+        game_.ExecuteSwapMove(selected_swap_indices_);
+        show_swap_popup_ = false;
+      } else {
+        no_tile_selected_error = true;
+      }
+    }
+
+    if (SDL_PointInRect(&mouse_pos, &swap_cancel_button_) == 1) {
+      show_swap_popup_ = false;
+      selected_swap_indices_.clear();
+    }
+  }
+}
+
+void IngameState::HandleBlankSelectPopupEvent(SDL_Event& event) {
+  if (!show_select_for_blank_popup) {
+    return;
+  }
+
+  SDL_Point mouse_pos{event.button.x, event.button.y};
+  if (event.type == SDL_MOUSEBUTTONDOWN &&
+      event.button.button == SDL_BUTTON_LEFT) {
+    for (int i = 0; i < 26; ++i) {
+      if (SDL_PointInRect(&mouse_pos, &letter_rects_.at(i)) == 1) {
+        selected_letter_index_ = i;
+        blank_tile_use_ = static_cast<char>(i + 'a');
+        player_move_.push_back({blank_tile_index_, blank_tile_use_,
+                                blank_tile_row_, blank_tile_col_});
+        show_select_for_blank_popup = false;
       }
     }
   }
 }
 
 void IngameState::HandleEvent(SDL_Event& event) {
+  if (show_swap_popup_) {
+    HandleSwapPopupEvent(event);
+    return;
+  }
+  if (show_select_for_blank_popup) {
+    HandleBlankSelectPopupEvent(event);
+    return;
+  }
   HandleTileDrag(event);
   HandleBoardSquareClick(event);
   HandleActionButtons(event);
@@ -447,7 +688,6 @@ void IngameState::Update() {
 }  // namespace gui
 
 // TODO (Duy Nguyen):
-// Swap mechanism
 // Blank tile mechanism
 // Handle move validation exceptions
 // Move history

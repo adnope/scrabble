@@ -265,7 +265,7 @@ Board::MoveValidationResponse Board::ValidateMove(const Move& move,
 
   // Checking placements alignment
   int horizontal = IsAligned(move);
-  if (horizontal == -2) {
+  if (horizontal == -1) {
     return {{}, 0, ResponseStatus::kNotAligned};
   }
 
