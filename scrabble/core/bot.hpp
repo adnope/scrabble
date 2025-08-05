@@ -2,7 +2,8 @@
 
 #include <map>
 #include <utility>
-#include <vector>
+#include <vector> 
+#include <memory>
 #include "bag.hpp"
 #include "core/board.hpp"
 #include "core/lexicon.hpp"
@@ -60,7 +61,7 @@ public:
 
 private:
     std::vector<Player::Move> moves_; // Kế thừa từ Player
-    Lexicon* lexicon_; // Lưu trữ con trỏ tới lexicon để sử dụng trong IsValidMove
+    std::unique_ptr<Lexicon> lexicon_; // Lưu trữ con trỏ tới lexicon để sử dụng trong IsValidMove
     void BuildCrossWordSegment(Board& board, const Board::Move& move, int& r, int& c,
                                  bool cross_horizontal, bool forward, std::string& word);
     char FindMoveLetter(const Board::Move& move, int row, int col, bool& found) const;

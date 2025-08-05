@@ -9,7 +9,7 @@
 namespace core {
 
 Bot::Bot(const std::string& player_name, int score)
-    : Player(player_name, score), lexicon_(nullptr) {
+    : Player(player_name, score), lexicon_(std::make_unique<Lexicon>()) {
     // Cần một Lexicon hợp lệ, ví dụ:
     lexicon_->PreloadDictionary(core::Dictionary::DictionaryType::CSW);
 }
@@ -164,7 +164,6 @@ static bool VerifyCrossWords(char ch, int row, int col, Board& board,
 
 // Tìm nước đi tốt nhất từ deck_, board và lexicon
 Player::Move Bot::FindBestMove(Board& board, Lexicon& lexicon, Bag& bag) {
-  lexicon_ = &lexicon;  // Lưu con trỏ lexicon để sử dụng trong IsValidMove
   if (current_deck_size() == 0) {
     return PassMove();
   }

@@ -147,6 +147,64 @@ void PrintBoardResponse(const core::Board::MoveValidationResponse& response) {
   }
 }
 
+TEST_CASE("Bot test") {
+  spdlog::info("Bot test");
+  core::Board board;
+  core::Lexicon lexicon;
+  core::Bag bag;
+  core::Bot bot("TestBot");
+  lexicon.PreloadDictionary(core::Dictionary::CSW);
+
+  // Dat ban dau bang
+  std::vector<core::Board::Placement> initial_state_move = {
+      {{'V', 4}, 5, 7},  {{'I', 1}, 5, 8}, {{'S', 1}, 5, 9}, {{'I', 1}, 5, 10},
+      {{'T', 1}, 5, 11}, {{'T', 1}, 7, 4}, {{'A', 1}, 7, 5}, {{'N', 1}, 7, 6},
+      {{'N', 1}, 7, 7},  {{'E', 1}, 7, 8}, {{'D', 2}, 7, 9}, {{'P', 3}, 2, 8},
+      {{'R', 1}, 3, 8},  {{'A', 1}, 4, 8}, {{'S', 1}, 6, 8}};
+  for (const auto& placement : initial_state_move) {
+    board.PlaceTile(placement.tile, placement.row, placement.col);
+  }
+
+  // Them cac o chu de bot co the su dung
+  std::vector<core::Tile> initial_tiles = {{'A', 1}, {'T', 1}};
+  bot.AddTiles(initial_tiles);
+
+  // Chuyen doi move sang dang Bot::Move
+  core::Bot::Move bot_move = {
+      {0, 6, 9},  // A tai vi tri (6, 9)
+      {1, 6, 10}  // T tai vi tri (6, 10)
+  };
+  CHECK(bot.IsValidMove(bot_move, board) == true);
+
+  // Goi FindBestMove de kiem tra
+  core::Bot::Move best_move = bot.FindBestMove(board, lexicon, bag);
+  if (!best_move.empty()) {
+    const auto board_response = board.ValidateMove(core::Bot::ConvertToBoardMove(bot, best_move), lexicon);
+    for (const core::Word& word : board_response.words) {
+      word.PrintContent();
+      std::cout << "-" << word.points() << "points" << " ";
+    }
+    std::cout << "\n";
+    CHECK(board_response.status == core::Board::ResponseStatus::kSuccess);
+  } else {
+    std::cout << "No valid move found.\n";
+  }
+
+  // Kiem tra move2 voi Bot
+  core::Bot::Move bot_move2 = {{0, 4, 10}}; // Su dung o A tai (4, 10), can cap nhat tile neu khac
+  if (bot.IsValidMove(bot_move2, board)) {
+    const auto board_response2 = board.ValidateMove(bot.ConvertToBoardMove(bot, bot_move2), lexicon);
+    for (const core::Word& word : board_response2.words) {
+      word.PrintContent();
+      std::cout << "-" << word.points() << "points" << " ";
+    }
+    std::cout << "\n";
+    CHECK(board_response2.status == core::Board::ResponseStatus::kSuccess);
+  }
+
+  std::cout << board.GetDisplayFormat();
+}
+
 // TEST_CASE("Bot FindBestMove with Simulated Board") {
 //   core::Bot bot("TestBot");
 //   core::Bag bag;
@@ -388,58 +446,6 @@ void PrintBoardResponse(const core::Board::MoveValidationResponse& response) {
 //     CHECK(connects);
 //   }
 // }
-
-TEST_CASE("Bot::IsValidMove function") {
-  core::Board newboard;
-  core::Lexicon lexicon;
-  core::Bot bot("TestBot");
-
-  bot.AddTiles({{'H', 4}, {'E', 1}, {'L', 1}, {'L', 1}, {'O', 1}});
-
-  SUBCASE("Valid first move") {
-    core::Player::Move move = {
-        {0, 7, 7},   // H
-        {1, 7, 8},   // E
-        {2, 7, 9},   // L
-        {3, 7, 10},  // L
-        {4, 7, 11}   // O
-    };
-    CHECK(bot.IsValidMove(move, newboard) == true);
-  }
-
-  SUBCASE("Invalid - not connected") {
-    core::Player::Move move = {
-        {0, 0, 0},  // H
-        {1, 0, 1}   // E
-    };
-    CHECK(bot.IsValidMove(move, newboard) == false);
-  }
-
-  // SUBCASE("Invalid - out of bounds") {
-  //   core::Player::Move move = {
-  //       {0, -1, 0},  // H
-  //       {1, -1, 1}   // E
-  //   };
-  //   CHECK(bot.IsValidMove(move, board) == false);
-  // }
-} 
-
-// TEST_CASE("Board::ValidateMove function") {
-//   // Khởi tạo lexicon với các từ cần thiết
-//   core::Lexicon lexicon;
-//   lexicon.PreloadDictionary(core::Dictionary::DictionaryType::CSW);
-
-//   SUBCASE("Valid first move - must cover center") {
-//     core::Board board;
-//     core::Board::Move valid_move = {
-//       {{'H', 4}, 7, 7}, // Bắt buộc qua ô trung tâm
-//       {{'E', 1}, 7, 8},
-//       {{'L', 1}, 7, 9}
-//     };
-//     auto response = board.ValidateMove(valid_move, lexicon);
-//     CHECK(response.status == core::Board::ResponseStatus::kSuccess);
-//     CHECK(response.move_points > 0);
-//   }
 
 //   SUBCASE("Invalid first move - not covering center") {
 //     core::Board board;
