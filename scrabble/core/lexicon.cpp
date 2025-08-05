@@ -3,11 +3,11 @@
 #include <algorithm>
 #include <cctype>
 #include <chrono>
+#include <iostream>
 #include <memory>
 #include <string>
 
 #include "dictionary.hpp"
-#include "spdlog/spdlog.h"
 
 namespace core {
 Node::Node() : is_word(false) {};
@@ -74,8 +74,8 @@ void Lexicon::BuildLexiconTree(const core::Dictionary& dictionary) {
   const auto end = std::chrono::high_resolution_clock::now();
   const std::chrono::duration<double, std::milli> elapsed = end - start;
 
-  // spdlog::info("[Lexicon] Lexicon tree built with {0} words in {1} ms.",
-  // size(), elapsed.count());
+  std::cout << "[Lexicon] Lexicon tree built with " << size() << " words in "
+            << elapsed.count() << " ms\n";
 }
 
 void Lexicon::PreloadDictionary(core::Dictionary::DictionaryType type) {

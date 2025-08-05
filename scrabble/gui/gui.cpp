@@ -7,7 +7,8 @@
 #include "SDL_error.h"
 #include "SDL_image.h"
 #include "SDL_ttf.h"
-#include "core/dictionary.hpp"
+#include "SDL_video.h"
+#include "core/lexicon.hpp"
 #include "ingame_state.hpp"
 #include "input_names_state.hpp"
 #include "main_menu_state.hpp"
@@ -73,12 +74,11 @@ GUI::GUI() {
   }
 
   resources_.SetRenderer(renderer_);
-
+  lexicon_ = resources_.csw_lexicon();
   // current_state_ = std::make_unique<MainMenuState>(this);
   current_state_type_ = GameStateType::Ingame;
   std::vector<std::string> player_names = {"duy1", "duy2", "duy3"};
-  current_state_ =
-      std::make_unique<IngameState>(this, dictionary_, player_names);
+  current_state_ = std::make_unique<IngameState>(this, lexicon_, player_names);
 }
 
 GUI::~GUI() {
@@ -103,7 +103,8 @@ bool GUI::Init() {
               << '\n';
     return false;
   }
-
+  SDL_Surface* icon = IMG_Load("assets/textures/appicon.png");
+  SDL_SetWindowIcon(window_, icon);
   SDL_SetWindowMinimumSize(window_, kInitialWindowWidth, kInitialWindowHeight);
   SDL_SetWindowMaximumSize(window_, 2560, 1440);
 
@@ -144,8 +145,7 @@ void GUI::ChangeState(GUI::GameStateType state_type, int num_players) {
   }
 }
 
-void GUI::ChangeState(GameStateType state_type,
-                      core::Dictionary::DictionaryType dict_type,
+void GUI::ChangeState(GameStateType state_type, core::Lexicon* lexicon,
                       const std::vector<std::string>& player_names) {
   if (state_type == current_state_type_) {
     return;
@@ -153,8 +153,7 @@ void GUI::ChangeState(GameStateType state_type,
 
   current_state_type_ = state_type;
   if (state_type == GameStateType::Ingame) {
-    current_state_ =
-        std::make_unique<IngameState>(this, dict_type, player_names);
+    current_state_ = std::make_unique<IngameState>(this, lexicon, player_names);
   }
 }
 
@@ -181,7 +180,7 @@ void GUI::Start() {
     current_state_->Render(renderer_);
     SDL_RenderPresent(renderer_);
     if (!vsync_) {
-      SDL_Delay(2);
+      SDL_Delay(4);
     }
   }
 }

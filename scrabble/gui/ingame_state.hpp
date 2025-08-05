@@ -6,7 +6,6 @@
 
 #include "SDL_events.h"
 #include "SDL_render.h"
-#include "core/dictionary.hpp"
 #include "game/game.hpp"
 #include "gui.hpp"
 #include "i_game_state.hpp"
@@ -29,7 +28,7 @@ class IngameState : public IGameState {
     std::string move_content;
   };
 
-  IngameState(GUI* gui, core::Dictionary::DictionaryType dict_type,
+  IngameState(GUI* gui, core::Lexicon* lexicon,
               const std::vector<std::string>& player_names);
 
   void HandleEvent(SDL_Event& event) override;

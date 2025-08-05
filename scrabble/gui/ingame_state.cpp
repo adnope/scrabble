@@ -9,13 +9,14 @@
 #include "SDL_mouse.h"
 #include "SDL_render.h"
 #include "core/board.hpp"
+#include "core/lexicon.hpp"
 #include "core/player.hpp"
 #include "gui.hpp"
 
 namespace gui {
-IngameState::IngameState(GUI* gui, core::Dictionary::DictionaryType dict_type,
+IngameState::IngameState(GUI* gui, core::Lexicon* lexicon,
                          const std::vector<std::string>& player_names)
-    : gui_(gui), game_(dict_type, player_names) {
+    : gui_(gui), game_(lexicon, player_names) {
   InitFirstPlayer();
   InitPlayerDecks();
   for (const auto& name : player_names) {

@@ -32,10 +32,7 @@ class Game {
 
   Game() {}
 
-  Game(core::Dictionary::DictionaryType dict_type,
-       const std::vector<std::string>& player_names);
-
-  void LoadDictionary(core::Dictionary::DictionaryType type);
+  Game(core::Lexicon* lexicon, const std::vector<std::string>& player_names);
 
   void AddPlayer(const std::string& name) { players_.emplace_back(name, 0); }
 
@@ -73,7 +70,7 @@ class Game {
   std::vector<core::Player> players_;
   core::Bag bag_;
   core::Board board_;
-  core::Lexicon lexicon_;
+  core::Lexicon* lexicon_ = new core::Lexicon();
   std::vector<Move> move_history_;
 
   int current_player_index_ = 0;

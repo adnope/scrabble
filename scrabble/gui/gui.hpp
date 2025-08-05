@@ -9,6 +9,7 @@
 #include "SDL_ttf.h"
 #include "SDL_video.h"
 #include "core/dictionary.hpp"
+#include "core/lexicon.hpp"
 #include "i_game_state.hpp"
 #include "resource_manager.hpp"
 
@@ -48,8 +49,7 @@ class GUI {
 
   void ChangeState(GameStateType state_type);
   void ChangeState(GameStateType state_type, int num_players);
-  void ChangeState(GameStateType state_type,
-                   core::Dictionary::DictionaryType dict_type,
+  void ChangeState(GameStateType state_type, core::Lexicon* lexicon,
                    const std::vector<std::string>& player_names);
 
   void Quit() { quit_ = true; }
@@ -74,6 +74,15 @@ class GUI {
     SDL_RenderSetVSync(renderer_, static_cast<int>(vsync_));
   }
 
+  void ChangeDictionary(core::Dictionary::DictionaryType dictionary_type) {
+    if (dictionary_type == core::Dictionary::CSW) {
+      lexicon_ = resources_.csw_lexicon();
+    }
+    if (dictionary_type == core::Dictionary::TWL) {
+      lexicon_ = resources_.twl_lexicon();
+    }
+  }
+
  private:
   int window_width_ = kInitialWindowWidth;
   int window_height_ = kInitialWindowHeight;
@@ -84,7 +93,7 @@ class GUI {
 
   bool quit_ = false;
   bool vsync_ = false;
-  core::Dictionary::DictionaryType dictionary_ = core::Dictionary::CSW;
+  core::Lexicon* lexicon_ = new core::Lexicon();
 
   ResourceManager resources_;
 

@@ -105,11 +105,9 @@ void CLIGame::InitDictionary() {
 
   if (choice == 1) {
     std::cout << "Dictionary: CSW\n\n";
-    game.LoadDictionary(core::Dictionary::CSW);
   }
   if (choice == 2) {
     std::cout << "Dictionary: TWL\n\n";
-    game.LoadDictionary(core::Dictionary::TWL);
   }
 }
 

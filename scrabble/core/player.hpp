@@ -62,8 +62,6 @@ class Player {
   std::array<Tile, kMaxDeckSize> deck() { return deck_; }
   int current_deck_size() const;
 
-  void SetTile(int index, Tile tile) { deck_.at(index) = tile; }
-
  private:
   std::string player_name_;
   std::array<Tile, kMaxDeckSize> deck_;

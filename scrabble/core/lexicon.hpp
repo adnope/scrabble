@@ -27,11 +27,12 @@ struct Node {
 class Lexicon {
  public:
   Lexicon();
-  ~Lexicon() = default;
-  Lexicon(Lexicon&&) = default;
-  Lexicon& operator=(Lexicon&&) = default;
-  Lexicon(const Lexicon&) = delete;
+
+  Lexicon(Lexicon&&) = delete;
   Lexicon& operator=(const Lexicon&) = delete;
+  Lexicon& operator=(Lexicon&&) = delete;
+  Lexicon(const Lexicon&) = delete;
+  ~Lexicon() {}
 
   void AddWord(const std::string& word);
   bool Contains(std::string word) const;

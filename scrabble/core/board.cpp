@@ -80,6 +80,9 @@ Board::Board() : is_first_move_(true) {
 
 bool Board::PlaceTile(const Tile& tile, const int row, const int col) {
   if (!IsOccupied(row, col)) {
+    if (is_first_move_) {
+      is_first_move_ = false;
+    }
     board_grid_.at(row).at(col).PlaceTile(tile);
     return true;
   }

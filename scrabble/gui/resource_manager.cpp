@@ -56,5 +56,7 @@ void ResourceManager::Clear() {
     SDL_FreeCursor(pair.second);
   }
   cursor_cache_.clear();
+  delete csw_lexicon_;
+  delete twl_lexicon_;
 }
 }  // namespace gui

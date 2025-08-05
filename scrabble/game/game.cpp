@@ -1,24 +1,31 @@
 #include "game.hpp"
 
+#include <algorithm>
 #include <iostream>
 #include <string>
 #include <vector>
 
 #include "core/board.hpp"
+#include "core/lexicon.hpp"
 #include "core/tile.hpp"
 
 namespace game {
-Game::Game(core::Dictionary::DictionaryType dict_type,
-           const std::vector<std::string>& player_names) {
-  lexicon_.PreloadDictionary(dict_type);
+Game::Game(core::Lexicon* lexicon, const std::vector<std::string>& player_names)
+    : lexicon_(lexicon) {
   for (const auto& name : player_names) {
     AddPlayer(name);
   }
-  players_.at(0).SetTile(0, core::Tile('?', 0));
-}
 
-void Game::LoadDictionary(core::Dictionary::DictionaryType type) {
-  lexicon_.PreloadDictionary(type);
+  const core::Board::Move initial_board = {
+      // Existing words
+      {{'V', 4}, 5, 7},  {{'I', 1}, 5, 8}, {{'S', 1}, 5, 9}, {{'I', 1}, 5, 10},
+      {{'T', 1}, 5, 11}, {{'T', 1}, 7, 4}, {{'A', 1}, 7, 5}, {{'N', 1}, 7, 6},
+      {{'N', 1}, 7, 7},  {{'E', 1}, 7, 8}, {{'D', 2}, 7, 9}, {{'P', 3}, 2, 8},
+      {{'R', 1}, 3, 8},  {{'A', 1}, 4, 8}, {{'S', 1}, 6, 8}};
+  for (const auto& placement : initial_board) {
+    board_.PlaceTile(placement.tile, placement.row, placement.col);
+    bag_.RemoveTile(placement.tile.letter());
+  }
 }
 
 void Game::InitPlayerDecks() {
@@ -92,29 +99,40 @@ Game::SwapResponse Game::ExecuteSwapMove(const std::vector<int>& indices) {
 }
 
 void Game::EndGame() {
-  int winner_index = 0;
-  int highest_score = players_[0].score();
-  for (int i = 0; i < num_players(); ++i) {
-    if (players_[i].score() > highest_score) {
-      highest_score = players_[i].score();
-      winner_index = i;
-    }
-  }
-
-  for (int i = 0; i < num_players(); ++i) {
-    if (i != winner_index) {
-      players_[winner_index].AddScore(players_[i].GetDeckScore());
+  bool end_by_passing = consecutive_passes_ >= 2 * num_players();
+  if (end_by_passing) {
+    for (int i = 0; i < num_players(); ++i) {
       players_[i].SubtractScore(players_[i].GetDeckScore());
     }
+    auto it = std::max_element(
+        players_.begin(), players_.end(),
+        [](const auto& a, const auto& b) { return a.score() < b.score(); });
+    winner_ = players_[static_cast<int>(std::distance(players_.begin(), it))];
+  } else {
+    int game_ender_index = 0;
+    for (int i = 0; i < num_players(); ++i) {
+      if (players_[i].current_deck_size() == 0) {
+        game_ender_index = i;
+        break;
+      }
+    }
+    for (int i = 0; i < num_players() && i != game_ender_index; ++i) {
+      players_[game_ender_index].AddScore(players_[i].GetDeckScore());
+      players_[i].SubtractScore(players_[i].GetDeckScore());
+    }
+    auto it = std::max_element(
+        players_.begin(), players_.end(),
+        [](const auto& a, const auto& b) { return a.score() < b.score(); });
+    winner_ = players_[static_cast<int>(std::distance(players_.begin(), it))];
   }
-
-  winner_ = players_[winner_index];
+  std::cout << "Winner: " << winner_.name() << "\nScore: " << winner_.score()
+            << '\n';
 }
 
 core::Player::MoveSubmissionResponse Game::ExecutePlaceMove(
     const core::Player::Move& player_move) {
   const auto player_response =
-      current_player_ref().SubmitMove(player_move, board_, lexicon_);
+      current_player_ref().SubmitMove(player_move, board_, *lexicon_);
   if (player_response.status == core::Board::ResponseStatus::kSuccess) {
     Move move;
     move.type = MoveType::kPlacing;
