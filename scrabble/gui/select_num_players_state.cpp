@@ -6,6 +6,44 @@
 #include "gui.hpp"
 
 namespace gui {
+void SelectNumPlayersState::Render(SDL_Renderer* renderer) {
+  SDL_RenderClear(renderer);
+
+  int w_width = gui_->window_width();
+  int w_height = gui_->window_height();
+
+  int logo_w = w_width / 3 * 2;
+  int logo_h = w_height / 6;
+  int logo_x = (w_width / 2) - (logo_w / 2);
+  int logo_y = w_height / 10;
+  gui_->RenderImage(renderer,
+                    "assets/textures/select_num_players/chooseplayer.png",
+                    {logo_x, logo_y, logo_w, logo_h});
+
+  int button_size = w_height / 4;
+  int button_y = (w_height / 2) - (button_size / 2);
+  int gap = (w_width - 3 * button_size) / 4;
+  two_players_button_ = {gap, button_y, button_size, button_size};
+  three_players_button_ = {(gap * 2) + button_size, button_y, button_size,
+                           button_size};
+  four_players_button_ = {(gap * 3) + (2 * button_size), button_y, button_size,
+                          button_size};
+
+  back_button_.w = w_height / 12;
+  back_button_.h = w_height / 12;
+  back_button_.x = w_width / 50;
+  back_button_.y = w_width / 50;
+
+  gui_->RenderImage(renderer, "assets/textures/select_num_players/2.png",
+                    two_players_button_);
+  gui_->RenderImage(renderer, "assets/textures/select_num_players/3.png",
+                    three_players_button_);
+  gui_->RenderImage(renderer, "assets/textures/select_num_players/4.png",
+                    four_players_button_);
+  gui_->RenderImage(renderer, "assets/textures/select_num_players/home.png",
+                    back_button_);
+}
+
 void SelectNumPlayersState::HandleEvent(SDL_Event& event) {
   SDL_Point mouse_pos;
   if (event.type == SDL_MOUSEMOTION || event.type == SDL_MOUSEBUTTONDOWN) {
@@ -47,38 +85,5 @@ void SelectNumPlayersState::HandleEvent(SDL_Event& event) {
 
 void SelectNumPlayersState::Update() {
   // e.g. animate background
-}
-
-void SelectNumPlayersState::Render(SDL_Renderer* renderer) {
-  SDL_RenderClear(renderer);
-
-  int w_width = gui_->window_width();
-  int w_height = gui_->window_height();
-
-  int logo_w = w_width / 3 * 2;
-  int logo_h = w_height / 6;
-  int logo_x = (w_width / 2) - (logo_w / 2);
-  int logo_y = w_height / 10;
-  gui_->RenderImage(renderer, "assets/textures/chooseplayer.png",
-                    {logo_x, logo_y, logo_w, logo_h});
-
-  int button_size = w_height / 4;
-  int button_y = (w_height / 2) - (button_size / 2);
-  int gap = (w_width - 3 * button_size) / 4;
-  two_players_button_ = {gap, button_y, button_size, button_size};
-  three_players_button_ = {(gap * 2) + button_size, button_y, button_size,
-                           button_size};
-  four_players_button_ = {(gap * 3) + (2 * button_size), button_y, button_size,
-                          button_size};
-
-  back_button_.w = w_height / 12;
-  back_button_.h = w_height / 12;
-  back_button_.x = w_width / 50;
-  back_button_.y = w_width / 50;
-
-  gui_->RenderImage(renderer, "assets/textures/2.png", two_players_button_);
-  gui_->RenderImage(renderer, "assets/textures/3.png", three_players_button_);
-  gui_->RenderImage(renderer, "assets/textures/4.png", four_players_button_);
-  gui_->RenderImage(renderer, "assets/textures/home.png", back_button_);
 }
 }  // namespace gui

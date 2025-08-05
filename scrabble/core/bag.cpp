@@ -98,13 +98,4 @@ void Bag::PrintBagInfo() const {
   std::cout << '\n';
   std::cout << "Tiles remaining: " << num_tiles_remanining() << '\n';
 }
-
-void Bag::RemoveTile(char tile_letter) {
-  auto it = std::find_if(tile_bag_.begin(), tile_bag_.end(),
-               [&](const Tile& tile) { return tile.letter() == tile_letter; });
-  if (it != tile_bag_.end()) {
-    tile_bag_.erase(it);
-  }
-}
-
 }  // namespace core

@@ -8,7 +8,6 @@
 #include "SDL_image.h"
 #include "SDL_ttf.h"
 #include "SDL_video.h"
-#include "core/lexicon.hpp"
 #include "ingame_state.hpp"
 #include "input_names_state.hpp"
 #include "main_menu_state.hpp"
@@ -44,6 +43,9 @@ void GUI::RenderImage(SDL_Renderer* renderer, const std::string& image_path,
 
 void GUI::RenderText(SDL_Renderer* renderer, const std::string& text,
                      TTF_Font* font, int x, int y, SDL_Color color) {
+  if (text.empty()) {
+    return;
+  }
   SDL_Surface* surface = TTF_RenderUTF8_Blended(font, text.c_str(), color);
   if (surface == nullptr) {
     std::cerr << "Failed to render text surface: " << SDL_GetError() << '\n';
@@ -65,6 +67,24 @@ void GUI::RenderText(SDL_Renderer* renderer, const std::string& text,
   SDL_DestroyTexture(texture);
 }
 
+void GUI::RenderTextCenteredX(SDL_Renderer* renderer, TTF_Font* font,
+                              const std::string& text, int anchor_x, int y,
+                              SDL_Color color) {
+  SDL_Surface* surface = TTF_RenderUTF8_Solid(font, text.c_str(), color);
+  SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+
+  SDL_Rect area;
+  area.w = surface->w;
+  area.h = surface->h;
+  area.x = anchor_x - (area.w / 2);
+  area.y = y;
+
+  SDL_RenderCopy(renderer, texture, nullptr, &area);
+
+  SDL_FreeSurface(surface);
+  SDL_DestroyTexture(texture);
+}
+
 GUI::GUI() {
   if (!Init()) {
     std::cerr << "Init SDL failed! Error: \n"
@@ -72,13 +92,17 @@ GUI::GUI() {
               << IMG_GetError() << '\n'
               << TTF_GetError() << '\n';
   }
-
   resources_.SetRenderer(renderer_);
-  lexicon_ = resources_.csw_lexicon();
-  // current_state_ = std::make_unique<MainMenuState>(this);
-  current_state_type_ = GameStateType::Ingame;
-  std::vector<std::string> player_names = {"duy1", "duy2", "duy3"};
-  current_state_ = std::make_unique<IngameState>(this, lexicon_, player_names);
+  lexicon_ = resources_.twl_lexicon();
+
+  current_state_ = std::make_unique<MainMenuState>(this);
+
+  // current_state_ = std::make_unique<InputNamesState>(this, 4);
+
+  // current_state_type_ = GameStateType::Ingame;
+  // std::vector<std::string> player_names = {"duy1", "duy2", "duy3", "duy4"};
+  // current_state_ = std::make_unique<IngameState>(this, lexicon_,
+  // player_names);
 }
 
 GUI::~GUI() {
@@ -131,6 +155,9 @@ void GUI::ChangeState(GUI::GameStateType state_type) {
   } else if (state_type == GameStateType::Settings) {
     current_state_ = std::make_unique<SettingsState>(this);
   } else if (state_type == GameStateType::EndGame) {
+  } else {
+    std::cout << "Invalid state\n";
+    return;
   }
 }
 
@@ -142,10 +169,13 @@ void GUI::ChangeState(GUI::GameStateType state_type, int num_players) {
   current_state_type_ = state_type;
   if (state_type == GameStateType::InputNames) {
     current_state_ = std::make_unique<InputNamesState>(this, num_players);
+  } else {
+    std::cout << "Invalid state\n";
+    return;
   }
 }
 
-void GUI::ChangeState(GameStateType state_type, core::Lexicon* lexicon,
+void GUI::ChangeState(GameStateType state_type,
                       const std::vector<std::string>& player_names) {
   if (state_type == current_state_type_) {
     return;
@@ -153,7 +183,11 @@ void GUI::ChangeState(GameStateType state_type, core::Lexicon* lexicon,
 
   current_state_type_ = state_type;
   if (state_type == GameStateType::Ingame) {
-    current_state_ = std::make_unique<IngameState>(this, lexicon, player_names);
+    current_state_ =
+        std::make_unique<IngameState>(this, lexicon_, player_names);
+  } else {
+    std::cout << "Invalid state\n";
+    return;
   }
 }
 

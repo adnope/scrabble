@@ -6,11 +6,13 @@
 #include <string>
 #include <vector>
 
+#include "SDL_events.h"
 #include "SDL_mouse.h"
 #include "SDL_render.h"
 #include "core/board.hpp"
 #include "core/lexicon.hpp"
 #include "core/player.hpp"
+#include "game/game.hpp"
 #include "gui.hpp"
 
 namespace gui {
@@ -25,10 +27,10 @@ IngameState::IngameState(GUI* gui, core::Lexicon* lexicon,
 }
 
 void IngameState::ClearPendingPlayerMove() {
-  for (const auto& [i, use, row, col] : player_move_) {
+  for (const auto& [i, use, row, col] : pending_move_) {
     board_occupied.at(row).at(col) = false;
   }
-  player_move_.clear();
+  pending_move_.clear();
 }
 
 void IngameState::InitFirstPlayer() {
@@ -116,7 +118,7 @@ void IngameState::RenderBoard(SDL_Renderer* renderer) {
 
   // Display tiles in pending placements
   const auto& deck = game_.current_player().deck();
-  for (const auto& [tile_index, use, row, col] : player_move_) {
+  for (const auto& [tile_index, use, row, col] : pending_move_) {
     std::string image_path = "assets/textures/board/";
     std::string letter = std::string{deck.at(tile_index).letter()};
 
@@ -126,6 +128,12 @@ void IngameState::RenderBoard(SDL_Renderer* renderer) {
 
     std::transform(letter.begin(), letter.end(), letter.begin(), tolower);
     image_path += letter + ".png";
+    gui_->RenderImage(renderer,
+                      "assets/textures/ingame/selected_tile_background.png",
+                      {board_display_grid_.at(row).at(col).x - 2,
+                       board_display_grid_.at(row).at(col).y - 2,
+                       board_display_grid_.at(row).at(col).w + 4,
+                       board_display_grid_.at(row).at(col).h + 4});
     gui_->RenderImage(renderer, image_path,
                       board_display_grid_.at(row).at(col));
   }
@@ -148,7 +156,7 @@ void IngameState::UpdateDeckSize() {
     int x = offset_x + (i * (tile_w + gap));
     deck_display_.at(i) = {x, y, tile_w, tile_h};
   }
-  for (const auto& [j, use, row, col] : player_move_) {
+  for (const auto& [j, use, row, col] : pending_move_) {
     deck_display_.at(j).h = 0;
     deck_display_.at(j).w = 0;
   }
@@ -297,7 +305,7 @@ void IngameState::RenderSwapPopup(SDL_Renderer* renderer) {
 
   // Confirm button
   const int button_w = modal_w / 5;
-  const int button_h = modal_h / 6;
+  const int button_h = modal_h / 7;
   const int button_x = swap_popup_box_.x + ((modal_w - button_w) / 2);
 
   const int confirm_button_y = swap_popup_box_.y + (modal_h / 4);
@@ -311,7 +319,7 @@ void IngameState::RenderSwapPopup(SDL_Renderer* renderer) {
   gui_->RenderImage(renderer, "assets/textures/ingame/button_cancel.png",
                     swap_cancel_button_);
 
-  // Draw deck tiles inside modal
+  // Deck tiles
   const auto& deck = game_.current_player().deck();
   const int text_padding = modal_w / 20;
   int tile_h = modal_w / 10;
@@ -335,7 +343,6 @@ void IngameState::RenderSwapPopup(SDL_Renderer* renderer) {
   for (int i = 0; i < static_cast<int>(deck.size()); ++i) {
     swap_deck_.at(i) = {start_x + (i * (tile_w + gap)), y, tile_w, tile_h};
 
-    // Highlight if selected
     bool selected =
         std::find(selected_swap_indices_.begin(), selected_swap_indices_.end(),
                   i) != selected_swap_indices_.end();
@@ -347,7 +354,6 @@ void IngameState::RenderSwapPopup(SDL_Renderer* renderer) {
                         outline);
     }
 
-    // Draw tile image
     std::string image_path = "assets/textures/board/";
     std::string letter = (deck.at(i).letter() == '?')
                              ? "blank"
@@ -363,7 +369,6 @@ void IngameState::RenderBlankSelectPopup(SDL_Renderer* renderer) {
     return;
   }
 
-  // Modal box
   const int modal_w = gui_->window_width() / 2;
   const int modal_h = gui_->window_height() / 11 * 10;
   select_for_blank_box_ = {(gui_->window_width() - modal_w) / 2,
@@ -389,54 +394,88 @@ void IngameState::RenderBlankSelectPopup(SDL_Renderer* renderer) {
     rect.w = letter_w;
     rect.h = letter_h;
   }
-  for (int i = 0; i < 26; ++i) {
-    if (i >= 0 && i <= 5) {
-      for (int j = 0; j <= 5; ++j) {
-        letter_rects_.at(j).x = start_x + j * (gap_x + letter_w);
-        letter_rects_.at(j).y = y1;
-      }
-    }
-    if (i >= 6 && i <= 11) {
-      for (int j = 6; j <= 11; ++j) {
-        letter_rects_.at(j).x = letter_rects_.at(j - 6).x;
-        letter_rects_.at(j).y = y2;
-      }
-    }
-    if (i >= 12 && i <= 17) {
-      for (int j = 12; j <= 17; ++j) {
-        letter_rects_.at(j).x = letter_rects_.at(j - 6).x;
-        letter_rects_.at(j).y = y3;
-      }
-    }
-    if (i >= 18 && i <= 23) {
-      for (int j = 18; j <= 23; ++j) {
-        letter_rects_.at(j).x = letter_rects_.at(j - 6).x;
-        letter_rects_.at(j).y = y4;
-      }
-    }
-    if (i == 24 || i == 25) {
-      letter_rects_.at(i).y = y5;
-      if (i == 24) {
-        letter_rects_.at(i).x = letter_rects_.at(2).x;
-      }
-      if (i == 25) {
-        letter_rects_.at(i).x = letter_rects_.at(3).x;
-      }
-    }
 
-    bool selected = selected_letter_index_ == i;
-    if (selected) {
-      SDL_Rect outline = {letter_rects_.at(i).x - 2, letter_rects_.at(i).y - 2,
-                          letter_rects_.at(i).w + 4, letter_rects_.at(i).h + 4};
-      gui_->RenderImage(renderer,
-                        "assets/textures/ingame/selected_tile_background.png",
-                        outline);
+  const std::array<int, 5> letters_per_row{6, 6, 6, 6, 2};
+  const std::array<int, 5> row_y{y1, y2, y3, y4, y5};
+
+  int letter_index = 0;
+  for (int row = 0; row < 5; ++row) {
+    for (int col = 0; col < letters_per_row.at(row); ++col) {
+      int x = 0;
+      if (row < 4) {
+        x = start_x + col * (gap_x + letter_w);
+      } else {
+        if (col == 0) {
+          x = letter_rects_.at(2).x;
+        } else if (col == 1) {
+          x = letter_rects_.at(3).x;
+        }
+      }
+
+      letter_rects_.at(letter_index).x = x;
+      letter_rects_.at(letter_index).y = row_y.at(row);
+
+      bool selected = (selected_letter_index_ == letter_index);
+      if (selected) {
+        SDL_Rect outline = {letter_rects_.at(letter_index).x - 2,
+                            letter_rects_.at(letter_index).y - 2,
+                            letter_rects_.at(letter_index).w + 4,
+                            letter_rects_.at(letter_index).h + 4};
+        gui_->RenderImage(renderer,
+                          "assets/textures/ingame/selected_tile_background.png",
+                          outline);
+      }
+
+      ++letter_index;
     }
   }
 
   for (char c = 'a'; c <= 'z'; ++c) {
     std::string image_path = "assets/textures/board/" + std::string{c} + ".png";
     gui_->RenderImage(renderer, image_path, letter_rects_.at(c - 'a'));
+  }
+}
+
+void IngameState::RenderEndgamePopup(SDL_Renderer* renderer) {
+  if (!game_over) {
+    return;
+  }
+
+  // Box
+  int box_w = gui_->window_width() * 13 / 20;
+  int box_h = gui_->window_height() * 4 / 5;
+  endgame_popup_box_ = {(gui_->window_width() - box_w) / 2,
+                        (gui_->window_height() - box_h) / 2, box_w, box_h};
+  gui_->RenderImage(renderer, "assets/textures/ingame/endgame_popup_box.png",
+                    endgame_popup_box_);
+
+  const int padding_x = box_w / 20;
+  const int padding_y = box_h / 20;
+
+  // Back button
+  const int button_w = box_w * 3 / 10;
+  const int button_h = box_h * 2 / 15;
+  const int button_x = endgame_popup_box_.x + ((box_w - button_w) / 2);
+  const int button_y = endgame_popup_box_.y + (box_h - padding_y - button_h);
+  back_button_ = {button_x, button_y, button_w, button_h};
+  gui_->RenderImage(renderer, "assets/textures/ingame/button_back.png",
+                    back_button_);
+
+  constexpr SDL_Color kWhite = {255, 255, 255, 255};
+  const int winner_text_y = endgame_popup_box_.y + padding_y;
+  GUI::RenderTextCenteredX(renderer, gui_->jersey64(),
+                           game_.winner().name() + " wins!",
+                           gui_->window_width() / 2, winner_text_y, kWhite);
+
+  for (int i = 0; i < static_cast<int>(endgame_info_.size()); ++i) {
+    GUI::RenderText(renderer, endgame_info_[i].name, gui_->jersey48(),
+                    endgame_popup_box_.x + padding_x,
+                    winner_text_y + (padding_y * 2) + (box_h / 6 * i), kWhite);
+    GUI::RenderText(
+        renderer, endgame_info_[i].content(), gui_->jersey48(),
+        endgame_popup_box_.x + padding_x,
+        winner_text_y + (padding_y * 2) + (box_h / 6 * i) + (padding_y * 3 / 2),
+        kWhite);
   }
 }
 
@@ -456,21 +495,22 @@ void IngameState::Render(SDL_Renderer* renderer) {
 
   RenderSwapPopup(renderer);
   RenderBlankSelectPopup(renderer);
+  RenderEndgamePopup(renderer);
 }
 
 void IngameState::SubmitMove() {
-  const auto response = game_.ExecutePlaceMove(player_move_);
+  const auto response = game_.ExecutePlaceMove(pending_move_);
 
   if (response.status != core::Board::ResponseStatus::kSuccess) {
     std::cout << "Invalid move!\n";
   } else {
-    std::cout << response.move_points << "points\n";
+    std::cout << response.move_points << " points. ";
     std::cout << "words: ";
     for (const auto& word : response.words) {
       std::cout << word.AsString() << " ";
     }
     std::cout << '\n';
-    player_move_.clear();
+    pending_move_.clear();
   }
 }
 
@@ -513,9 +553,8 @@ void IngameState::HandleTileDrag(SDL_Event& event) {
                    .deck()
                    .at(dragged_tile_index_)
                    .IsBlankTile()) {
-            std::cout << "Tile placed at " << row << " " << col << '\n';
             board_occupied.at(row).at(col) = true;
-            player_move_.push_back({dragged_tile_index_, 0, row, col});
+            pending_move_.push_back({dragged_tile_index_, 0, row, col});
             placed = true;
           } else {
             board_occupied.at(row).at(col) = true;
@@ -546,8 +585,8 @@ void IngameState::HandleBoardSquareClick(SDL_Event& event) {
       for (int col = 0; col < 15; ++col) {
         SDL_Rect square = board_display_grid_.at(row).at(col);
         bool square_in_pending_placements = false;
-        auto found = player_move_.end();
-        for (auto it = player_move_.begin(); it != player_move_.end(); ++it) {
+        auto found = pending_move_.end();
+        for (auto it = pending_move_.begin(); it != pending_move_.end(); ++it) {
           if (it->row == row && it->col == col) {
             square_in_pending_placements = true;
             found = it;
@@ -560,8 +599,8 @@ void IngameState::HandleBoardSquareClick(SDL_Event& event) {
           SDL_SetCursor(gui_->cursor(SDL_SYSTEM_CURSOR_HAND));
           if (event.type == SDL_MOUSEBUTTONDOWN &&
               event.button.button == SDL_BUTTON_LEFT &&
-              found != player_move_.end()) {
-            player_move_.erase(found);
+              found != pending_move_.end()) {
+            pending_move_.erase(found);
             board_occupied.at(row).at(col) = false;
           }
         } else {
@@ -601,7 +640,7 @@ void IngameState::HandleActionButtons(SDL_Event& event) {
         selected_swap_indices_.clear();
       }
       if (is_hovering_submit) {
-        if (!player_move_.empty()) {
+        if (!pending_move_.empty()) {
           SubmitMove();
         }
       }
@@ -615,7 +654,7 @@ void IngameState::HandleSwapPopupEvent(SDL_Event& event) {
   }
 
   SDL_Point mouse_pos{event.button.x, event.button.y};
-
+  SDL_SetCursor(gui_->cursor(SDL_SYSTEM_CURSOR_ARROW));
   if (event.type == SDL_MOUSEBUTTONDOWN &&
       event.button.button == SDL_BUTTON_LEFT) {
     for (int i = 0; i < 7; ++i) {
@@ -659,10 +698,32 @@ void IngameState::HandleBlankSelectPopupEvent(SDL_Event& event) {
       if (SDL_PointInRect(&mouse_pos, &letter_rects_.at(i)) == 1) {
         selected_letter_index_ = i;
         blank_tile_use_ = static_cast<char>(i + 'a');
-        player_move_.push_back({blank_tile_index_, blank_tile_use_,
-                                blank_tile_row_, blank_tile_col_});
+        pending_move_.push_back({blank_tile_index_, blank_tile_use_,
+                                 blank_tile_row_, blank_tile_col_});
         show_select_for_blank_popup = false;
       }
+    }
+  }
+}
+
+void IngameState::HandleEndgamePopupEvent(SDL_Event& event) {
+  if (!game_over) {
+    return;
+  }
+
+  SDL_Point mouse_pos{event.button.x, event.button.y};
+  if (event.type == SDL_MOUSEMOTION || event.type == SDL_MOUSEBUTTONDOWN) {
+    bool is_hovering_back = SDL_PointInRect(&mouse_pos, &back_button_) == 1;
+
+    if (is_hovering_back) {
+      SDL_SetCursor(gui_->cursor(SDL_SYSTEM_CURSOR_HAND));
+      if (event.type == SDL_MOUSEBUTTONDOWN &&
+          event.button.button == SDL_BUTTON_LEFT) {
+        game_over = false;
+        gui_->ChangeState(GUI::GameStateType::MainMenu);
+      }
+    } else {
+      SDL_SetCursor(gui_->cursor(SDL_SYSTEM_CURSOR_ARROW));
     }
   }
 }
@@ -676,24 +737,53 @@ void IngameState::HandleEvent(SDL_Event& event) {
     HandleBlankSelectPopupEvent(event);
     return;
   }
+  if (game_over) {
+    HandleEndgamePopupEvent(event);
+    return;
+  }
   HandleTileDrag(event);
   HandleBoardSquareClick(event);
   HandleActionButtons(event);
 }
 
+void IngameState::UpdateEndgameInfo() {
+  for (int i = 0; i < game_.num_players(); ++i) {
+    // Name and final score first
+    std::string name = game_.players()[i].name();
+    std::string final_score = std::to_string(game_.players()[i].score());
+
+    // Top word and top word score
+    std::string top_word;
+    int top_word_points = 0;
+    for (const auto& move : game_.move_history()) {
+      if (move.type == game::Game::MoveType::kPlacing &&
+          move.player_name == name) {
+        for (const auto& word : move.words) {
+          if (word.points() > top_word_points) {
+            top_word_points = word.points();
+            top_word = word.AsString();
+          }
+        }
+      }
+    }
+    endgame_info_.emplace_back(name, final_score, top_word,
+                               std::to_string(top_word_points));
+  }
+}
+
 void IngameState::Update() {
   if (game_.IsOver()) {
-    gui_->ChangeState(GUI::GameStateType::MainMenu);
+    if (!game_over) {
+      game_over = true;
+      UpdateEndgameInfo();
+    }
   }
 }
 }  // namespace gui
 
 // TODO (Duy Nguyen):
-// Blank tile mechanism
-// Handle move validation exceptions
-// Move history
-// Input player names view
-// Load dictionary when create game
+// * Handle move validation exceptions
+// * Move history
 // Create 'determining first player' view
 // Add time constraint
 // Fix settings menu

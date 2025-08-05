@@ -80,7 +80,8 @@ void SettingsState::Render(SDL_Renderer* renderer) {
   SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
   SDL_RenderClear(renderer);
 
-  gui_->RenderImage(renderer, "assets/textures/settings_background.png",
+  gui_->RenderImage(renderer,
+                    "assets/textures/settings/settings_background.png",
                     {0, 0, gui_->window_width(), gui_->window_height()});
 
   const double w_width = static_cast<double>(gui_->window_width());
@@ -90,14 +91,15 @@ void SettingsState::Render(SDL_Renderer* renderer) {
   settings_box_.h = w_height / 1.6;
   settings_box_.x = (w_width / 2) - (settings_box_.w / 2);
   settings_box_.y = w_height / 4.5;
-  gui_->RenderImage(renderer, "assets/textures/settings_box.png",
+  gui_->RenderImage(renderer, "assets/textures/settings/settings_box.png",
                     settings_box_);
 
   back_button_.w = w_width / 6.4;
   back_button_.h = w_height / 10;
   back_button_.x = (w_width / 2) - (back_button_.w / 2);
   back_button_.y = settings_box_.y + settings_box_.h + w_height / 24;
-  gui_->RenderImage(renderer, "assets/textures/button_back.png", back_button_);
+  gui_->RenderImage(renderer, "assets/textures/settings/button_back.png",
+                    back_button_);
 
   for (size_t i = 0; i < option_list_.size(); ++i) {
     UpdateOptionPosition(i);
@@ -153,11 +155,11 @@ void SettingsState::RenderOption(SDL_Renderer* renderer, Option& option) {
 
   option.leftarrow_area.x =
       option.option_area.x - option.option_area.w / 4 - option.leftarrow_area.w;
-  gui_->RenderImage(renderer, "assets/textures/left_arrow.png",
+  gui_->RenderImage(renderer, "assets/textures/settings/left_arrow.png",
                     option.leftarrow_area);
   option.rightarrow_area.x =
       option.option_area.x + option.option_area.w * 5 / 4;
-  gui_->RenderImage(renderer, "assets/textures/right_arrow.png",
+  gui_->RenderImage(renderer, "assets/textures/settings/right_arrow.png",
                     option.rightarrow_area);
 }
 }  // namespace gui

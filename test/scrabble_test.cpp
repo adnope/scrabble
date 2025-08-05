@@ -127,6 +127,10 @@ void PrintBoardResponse(const core::Board::MoveValidationResponse& response) {
       std::cout << "Status: INVALID WORDS\n";
       break;
     }
+    case core::Board::ResponseStatus::kNotInStartingSquare: {
+      std::cout << "Status: NOT IN STARTING SQUARE\n";
+      break;
+    }
   }
 }
 

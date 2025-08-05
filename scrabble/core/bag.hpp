@@ -28,8 +28,5 @@ class Bag {
                                      int points, int count);
 
   std::vector<Tile> tile_bag_;
-
- public:
-  void RemoveTile(char tile_letter);
 };
 }  // namespace core

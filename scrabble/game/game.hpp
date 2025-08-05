@@ -6,7 +6,6 @@
 
 #include "core/bag.hpp"
 #include "core/board.hpp"
-#include "core/dictionary.hpp"
 #include "core/lexicon.hpp"
 #include "core/player.hpp"
 #include "core/word.hpp"
@@ -72,6 +71,7 @@ class Game {
   core::Board board_;
   core::Lexicon* lexicon_ = new core::Lexicon();
   std::vector<Move> move_history_;
+  bool is_over = false;
 
   int current_player_index_ = 0;
   int consecutive_passes_ = 0;

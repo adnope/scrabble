@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "SDL_events.h"
+#include "SDL_rect.h"
 #include "SDL_render.h"
 #include "game/game.hpp"
 #include "gui.hpp"
@@ -26,6 +27,29 @@ class IngameState : public IGameState {
     std::string player_name;
     std::string move_type;
     std::string move_content;
+  };
+
+  struct EndgamePlayerInfo {
+    std::string name;
+    std::string final_score;
+    std::string top_word;
+    std::string top_word_points;
+
+    EndgamePlayerInfo(const std::string& name, const std::string& final_score,
+                      const std::string& top_word,
+                      const std::string& top_word_points)
+        : name(name),
+          final_score(final_score),
+          top_word(top_word),
+          top_word_points(top_word_points) {}
+
+    std::string content() const {
+      if (top_word.empty()) {
+        return "Score: " + final_score + ", No word placed";
+      }
+      return "Score: " + final_score + ", Top word: " + top_word + " (" +
+             top_word_points + " points)";
+    }
   };
 
   IngameState(GUI* gui, core::Lexicon* lexicon,
@@ -58,7 +82,7 @@ class IngameState : public IGameState {
   int dragged_tile_index_ = -1;
   SDL_Point drag_offset_{};
   SDL_Rect dragged_tile_rect_{};
-  core::Player::Move player_move_;
+  core::Player::Move pending_move_;
 
   bool show_swap_popup_ = false;
   bool no_tile_selected_error = false;
@@ -76,6 +100,11 @@ class IngameState : public IGameState {
   int blank_tile_col_ = -1;
   std::array<SDL_Rect, 26> letter_rects_{};
   SDL_Rect select_for_blank_box_{};
+
+  bool game_over = false;
+  SDL_Rect endgame_popup_box_{};
+  SDL_Rect back_button_{};
+  std::vector<EndgamePlayerInfo> endgame_info_;
 
   void ClearPendingPlayerMove();
 
@@ -101,13 +130,17 @@ class IngameState : public IGameState {
 
   void RenderSwapPopup(SDL_Renderer* renderer);
   void RenderBlankSelectPopup(SDL_Renderer* renderer);
+  void RenderEndgamePopup(SDL_Renderer* renderer);
 
   void HandleTileDrag(SDL_Event& event);
   void HandleBoardSquareClick(SDL_Event& event);
   void HandleActionButtons(SDL_Event& event);
   void HandleSwapPopupEvent(SDL_Event& event);
   void HandleBlankSelectPopupEvent(SDL_Event& event);
+  void HandleEndgamePopupEvent(SDL_Event& event);
 
   void SubmitMove();
+
+  void UpdateEndgameInfo();
 };
 }  // namespace gui

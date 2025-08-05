@@ -30,6 +30,10 @@ class GUI {
   static void RenderText(SDL_Renderer* renderer, const std::string& text,
                          TTF_Font* font, int x, int y, SDL_Color color);
 
+  static void RenderTextCenteredX(SDL_Renderer* renderer, TTF_Font* font,
+                                  const std::string& text, int anchor_x, int y,
+                                  SDL_Color color);
+
   static constexpr int kInitialWindowWidth = 1280;
   static constexpr int kInitialWindowHeight = 780;
 
@@ -49,7 +53,7 @@ class GUI {
 
   void ChangeState(GameStateType state_type);
   void ChangeState(GameStateType state_type, int num_players);
-  void ChangeState(GameStateType state_type, core::Lexicon* lexicon,
+  void ChangeState(GameStateType state_type,
                    const std::vector<std::string>& player_names);
 
   void Quit() { quit_ = true; }

@@ -15,17 +15,18 @@ Game::Game(core::Lexicon* lexicon, const std::vector<std::string>& player_names)
   for (const auto& name : player_names) {
     AddPlayer(name);
   }
-
-  const core::Board::Move initial_board = {
-      // Existing words
-      {{'V', 4}, 5, 7},  {{'I', 1}, 5, 8}, {{'S', 1}, 5, 9}, {{'I', 1}, 5, 10},
-      {{'T', 1}, 5, 11}, {{'T', 1}, 7, 4}, {{'A', 1}, 7, 5}, {{'N', 1}, 7, 6},
-      {{'N', 1}, 7, 7},  {{'E', 1}, 7, 8}, {{'D', 2}, 7, 9}, {{'P', 3}, 2, 8},
-      {{'R', 1}, 3, 8},  {{'A', 1}, 4, 8}, {{'S', 1}, 6, 8}};
-  for (const auto& placement : initial_board) {
-    board_.PlaceTile(placement.tile, placement.row, placement.col);
-    bag_.RemoveTile(placement.tile.letter());
-  }
+  // const core::Board::Move initial_board = {
+  //     {{'V', 4}, 5, 7},  {{'I', 1}, 5, 8}, {{'S', 1}, 5, 9}, {{'I', 1}, 5,
+  //     10},
+  //     {{'T', 1}, 5, 11}, {{'T', 1}, 7, 4}, {{'A', 1}, 7, 5}, {{'N', 1}, 7,
+  //     6},
+  //     {{'N', 1}, 7, 7},  {{'E', 1}, 7, 8}, {{'D', 2}, 7, 9}, {{'P', 3}, 2,
+  //     8},
+  //     {{'R', 1}, 3, 8},  {{'A', 1}, 4, 8}, {{'S', 1}, 6, 8}};
+  // for (const auto& placement : initial_board) {
+  //   board_.PlaceTile(placement.tile, placement.row, placement.col);
+  //   bag_.RemoveTile(placement.tile.letter());
+  // }
 }
 
 void Game::InitPlayerDecks() {
@@ -35,18 +36,20 @@ void Game::InitPlayerDecks() {
 }
 
 bool Game::IsOver() {
-  if (bag_.num_tiles_remanining() == 0) {
-    for (const auto& player : players_) {
-      if (player.current_deck_size() == 0) {
-        EndGame();
-        return true;
+  if (!is_over) {
+    if (bag_.num_tiles_remanining() == 0) {
+      for (const auto& player : players_) {
+        if (player.current_deck_size() == 0) {
+          EndGame();
+          is_over = true;
+        }
       }
+    } else if (consecutive_passes_ >= 2 * num_players()) {
+      EndGame();
+      is_over = true;
     }
-  } else if (consecutive_passes_ >= 2 * num_players()) {
-    EndGame();
-    return true;
   }
-  return false;
+  return is_over;
 }
 
 void Game::NextTurn() {
