@@ -20,11 +20,10 @@ class Board {
 
   enum class ResponseStatus : uint8_t {
     kSuccess,
+    kNotInStartingSquare,
     kOccupied,
     kNotAligned,
-    kWordsInvalid,
-    kFailure, 
-    kNotConnected
+    kWordsInvalid
   };
 
   struct Placement {
@@ -55,7 +54,7 @@ class Board {
 
   MoveValidationResponse ValidateMove(const Move& move, const Lexicon& lexicon);
 
-  std::string GetDisplayFormat() const;
+  std::array<std::array<std::string, 15>, 15> GetDisplayFormat() const;
 
   bool is_first_move() const { return is_first_move_; }
 
@@ -72,10 +71,6 @@ class Board {
   Tile GetTile(int row, int col) const;
   Tile GetTile(int case_curr) const;
 
-  // Kiểm tra sự thẳng hàng của các nước đi
-  //int CheckAlignment(const Move& move) const;
-  bool IsConnected(const Move& move) const;
-
  private:
   BoardGrid board_grid_;
   bool is_first_move_;
@@ -83,6 +78,8 @@ class Board {
   // Word GetWordFromPos(int row, int col, bool horizontal, const Move& move);
 
   // std::vector<Word> GetWordsFromMove(const Move& move, bool horizontal);
+
+  bool IsInStartingSquare(const Move& move) const;
 
   static int IsAligned(const Move& move);
 

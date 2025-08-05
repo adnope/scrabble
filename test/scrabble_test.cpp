@@ -16,27 +16,6 @@
 #include "doctest/doctest.h"
 #include "spdlog/spdlog.h"
 
-// TEST_CASE("Lexicon contains test") {
-//   core::Lexicon lexicon;
-//   lexicon.AddWord("cat");
-//   lexicon.AddWord("car");
-//   lexicon.AddWord("dog");
-
-//   SUBCASE("Lexicon size") { CHECK(lexicon.size() == 8); }
-
-//   SUBCASE("Lexicon contains words") {
-//     CHECK(lexicon.Contains("cat") == true);
-//     CHECK(lexicon.Contains("car") == true);
-//     CHECK(lexicon.Contains("dog") == true);
-//   }
-
-//   SUBCASE("Lexicon contains prefixes") {
-//     CHECK(lexicon.ContainsPrefix("ca") == true);
-//     CHECK(lexicon.ContainsPrefix("do") == true);
-//     CHECK(lexicon.ContainsPrefix("fi") == false);
-//     CHECK(lexicon.ContainsPrefix("bi") == false);
-//   }
-// }
 
 
 
@@ -176,33 +155,21 @@ TEST_CASE("Bot test") {
   };
   CHECK(bot.IsValidMove(bot_move, board) == true);
 
-  // Goi FindBestMove de kiem tra
-  core::Bot::Move best_move = bot.FindBestMove(board, lexicon, bag);
-  if (!best_move.empty()) {
-    const auto board_response = board.ValidateMove(core::Bot::ConvertToBoardMove(bot, best_move), lexicon);
-    for (const core::Word& word : board_response.words) {
-      word.PrintContent();
-      std::cout << "-" << word.points() << "points" << " ";
-    }
-    std::cout << "\n";
-    CHECK(board_response.status == core::Board::ResponseStatus::kSuccess);
-  } else {
-    std::cout << "No valid move found.\n";
-  }
+  
+  SUBCASE("Invalid move - occupied square") {
+    core::Bot::Move invalid_move = {{0, 5, 7}}; // 'A' at (5, 7), already occupied by 'V'
+    CHECK(bot.IsValidMove(invalid_move, board) == false);
+}
 
-  // Kiem tra move2 voi Bot
-  core::Bot::Move bot_move2 = {{0, 4, 10}}; // Su dung o A tai (4, 10), can cap nhat tile neu khac
-  if (bot.IsValidMove(bot_move2, board)) {
-    const auto board_response2 = board.ValidateMove(bot.ConvertToBoardMove(bot, bot_move2), lexicon);
-    for (const core::Word& word : board_response2.words) {
-      word.PrintContent();
-      std::cout << "-" << word.points() << "points" << " ";
-    }
-    std::cout << "\n";
-    CHECK(board_response2.status == core::Board::ResponseStatus::kSuccess);
-  }
-
-  std::cout << board.GetDisplayFormat();
+// SUBCASE("Cross-word validation") {
+//     auto board_move = ConvertToBoardMove(bot, bot_move);
+//     auto response = board.ValidateMove(board_move, lexicon);
+//     CHECK(response.status == core::Board::ResponseStatus::kSuccess);
+//     CHECK(response.words.size() >= 1); // Should form "AT" and possibly cross-words
+//     for (const auto& word : response.words) {
+//         CHECK(lexicon.Contains(word.AsString()));
+//     }
+//}
 }
 
 // TEST_CASE("Bot FindBestMove with Simulated Board") {

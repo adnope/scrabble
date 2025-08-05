@@ -17,6 +17,7 @@ struct MoveGenState {
   bool plus;                 // Hướng di chuyển trong GADDAG
   std::vector<Tile> rack;    // Các Tile trên tay
   std::vector<int> tile_indices;
+  Player::Move current_move; // Nước đi hiện tại
 
   MoveGenState(std::map<char, int>&& f, std::string&& m, bool o, bool p,
                std::vector<Tile> r, std::vector<int> idx)
@@ -55,8 +56,9 @@ public:
                         Lexicon& lexicon, std::vector<Player::Move>& moves, int &row, int &col);
     void BlankTileCase(Node* node, MoveGenState& state, Board &board,
                        Lexicon& lexicon, std::vector<Player::Move>& moves, int &row, int &col);
-    void AddValidMove(Node* node, MoveGenState& state, Board &board, Lexicon& lexicon,
-                      std::vector<Player::Move>& moves, int &row, int &col, int &tile_index);
+    void ProcessTile(Node* node, MoveGenState& state, Board& board,
+                       Lexicon& lexicon, std::vector<Player::Move>& moves,
+                       int row, int col, char c, int tile_index);
     void AutoPlaceTile(Board& board, Lexicon& lexicon, Bag& bag);
 
 private:
