@@ -6,12 +6,10 @@
 #include <vector>
 
 #include "core/board.hpp"
-#include "core/lexicon.hpp"
 #include "core/tile.hpp"
 
 namespace game {
-Game::Game(core::Lexicon* lexicon, const std::vector<std::string>& player_names)
-    : lexicon_(lexicon) {
+Game::Game(const std::vector<std::string>& player_names) {
   for (const auto& name : player_names) {
     AddPlayer(name);
   }

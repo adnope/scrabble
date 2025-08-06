@@ -64,7 +64,7 @@ class GUI {
   TTF_Font* jersey32() const { return resources_.jersey32(); }
   TTF_Font* jersey48() const { return resources_.jersey48(); }
   TTF_Font* jersey64() const { return resources_.jersey64(); }
-  const core::Lexicon& lexicon() { return *lexicon_; }
+  core::Lexicon* lexicon() { return lexicon_; }
   SDL_Cursor* cursor(SDL_SystemCursor cursor) {
     return resources_.GetSystemCursor(cursor);
   }
@@ -98,7 +98,7 @@ class GUI {
 
   bool quit_ = false;
   bool vsync_ = false;
-  core::Lexicon* lexicon_ = new core::Lexicon();
+  core::Lexicon* lexicon_ = nullptr;
 
   ResourceManager resources_;
 

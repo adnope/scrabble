@@ -5,6 +5,7 @@
 #include <cctype>
 #include <climits>
 #include <cstdint>
+#include <iostream>
 #include <string>
 #include <vector>
 
@@ -14,16 +15,14 @@
 #include "SDL_render.h"
 #include "SDL_timer.h"
 #include "core/board.hpp"
-#include "core/lexicon.hpp"
 #include "core/player.hpp"
 #include "game/game.hpp"
 #include "gui.hpp"
 
 namespace gui {
-IngameState::IngameState(GUI* gui, core::Lexicon* lexicon,
-                         const std::vector<std::string>& player_names)
+IngameState::IngameState(GUI* gui, const std::vector<std::string>& player_names)
     : gui_(gui),
-      game_(lexicon, player_names),
+      game_(player_names),
       first_player_popup_start_time_(SDL_GetTicks()) {
   InitFirstPlayer();
   InitPlayerDecks();
@@ -1038,6 +1037,10 @@ void IngameState::UpdateEndgameInfo() {
 }
 
 void IngameState::Update() {
+  if (gui_->lexicon() != nullptr && game_.lexicon() == nullptr) {
+    game_.SetLexicon(gui_->lexicon());
+  }
+
   if (game_.IsOver()) {
     if (!game_over) {
       game_over = true;
@@ -1068,8 +1071,6 @@ void IngameState::Update() {
 // [Move history] Fix can't see turn 1 when turn number is odd
 // [Move history] Print words in history entry of type SUBMIT
 // [Move history] Render colored tiles for word submission
-// Create 'determining first player' view
-// Load lexicon asynchronously when ResourceManager init
 // Add bot
 // Fix settings menu
 // Add time constraint

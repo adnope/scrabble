@@ -31,13 +31,14 @@ class Game {
 
   Game() {}
 
-  Game(core::Lexicon* lexicon, const std::vector<std::string>& player_names);
+  explicit Game(const std::vector<std::string>& player_names);
 
   void AddPlayer(const std::string& name) { players_.emplace_back(name, 0); }
 
   void InitPlayerDecks();
 
   void SetFirstPlayer(const int index) { current_player_index_ = index; }
+  void SetLexicon(core::Lexicon* lexicon) { lexicon_ = lexicon; }
 
   void ExecutePassMove();
 
@@ -62,6 +63,7 @@ class Game {
   core::Player current_player() const {
     return players_[current_player_index_];
   }
+  core::Lexicon* lexicon() { return lexicon_; }
 
   void PrintBoard() const;
   void PrintDebugInfo() const;
@@ -70,7 +72,7 @@ class Game {
   std::vector<core::Player> players_;
   core::Bag bag_;
   core::Board board_;
-  core::Lexicon* lexicon_ = new core::Lexicon();
+  core::Lexicon* lexicon_ = nullptr;
   std::vector<Move> move_history_;
   unsigned int turn_number_ = 0;
   bool is_over = false;

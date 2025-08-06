@@ -4,19 +4,29 @@
 #include <SDL_image.h>
 #include <SDL_ttf.h>
 
+#include <future>
 #include <string>
 #include <unordered_map>
 
 #include "core/dictionary.hpp"
 #include "core/lexicon.hpp"
 
-
 namespace gui {
 class ResourceManager {
  public:
-  ResourceManager() {
+  ResourceManager() : csw_loading_(true), twl_loading_(true) {
     // csw_lexicon_->PreloadDictionary(core::Dictionary::CSW);
-    twl_lexicon_->PreloadDictionary(core::Dictionary::TWL);
+    // twl_lexicon_->PreloadDictionary(core::Dictionary::TWL);
+
+    csw_future_ = std::async(std::launch::async, [this] {
+      csw_lexicon_->PreloadDictionary(core::Dictionary::CSW);
+      csw_loading_ = false;
+    });
+
+    twl_future_ = std::async(std::launch::async, [this] {
+      twl_lexicon_->PreloadDictionary(core::Dictionary::TWL);
+      twl_loading_ = false;
+    });
   }
 
   ResourceManager(const ResourceManager&) = delete;
@@ -35,8 +45,10 @@ class ResourceManager {
   TTF_Font* jersey48() const { return jersey48_; }
   TTF_Font* jersey64() const { return jersey64_; }
 
-  core::Lexicon* csw_lexicon() { return csw_lexicon_; }
-  core::Lexicon* twl_lexicon() { return twl_lexicon_; }
+  bool IsCSWReady() const { return !csw_loading_; }
+  bool IsTWLReady() const { return !twl_loading_; }
+  core::Lexicon* csw_lexicon() { return IsCSWReady() ? csw_lexicon_ : nullptr; }
+  core::Lexicon* twl_lexicon() { return IsTWLReady() ? twl_lexicon_ : nullptr; }
 
   void Clear();
 
@@ -52,5 +64,10 @@ class ResourceManager {
 
   core::Lexicon* csw_lexicon_ = new core::Lexicon();
   core::Lexicon* twl_lexicon_ = new core::Lexicon();
+
+  std::future<void> csw_future_;
+  std::future<void> twl_future_;
+  std::atomic<bool> csw_loading_{false};
+  std::atomic<bool> twl_loading_{false};
 };
 }  // namespace gui

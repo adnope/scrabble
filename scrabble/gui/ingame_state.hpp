@@ -17,12 +17,8 @@ class IngameState : public IGameState {
  public:
   static constexpr int kBoardSize = 15;
 
-  enum class MoveType : uint8_t {
-    PASS,
-    SWAP,
-    SUBMIT
-  };
-  
+  enum class MoveType : uint8_t { PASS, SWAP, SUBMIT };
+
   struct PlayerInfoBox {
     SDL_Rect box;
     std::string name;
@@ -60,8 +56,7 @@ class IngameState : public IGameState {
     }
   };
 
-  IngameState(GUI* gui, core::Lexicon* lexicon,
-              const std::vector<std::string>& player_names);
+  IngameState(GUI* gui, const std::vector<std::string>& player_names);
 
   void HandleEvent(SDL_Event& event) override;
 
@@ -72,7 +67,7 @@ class IngameState : public IGameState {
  private:
   GUI* gui_;
   game::Game game_;
-  
+
   bool is_hovering_ = false;
   void HandleHovering(SDL_Event& event);
 
@@ -156,7 +151,7 @@ class IngameState : public IGameState {
   int first_player_popup_stage = -1;
   std::vector<char> init_letters;
   void RenderFirstPlayerInitPopup(SDL_Renderer* renderer);
-  
+
   void InitPlayerDecks();
 };
 }  // namespace gui

@@ -93,12 +93,11 @@ GUI::GUI() {
               << TTF_GetError() << '\n';
   }
   resources_.SetRenderer(renderer_);
-  lexicon_ = resources_.twl_lexicon();
 
-  // current_state_ = std::make_unique<MainMenuState>(this);
+  current_state_ = std::make_unique<MainMenuState>(this);
   // current_state_ = std::make_unique<InputNamesState>(this, 4);
-  ChangeState(GameStateType::Ingame,
-              {"duy1", "duy2", "duy3", "1234567890duy1"});
+  // ChangeState(GameStateType::Ingame,
+  //             {"duy1", "duy2", "duy3", "1234567890duy1"});
 }
 
 GUI::~GUI() {
@@ -179,8 +178,7 @@ void GUI::ChangeState(GameStateType state_type,
 
   current_state_type_ = state_type;
   if (state_type == GameStateType::Ingame) {
-    current_state_ =
-        std::make_unique<IngameState>(this, lexicon_, player_names);
+    current_state_ = std::make_unique<IngameState>(this, player_names);
   } else {
     std::cout << "Invalid state\n";
     return;
@@ -190,6 +188,9 @@ void GUI::ChangeState(GameStateType state_type,
 void GUI::Start() {
   SDL_Event e;
   while (!quit_) {
+    if (lexicon_ == nullptr) {
+      lexicon_ = resources_.twl_lexicon();
+    }
     while (SDL_PollEvent(&e) != 0) {
       if (e.type == SDL_QUIT) {
         quit_ = true;
