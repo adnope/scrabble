@@ -79,7 +79,14 @@ Board::Board() : is_first_move_(true) {
 }
 
 bool Board::PlaceTile(const Tile& tile, const int row, const int col) {
+  if (row < 0 || row >= kHeight || col < 0 || col >= kWidth) {
+    return false;
+  }
+  
   if (!IsOccupied(row, col)) {
+    if (is_first_move_) {
+      is_first_move_ = false;
+    }
     board_grid_.at(row).at(col).PlaceTile(tile);
     return true;
   }
@@ -87,46 +94,50 @@ bool Board::PlaceTile(const Tile& tile, const int row, const int col) {
   return false;
 }
 
-// Return the points of the word to parameter 'points'
-Word Board::GetWordFromPos(int row, int col, const bool horizontal,
-                           const Move& move) {
+
+Word Board::GetWordFromPos(int row, int col, const bool horizontal, const Move& move) {
   // Go backward to find start
-  while (row >= 0 && col >= 0 && board_grid_.at(row).at(col).IsOccupied()) {
+  int start_row = row;
+  int start_col = col;
+  while (start_row >= 0 && start_row < kHeight && start_col >= 0 && start_col < kWidth && 
+         board_grid_.at(start_row).at(start_col).IsOccupied()) {
     if (horizontal) {
-      --col;
+      --start_col;
     } else {
-      --row;
+      --start_row;
     }
   }
+
   if (horizontal) {
-    ++col;
+    start_col++;
+
+    start_col = std::max(start_col, 0);
   } else {
-    ++row;
+    start_row++;
+    start_row = std::max(start_row, 0);
   }
 
+  if (start_row < 0 || start_row >= kHeight || start_col < 0 || start_col >= kWidth) {
+    return Word();
+  }
   Word word;
   int letter_index = 0;
-  // Iterate through word from the start of the word
-  while (row < kHeight && col < kWidth &&
-         board_grid_.at(row).at(col).IsOccupied()) {
-    const Square square = board_grid_.at(row).at(col);
+  int r = start_row;
+  int c = start_col;
+  while (r < kHeight && c < kWidth && row >= 0 && col >= 0 &&
+         board_grid_.at(r).at(c).IsOccupied()) {
+    const Square square = board_grid_.at(r).at(c);
     const char letter = square.tile_letter();
     const auto multiplier = square.multiplier();
     int points = square.tile_points();
-
-    // Add the letter and its multiplier to the word's content
     word.AddToContent(letter, Square::Multiplier::kNormal);
-
-    // Check if the tile at {row, col} is a newly placed tile
     bool is_newly_placed_tile = false;
     for (const auto& placement : move) {
-      if (row == placement.row && col == placement.col) {
+      if (r == placement.row && c == placement.col) {
         is_newly_placed_tile = true;
         break;
       }
     }
-
-    // Only apply premium square's boost to newly placed tiles
     if (is_newly_placed_tile) {
       switch (multiplier) {
         case Square::Multiplier::kNormal: {
@@ -140,7 +151,6 @@ Word Board::GetWordFromPos(int row, int col, const bool horizontal,
           points *= 3;
           break;
         }
-        // Add word-boost to the word
         case Square::Multiplier::kDoubleWord: {
           word.AddMultiplier(2);
           break;
@@ -152,18 +162,15 @@ Word Board::GetWordFromPos(int row, int col, const bool horizontal,
       }
       word.SetMultiplierAt(letter_index, multiplier);
     }
-
     word.AddPoints(points);
 
     if (horizontal) {
-      ++col;
+      ++c;
     } else {
-      ++row;
+      ++r;
     }
-
     ++letter_index;
   }
-
   word.ApplyMultiplier();
   return word;
 }
@@ -252,6 +259,8 @@ bool Board::AreInDictionary(const std::vector<std::string>& words,
 
 Board::MoveValidationResponse Board::ValidateMove(const Move& move,
                                                   const Lexicon& lexicon) {
+
+  
   // Check if first move is on the starting square
   if (!IsInStartingSquare(move)) {
     std::cout << "First move is not on start square\n";
@@ -266,6 +275,12 @@ Board::MoveValidationResponse Board::ValidateMove(const Move& move,
   // Checking placements alignment
   int horizontal = IsAligned(move);
   if (horizontal == -1) {
+    return {{}, 0, ResponseStatus::kNotAligned};
+  }
+    if (std::any_of(move.begin(), move.end(), [](const Placement& p) {
+        return p.row < 0 || p.row >= kHeight || 
+               p.col < 0 || p.col >= kWidth;
+      })) {
     return {{}, 0, ResponseStatus::kNotAligned};
   }
 
@@ -332,7 +347,7 @@ std::array<std::array<std::string, 15>, 15> Board::GetDisplayFormat() const {
 
 Tile Board::GetTile(int row, int col) const {
   if (row < 0 || row >= kHeight || col < 0 || col >= kWidth) {
-    throw std::out_of_range("Invalid board position");
+    return Tile();
   }
   return board_grid_.at(row).at(col).tile();
 }

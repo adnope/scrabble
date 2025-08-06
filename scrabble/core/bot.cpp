@@ -7,6 +7,7 @@
 
 #include "bag.hpp"
 #include "core/board.hpp"
+#include "core/tile.hpp"
 
 namespace core {
 
@@ -19,49 +20,26 @@ Bot::Bot(const std::string& player_name, int score)
 // Hàm hỗ trợ: Kiểm tra xem có thể di chuyển từ vị trí (row, col) theo hướng và
 // chiều
 static bool moves_available(int row, int col, bool horizontal, bool plus) {
+  // Kiểm tra vị trí có nằm trong biên bảng không
   if (row < 0 || row >= Board::kHeight || col < 0 || col >= Board::kWidth) {
     return false;
   }
+
   if (horizontal) {
-    if (plus && col >= Board::kWidth - 1) {
-      return false;
-    }
-    if (!plus && col <= 0) {
-      return false;
-    }
-  } else {
-    if (plus && row >= Board::kHeight - 1) {
-      return false;
-    }
-    if (!plus && row <= 0) {
-      return false;
-    }
+    return plus ? (col < Board::kWidth - 1) : (col > 0);
   }
-  return true;
+  
+  return plus ? (row < Board::kHeight - 1) : (row > 0);
 }
 
 // Hàm hỗ trợ: Cập nhật vị trí (row, col) theo hướng và chiều
 static void deplacement(bool horizontal, bool plus, int& row, int& col) {
-  if (plus) {
-    if (horizontal) {
-      if (col < Board::kWidth - 1) {
-        col++;
-      }
-    } else {
-      if (row < Board::kHeight - 1) {
-        row++;
-      }
-    }
+  if (horizontal) {
+    if (plus && col < Board::kWidth - 1) { col++; }
+    else if (!plus && col > 0) { col--; }
   } else {
-    if (horizontal) {
-      if (col > 0) {
-        col--;
-      }
-    } else {
-      if (row > 0) {
-        row--;
-      }
-    }
+    if (plus && row < Board::kHeight - 1) { row++; }
+    else if (!plus && row > 0) { row--; }
   }
 }
 
@@ -80,11 +58,20 @@ static void adapt_word(int& row, int& col, bool horizontal, std::string& mot) {
   int c = col;
   size_t i = 0;
   word += mot[i++];
-  while (i < mot.size() && mot[i] != '+' &&
+  while (i < mot.size() && mot[i] != '+' && r >= 0 && r < Board::kHeight && 
+         c >= 0 && c < Board::kWidth && 
          moves_available(r, c, horizontal, false)) {
     word += mot[i++];
     deplacement(horizontal, false, r, c);
+    if(r < 0 || r >= Board::kHeight || c < 0 || c >= Board::kWidth) {
+      break; // Vượt ra ngoài phạm vi bảng
+    }
   }
+  
+  if(r<0 || r >= Board::kHeight || c < 0 || c >= Board::kWidth) {
+    return; // Vượt ra ngoài phạm vi bảng
+  }
+
   if (i >= mot.size() || mot[i] != '+') {
     return;
   }
@@ -115,8 +102,10 @@ static char FindMoveLetter(const Board::Move& move, int r, int c, bool& found) {
 static void BuildCrossWordSegment(Board& board, const Board::Move& move, int& r,
                                   int& c, bool cross_horizontal, bool forward,
                                   std::string& word) {
-  while (moves_available(r, c, cross_horizontal, forward)) {
+  while (moves_available(r, c, cross_horizontal, forward) && (r >= 0 && r < Board::kHeight && c >= 0 && c < Board::kWidth)) {
     deplacement(cross_horizontal, forward, r, c);
+    if (r < 0 || r >= Board::kHeight || c < 0 || c >= Board::kWidth) { break;
+}
     if (board.IsOccupied(r, c)) {
       if (forward) {
         word.append(1, board.GetTile(r, c).letter());
@@ -164,58 +153,78 @@ static bool VerifyCrossWords(char ch, int row, int col, Board& board,
          lexicon.Contains(word);
 }
 
-// Tìm nước đi tốt nhất từ deck_, board và lexicon
 Player::Move Bot::FindBestMove(Board& board, Lexicon& lexicon, Bag& bag) {
   if (current_deck_size() == 0) {
     return PassMove();
   }
+
+  // Tạo danh sách tất cả các nước đi có thể
   std::vector<Player::Move> moves = GenerateAllMoves(board, lexicon);
+
+    moves.erase(std::remove_if(moves.begin(), moves.end(),
+      [](const Player::Move& move) {
+        return std::any_of(move.begin(), move.end(),
+            [](const Placement& p) {
+              return p.row < 0 || p.row >= Board::kHeight ||
+                     p.col < 0 || p.col >= Board::kWidth;
+            });
+      }), moves.end());
+    
+
   if (moves.empty()) {
     Player::Move swap_move = SwapTiles(bag);
     if (!swap_move.empty()) {
-      // Gọi DrawNewTiles để bổ sung gạch sau khi đổi
+      // Bổ sung gạch sau khi đổi
       DrawNewTiles(bag);
       return swap_move;
     }
     return PassMove();
   }
-  auto best = std::max_element(
-      moves.begin(), moves.end(),
-      [&board, &lexicon, this](const Player::Move& a, const Player::Move& b) {
-        Player::MoveSubmissionResponse res_a = SubmitMove(a, board, lexicon);
-        Player::MoveSubmissionResponse res_b = SubmitMove(b, board, lexicon);
-        return res_a.move_points < res_b.move_points ||
-               (res_a.move_points == res_b.move_points && a.size() > b.size());
-      });
-  if (best != moves.end()) {
-    return *best;
+
+    // Tìm nước đi tốt nhất dựa trên điểm số
+  Player::Move best_move;
+  int best_score = -1;
+
+  for (const auto& move : moves) {
+    // Chuyển đổi sang Board::Move sử dụng move state thực tế
+    Board::Move board_move;
+    const auto& handtiles = deck(); // Lấy danh sách tile hiện tại
+    for (const auto& placement : move) {
+      // Lấy tile từ deck theo chỉ số
+      if (placement.tile_index >= 0 && 
+          static_cast<size_t>(placement.tile_index) < handtiles.size()) 
+      {
+        Tile tile = handtiles.at(placement.tile_index);
+        
+        // Xử lý blank tile
+        if (tile.IsBlankTile()) {
+          Tile new_tile = tile; // Tạo bản sao
+          new_tile.UseAs(placement.use); // Gán ký tự sử dụng
+          board_move.push_back({new_tile, placement.row, placement.col});
+        } else {
+          board_move.push_back({tile, placement.row, placement.col});
+        }
+      }
+    }
+
+    // Xác thực nước đi
+    auto response = board.ValidateMove(board_move, lexicon);
+    
+    // Chọn nước đi có điểm cao nhất
+    if (response.status == Board::ResponseStatus::kSuccess && 
+        response.move_points > best_score) {
+      best_score = response.move_points;
+      best_move = move;
+    }
   }
+
+  if (best_score > 0) {
+    return best_move;
+  }
+  
   return PassMove();
+
 }
-
-// Thêm một nước đi vào danh sách moves
-void Bot::addMove(Player::Move& move, Board& board) {
-  Player::MoveSubmissionResponse res_move = SubmitMove(move, board, *lexicon_);
-  if (res_move.status != Board::ResponseStatus::kSuccess) {
-    return;
-  }
-
-  // So sánh điểm số và số gạch sử dụng
-  Player::MoveSubmissionResponse res_best =
-      moves_.empty()
-          ? Player::MoveSubmissionResponse(Board::MoveValidationResponse{})
-          : SubmitMove(moves_.front(), board, *lexicon_);
-  if (moves_.empty() || res_move.move_points > res_best.move_points ||
-      (res_move.move_points == res_best.move_points &&
-       move.size() < moves_.front().size())) {
-    // Lưu nước đi tốt nhất
-    moves_ = {move};
-    // SubmitMove đã gọi AddScore nội bộ, không cần gọi lại
-    // Để debug, có thể in điểm số hiện tại
-    // std::cout << "Bot " << name() << " score: " << score() << std::endl;
-  }
-}
-
 // Lấy danh sách các nước đi
 std::vector<Player::Move> Bot::getMoves() const { return moves_; }
 
@@ -332,6 +341,9 @@ void Bot::GenerateWords(Node* node, MoveGenState& state, Board& board,
   if ((node == nullptr) || state.mot.size() > 15) {
     return;
   }
+  if (row < 0 || row >= Board::kHeight || col < 0 || col >= Board::kWidth) {
+    return;
+  }
   if (!board.IsOccupied(row, col)) {
     ProcessEmptyCell(node, state, board, lexicon, moves, row, col);
   } else {
@@ -348,13 +360,16 @@ void Bot::ProcessOccupiedCell(Node* node, MoveGenState& state, Board& board,
   if (node == nullptr) {
     return;
   }
+  if (row < 0 || row >= Board::kHeight || col < 0 || col >= Board::kWidth) {
+    return;
+  }
   char c = board.GetTile(row, col).letter();
   if (node->suffixes.count(c) == 0) {
     return;
   }
   // const auto& handtiles = deck();
   state.mot += c;
-  state.current_move.push_back({-1, row, col});  // -1 indicates no tile index
+  state.current_move.push_back({-1, c, row, col });  // -1 indicates no tile index
   Node* next_node = node->suffixes[c].get();
   Board::Move temp_move;
   if (!VerifyCrossWords(c, row, col, board, lexicon, temp_move,
@@ -616,6 +631,9 @@ void Bot::AutoPlaceTile(Board& board, Lexicon& lexicon, Bag& bag) {
 void Bot::ProcessTile(Node* node, MoveGenState& state, Board& board,
                         Lexicon& lexicon, std::vector<Player::Move>& moves,
                         int row, int col, char c, int tile_index) {
+  if (row < 0 || row >= Board::kHeight || col < 0 || col >= Board::kWidth) {
+    return;
+  }
   Board::Move temp_board_move;
   temp_board_move.push_back({Tile(c, 0), row, col});
   if (!VerifyCrossWords(c, row, col, board, lexicon, temp_board_move,
@@ -640,7 +658,7 @@ void Bot::ProcessTile(Node* node, MoveGenState& state, Board& board,
     }
   }
 
-  new_state.current_move.push_back({tile_index, row, col});
+  new_state.current_move.push_back({tile_index, c, row, col});
 
   if (node->suffixes[c]->is_word && !new_state.mot.empty()) {
     Board::Move board_move;

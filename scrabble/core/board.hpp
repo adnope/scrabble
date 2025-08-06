@@ -49,6 +49,9 @@ class Board {
   bool PlaceTile(const Tile& tile, int row, int col);
 
   bool IsOccupied(const int row, const int col) const {
+    if (row < 0 || row >= kHeight || col < 0 || col >= kWidth) {
+    return false;
+    }
     return board_grid_.at(row).at(col).IsOccupied();
   }
 

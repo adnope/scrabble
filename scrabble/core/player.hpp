@@ -13,6 +13,7 @@ class Player {
  public:
   struct Placement {
     int tile_index = 0;
+    char use = 0; // if the tile is a blank tile
     int row = 0;
     int col = 0;
   };
@@ -60,7 +61,6 @@ class Player {
   int score() const { return player_score_; }
   std::array<Tile, kMaxDeckSize> deck() { return deck_; }
   int current_deck_size() const;
-  void SwapTile(int index, Bag &bag);
   static Board::Move ConvertToBoardMove(Player& player, const Player::Move &player_move);
 
  private:
@@ -68,5 +68,6 @@ class Player {
   std::array<Tile, kMaxDeckSize> deck_;
   int player_score_;
 
+  void SwapTile(int index, Bag &bag);
 };
 }  // namespace core

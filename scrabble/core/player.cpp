@@ -73,8 +73,13 @@ Player::MoveSubmissionResponse Player::SubmitMove(const Move &move,
   // Convert Player::Move to Board::Move
   std::vector<Board::Placement> board_move;
   board_move.reserve(move.size());
-  for (const auto &[index, row, col] : move) {
-    board_move.emplace_back(deck_.at(index), row, col);
+  for (const auto &[index, use, row, col] : move) {
+    if (!deck_.at(index).IsBlankTile()) {
+      board_move.emplace_back(deck_.at(index), row, col);
+    } else {
+      Tile tile(use, 0);
+      board_move.emplace_back(tile, row, col);
+    }
   }
 
   // Get board validation response
@@ -139,5 +144,4 @@ Board::Move Player::ConvertToBoardMove(Player& player ,const Player::Move &playe
     }
     return board_move;
 }
-
 }  // namespace core
