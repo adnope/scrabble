@@ -1,14 +1,18 @@
 #include "ingame_state.hpp"
 
 #include <algorithm>
+#include <array>
 #include <cctype>
-#include <iostream>
+#include <climits>
+#include <cstdint>
 #include <string>
 #include <vector>
 
 #include "SDL_events.h"
 #include "SDL_mouse.h"
+#include "SDL_rect.h"
 #include "SDL_render.h"
+#include "SDL_timer.h"
 #include "core/board.hpp"
 #include "core/lexicon.hpp"
 #include "core/player.hpp"
@@ -18,7 +22,9 @@
 namespace gui {
 IngameState::IngameState(GUI* gui, core::Lexicon* lexicon,
                          const std::vector<std::string>& player_names)
-    : gui_(gui), game_(lexicon, player_names) {
+    : gui_(gui),
+      game_(lexicon, player_names),
+      first_player_popup_start_time_(SDL_GetTicks()) {
   InitFirstPlayer();
   InitPlayerDecks();
   for (const auto& name : player_names) {
@@ -34,28 +40,117 @@ void IngameState::ClearPendingPlayerMove() {
 }
 
 void IngameState::InitFirstPlayer() {
-  constexpr int kIntMax = 9999;
-  int first_player_index = 0;
-  int distance_from_a = kIntMax;
   auto game_bag = game_.bag();
-  auto game_players = game_.players();
   for (int i = 0; i < game_.num_players(); ++i) {
-    const char letter = game_bag.DrawTile().letter();
-    std::cout << game_players[i].name() << ": " << letter << '\n';
-
+    char letter = game_bag.DrawTile().letter();
+    init_letters.push_back(letter);
     if (letter == '?') {
-      std::cout << game_players[i].name() << " has a blank tile.\n";
-      first_player_index = i;
       break;
     }
+  }
+}
 
-    if (letter - 'A' < distance_from_a) {
-      first_player_index = i;
-      distance_from_a = letter - 'A';
+void IngameState::RenderFirstPlayerInitPopup(SDL_Renderer* renderer) {
+  if (!showing_first_player_popup_) {
+    return;
+  }
+
+  const int modal_w = gui_->window_width() * 2 / 3;
+  const int modal_h = gui_->window_height() * 2 / 3;
+  init_first_player_popup = {(gui_->window_width() - modal_w) / 2,
+                             (gui_->window_height() - modal_h) / 2, modal_w,
+                             modal_h};
+
+  gui_->RenderImage(renderer,
+                    "assets/textures/ingame/init_first_player_background.png",
+                    init_first_player_popup);
+
+  const int padding_x = modal_w / 20;
+  const int padding_y = modal_h / 40;
+  GUI::RenderTextCenteredX(
+      renderer, gui_->jersey64(), "Initializing first player...",
+      gui_->window_width() / 2, init_first_player_popup.y + padding_y,
+      {255, 255, 255, 255});
+
+  int init_size = static_cast<int>(init_letters.size());
+
+  for (int i = 1; i <= init_size; ++i) {
+    if (SDL_GetTicks() - first_player_popup_start_time_ >
+        static_cast<uint32_t>(i * 1000)) {
+      first_player_popup_stage = i - 1;
     }
   }
-  std::cout << game_players[first_player_index].name() << " moves first!\n\n";
-  game_.SetFirstPlayer(first_player_index);
+
+  if (SDL_GetTicks() - first_player_popup_start_time_ >
+      static_cast<uint32_t>((init_size + 1) * 1000)) {
+    first_player_popup_stage = init_size;
+  }
+
+  if (first_player_popup_stage == -1) {
+    return;
+  }
+
+  const int gap = modal_h / 15;
+  std::array<int, 4> y{};
+  y[0] = init_first_player_popup.y + (gap * 3);
+  for (int i = 1; i < 4; ++i) {
+    y.at(i) = y.at(i - 1) + gap * 2;
+  }
+
+  for (int i = 0; i <= first_player_popup_stage && i < init_size; ++i) {
+    std::string text =
+        game_.players()[i].name() + " got letter " + init_letters[i];
+    GUI::RenderText(renderer, text, gui_->jersey48(),
+                    padding_x + init_first_player_popup.x, y.at(i),
+                    {255, 255, 255, 255});
+  }
+
+  int first_player_index = 0;
+  std::string first_player_name;
+  bool has_blank = false;
+  for (int i = 0; i < init_size; ++i) {
+    if (init_letters[i] == '?') {
+      has_blank = true;
+      first_player_index = i;
+      first_player_name = game_.players()[first_player_index].name();
+      break;
+    }
+  }
+
+  if (first_player_popup_stage == init_size) {
+    if (!has_blank) {
+      char smallest = CHAR_MAX;
+      for (int i = 0; i < init_size; ++i) {
+        if (init_letters[i] < smallest) {
+          smallest = init_letters[i];
+          first_player_index = i;
+          first_player_name = game_.players()[i].name();
+        }
+      }
+      GUI::RenderTextCenteredX(
+          renderer, gui_->jersey48(),
+          first_player_name + " has the closest tile to 'A'",
+          gui_->window_width() / 2, y[3] + (gap * 2), {255, 255, 255, 255});
+      std::string text = first_player_name + " is the first player to move";
+      GUI::RenderTextCenteredX(renderer, gui_->jersey48(), text,
+                               gui_->window_width() / 2, y[3] + (gap * 4),
+                               {255, 255, 255, 255});
+    } else {
+      GUI::RenderTextCenteredX(renderer, gui_->jersey48(), "Blank tile found!",
+                               gui_->window_width() / 2, y[3] + (gap * 2),
+                               {255, 255, 255, 255});
+      std::string text = first_player_name + " is the first player to move";
+      GUI::RenderTextCenteredX(renderer, gui_->jersey48(), text,
+                               gui_->window_width() / 2, y[3] + (gap * 4),
+                               {255, 255, 255, 255});
+    }
+  }
+  if (SDL_GetTicks() - first_player_popup_start_time_ >
+      static_cast<uint32_t>((init_size + 3) * 1000)) {
+    game_.SetFirstPlayer(first_player_index);
+    showing_first_player_popup_ = false;
+    SDL_RenderClear(renderer);
+  }
 }
 
 void IngameState::InitPlayerDecks() { game_.InitPlayerDecks(); }
@@ -128,12 +223,18 @@ void IngameState::RenderBoard(SDL_Renderer* renderer) {
 
     std::transform(letter.begin(), letter.end(), letter.begin(), tolower);
     image_path += letter + ".png";
-    gui_->RenderImage(renderer,
-                      "assets/textures/ingame/selected_tile_background.png",
-                      {board_display_grid_.at(row).at(col).x - 2,
-                       board_display_grid_.at(row).at(col).y - 2,
-                       board_display_grid_.at(row).at(col).w + 4,
-                       board_display_grid_.at(row).at(col).h + 4});
+
+    std::string tile_bg_path;
+    if (ValidateMove()) {
+      tile_bg_path = "assets/textures/ingame/board_tile_bg_valid.png";
+    } else {
+      tile_bg_path = "assets/textures/ingame/board_tile_bg_invalid.png";
+    }
+    gui_->RenderImage(renderer, tile_bg_path,
+                      {board_display_grid_.at(row).at(col).x - 3,
+                       board_display_grid_.at(row).at(col).y - 3,
+                       board_display_grid_.at(row).at(col).w + 6,
+                       board_display_grid_.at(row).at(col).h + 6});
     gui_->RenderImage(renderer, image_path,
                       board_display_grid_.at(row).at(col));
   }
@@ -182,8 +283,8 @@ void IngameState::RenderDeck(SDL_Renderer* renderer) {
   }
 }
 
-void IngameState::UpdatePlayerinfoBoxesSize() {
-  const int box_w = gui_->window_width() / 4;
+void IngameState::UpdatePlayerinfoBoxes() {
+  const int box_w = gui_->window_width() / 6;
   const int box_h = gui_->window_height() / 10;
 
   int x = gui_->window_width() / 2;
@@ -231,16 +332,94 @@ void IngameState::UpdateMoveHistorySize() {
       player_infos_.back().box.y + (player_infos_.back().box.h / 3 * 4);
   const int box_h = (gui_->window_height() - box_y) / 10 * 9;
   movehistory_box_ = {box_x, box_y, box_w, box_h};
+
+  const int padding_x = box_w * 1 / 36;
+  const int arrow_h = box_h / 10;
+  const int arrow_w = box_w / 20;
+  const int arrow_y = box_y + (box_h / 4) - arrow_h;
+  const int left_arrow_x = box_x + padding_x;
+  const int right_arrow_x = left_arrow_x + arrow_w + (box_w / 12);
+  history_left_arrow_ = {left_arrow_x, arrow_y, arrow_w, arrow_h};
+  history_right_arrow_ = {right_arrow_x, arrow_y, arrow_w, arrow_h};
+
+  const int gap = box_h * 1 / 10;
+  const int entry_w = box_w - (padding_x * 2);
+  const int entry1_y = box_y + (box_h * 3 / 10);
+  const int entry_h = (box_h * 3 / 4 - gap * 2) / 2;
+  const int entry_x = left_arrow_x;
+  const int entry2_y = entry1_y + entry_h + gap;
+
+  int entry1_index = visible_entries_indices_[0];
+  if (entry1_index != -1) {
+    movehistory_[entry1_index].box = {entry_x, entry1_y, entry_w, entry_h};
+  }
+  int entry2_index = visible_entries_indices_[1];
+  if (entry2_index != -1) {
+    movehistory_[entry2_index].box = {entry_x, entry2_y, entry_w, entry_h};
+  }
 }
 
 void IngameState::RenderMoveHistory(SDL_Renderer* renderer) {
+  UpdateMoveHistorySize();
   constexpr SDL_Color kWhite = {255, 255, 255, 255};
-  const int boxlabel_padding = movehistory_box_.h / 40;
   gui_->RenderImage(renderer, "assets/textures/ingame/movehistory_box.png",
                     movehistory_box_);
-  GUI::RenderText(renderer, "Move history", gui_->jersey32(),
-                  movehistory_box_.x + boxlabel_padding,
-                  movehistory_box_.y + boxlabel_padding, kWhite);
+  GUI::RenderText(renderer, "Move history", gui_->jersey48(),
+                  history_left_arrow_.x, movehistory_box_.y, kWhite);
+
+  gui_->RenderImage(renderer, "assets/textures/ingame/left_arrow.png",
+                    history_left_arrow_);
+  gui_->RenderImage(renderer, "assets/textures/ingame/right_arrow.png",
+                    history_right_arrow_);
+
+  int entry1_index = visible_entries_indices_[0];
+  if (entry1_index != -1) {
+    const auto& box = movehistory_[entry1_index].box;
+    gui_->RenderImage(renderer,
+                      "assets/textures/ingame/movehistory_entry_1.png", box);
+    const auto& content = movehistory_[entry1_index].move_content;
+    GUI::RenderText(renderer, content, gui_->jersey32(), box.x + 5, box.y + 10,
+                    kWhite);
+  }
+  int entry2_index = visible_entries_indices_[1];
+  if (entry2_index != -1) {
+    const auto& box = movehistory_[entry2_index].box;
+    gui_->RenderImage(renderer,
+                      "assets/textures/ingame/movehistory_entry_2.png", box);
+    const auto& content = movehistory_[entry2_index].move_content;
+    GUI::RenderText(renderer, content, gui_->jersey32(), box.x + 5, box.y + 10,
+                    kWhite);
+  }
+}
+
+void IngameState::HandleMoveHistoryNavigation(SDL_Event& event) {
+  if (event.type == SDL_MOUSEBUTTONDOWN &&
+      event.button.button == SDL_BUTTON_LEFT) {
+    SDL_Point mouse_pos = {event.motion.x, event.motion.y};
+    // See latest moves, indices increase
+    if (SDL_PointInRect(&mouse_pos, &history_left_arrow_) == 1) {
+      const int i1 = visible_entries_indices_[0];
+      const int mh_size = static_cast<int>(movehistory_.size());
+      if (i1 + 1 < mh_size) {
+        visible_entries_indices_[1] += 2;
+        if (i1 + 2 > mh_size - 1) {
+          visible_entries_indices_[0] += 1;
+        } else {
+          visible_entries_indices_[0] += 2;
+        }
+      }
+    }
+    // See previous moves, indices decrease
+    if (SDL_PointInRect(&mouse_pos, &history_right_arrow_) == 1) {
+      history_view_locked = true;
+      const int i1 = visible_entries_indices_[0];
+      const int i2 = visible_entries_indices_[1];
+      if (i1 - 2 >= 0 && i2 - 2 >= 0) {
+        visible_entries_indices_[0] -= 2;
+        visible_entries_indices_[1] -= 2;
+      }
+    }
+  }
 }
 
 void IngameState::UpdateActionButtonsSize() {
@@ -272,6 +451,12 @@ void IngameState::RenderActionButtons(SDL_Renderer* renderer) {
                     swap_button_);
   gui_->RenderImage(renderer, "assets/textures/ingame/button_submit.png",
                     submit_button_);
+  if (!submit_error_message.empty()) {
+    GUI::RenderTextCenteredX(renderer, gui_->jersey32(), submit_error_message,
+                             board_display_grid_[7][7].x,
+                             submit_button_.y + submit_button_.h + 20,
+                             {255, 0, 0, 255});
+  }
 }
 
 void IngameState::RenderDraggedTile(SDL_Renderer* renderer) {
@@ -484,11 +669,10 @@ void IngameState::Render(SDL_Renderer* renderer) {
   RenderBoard(renderer);
   UpdateDeckSize();
   RenderDeck(renderer);
-  UpdatePlayerinfoBoxesSize();
+  UpdatePlayerinfoBoxes();
   RenderPlayerinfoBoxes(renderer);
   UpdateActionButtonsSize();
   RenderActionButtons(renderer);
-  UpdateMoveHistorySize();
   RenderMoveHistory(renderer);
 
   RenderDraggedTile(renderer);
@@ -496,20 +680,50 @@ void IngameState::Render(SDL_Renderer* renderer) {
   RenderSwapPopup(renderer);
   RenderBlankSelectPopup(renderer);
   RenderEndgamePopup(renderer);
+  RenderFirstPlayerInitPopup(renderer);
+}
+
+bool IngameState::ValidateMove() {
+  auto game_temp = game_;
+  const auto response = game_temp.ExecutePlaceMove(pending_move_);
+
+  return response.status == core::Board::ResponseStatus::kSuccess;
 }
 
 void IngameState::SubmitMove() {
+  const std::string name = game_.current_player().name();
   const auto response = game_.ExecutePlaceMove(pending_move_);
 
   if (response.status != core::Board::ResponseStatus::kSuccess) {
-    std::cout << "Invalid move!\n";
-  } else {
-    std::cout << response.move_points << " points. ";
-    std::cout << "words: ";
-    for (const auto& word : response.words) {
-      std::cout << word.AsString() << " ";
+    switch (response.status) {
+      case core::Board::ResponseStatus::kNotInStartingSquare: {
+        submit_error_message = "Your tiles must cover the starting square";
+        break;
+      }
+      case core::Board::ResponseStatus::kNotAligned: {
+        submit_error_message = "Your tiles must be in a straight line";
+        break;
+      }
+      case core::Board::ResponseStatus::kNotAdjacent: {
+        submit_error_message =
+            "Your tiles must be continuous and connected to existing tiles";
+        break;
+      }
+      case core::Board::ResponseStatus::kWordsInvalid: {
+        submit_error_message = "Invalid words: " + response.invalid_word;
+        break;
+      }
+      default: {
+        break;
+      }
     }
-    std::cout << '\n';
+  } else {
+    const std::string turn_number = std::to_string(game_.turn_number());
+    const std::string points = std::to_string(response.move_points);
+    const std::string message =
+        turn_number + ". " + name + " earned " + points + " points";
+    movehistory_.push_back(
+        {{}, name, IngameState::MoveType::SUBMIT, message, response.words});
     pending_move_.clear();
   }
 }
@@ -523,6 +737,7 @@ void IngameState::HandleTileDrag(SDL_Event& event) {
     const auto& deck = game_.current_player().deck();
     for (int i = 0; i < static_cast<int>(deck.size()); ++i) {
       if (SDL_PointInRect(&mouse_pos, &deck_display_.at(i)) == 1) {
+        submit_error_message.clear();
         dragging_tile_ = true;
         dragged_tile_index_ = i;
         drag_offset_.x = mouse_pos.x - deck_display_.at(i).x;
@@ -556,6 +771,7 @@ void IngameState::HandleTileDrag(SDL_Event& event) {
             board_occupied.at(row).at(col) = true;
             pending_move_.push_back({dragged_tile_index_, 0, row, col});
             placed = true;
+            SDL_SetCursor(gui_->cursor(SDL_SYSTEM_CURSOR_HAND));
           } else {
             board_occupied.at(row).at(col) = true;
             placed = true;
@@ -576,11 +792,9 @@ void IngameState::HandleTileDrag(SDL_Event& event) {
 }
 
 void IngameState::HandleBoardSquareClick(SDL_Event& event) {
-  SDL_Point mouse_pos;
-  if (event.type == SDL_MOUSEMOTION || event.type == SDL_MOUSEBUTTONDOWN) {
-    mouse_pos.x = event.motion.x;
-    mouse_pos.y = event.motion.y;
-
+  if (event.type == SDL_MOUSEBUTTONDOWN &&
+      event.button.button == SDL_BUTTON_LEFT) {
+    SDL_Point mouse_pos{event.motion.x, event.motion.y};
     for (int row = 0; row < 15; ++row) {
       for (int col = 0; col < 15; ++col) {
         SDL_Rect square = board_display_grid_.at(row).at(col);
@@ -594,17 +808,11 @@ void IngameState::HandleBoardSquareClick(SDL_Event& event) {
           }
         }
         bool hovering_square = (SDL_PointInRect(&mouse_pos, &square) == 1);
-
-        if (hovering_square && square_in_pending_placements) {
-          SDL_SetCursor(gui_->cursor(SDL_SYSTEM_CURSOR_HAND));
-          if (event.type == SDL_MOUSEBUTTONDOWN &&
-              event.button.button == SDL_BUTTON_LEFT &&
-              found != pending_move_.end()) {
-            pending_move_.erase(found);
-            board_occupied.at(row).at(col) = false;
-          }
-        } else {
-          SDL_SetCursor(gui_->cursor(SDL_SYSTEM_CURSOR_ARROW));
+        if (hovering_square && found != pending_move_.end() &&
+            square_in_pending_placements) {
+          submit_error_message.clear();
+          pending_move_.erase(found);
+          board_occupied.at(row).at(col) = false;
         }
       }
     }
@@ -612,37 +820,28 @@ void IngameState::HandleBoardSquareClick(SDL_Event& event) {
 }
 
 void IngameState::HandleActionButtons(SDL_Event& event) {
-  SDL_Point mouse_pos;
-  if (event.type == SDL_MOUSEMOTION || event.type == SDL_MOUSEBUTTONDOWN) {
-    mouse_pos.x = event.motion.x;
-    mouse_pos.y = event.motion.y;
-
-    bool is_hovering_pass = SDL_PointInRect(&mouse_pos, &pass_button_) == 1;
-    bool is_hovering_swap = SDL_PointInRect(&mouse_pos, &swap_button_) == 1;
-    bool is_hovering_submit = SDL_PointInRect(&mouse_pos, &submit_button_) == 1;
-
-    if (is_hovering_pass || is_hovering_swap || is_hovering_submit) {
-      SDL_SetCursor(gui_->cursor(SDL_SYSTEM_CURSOR_HAND));
-    } else {
-      SDL_SetCursor(gui_->cursor(SDL_SYSTEM_CURSOR_ARROW));
+  if (event.type == SDL_MOUSEBUTTONDOWN &&
+      event.button.button == SDL_BUTTON_LEFT) {
+    SDL_Point mouse_pos{event.motion.x, event.motion.y};
+    if (SDL_PointInRect(&mouse_pos, &pass_button_) == 1) {
+      ClearPendingPlayerMove();
+      const std::string name = game_.current_player().name();
+      game_.ExecutePassMove();
+      const std::string turn_number = std::to_string(game_.turn_number());
+      const std::string message =
+          turn_number + ". " + name + " passed their turn";
+      movehistory_.push_back(
+          {{}, name, IngameState::MoveType::PASS, message, {}});
     }
-
-    if ((is_hovering_pass || is_hovering_swap || is_hovering_submit) &&
-        event.type == SDL_MOUSEBUTTONDOWN &&
-        event.button.button == SDL_BUTTON_LEFT) {
-      if (is_hovering_pass) {
-        ClearPendingPlayerMove();
-        game_.ExecutePassMove();
-        std::cout << game_.current_player().name() << " passed their turn\n";
-      }
-      if (is_hovering_swap) {
-        show_swap_popup_ = true;
-        selected_swap_indices_.clear();
-      }
-      if (is_hovering_submit) {
-        if (!pending_move_.empty()) {
-          SubmitMove();
-        }
+    if (SDL_PointInRect(&mouse_pos, &swap_button_) == 1) {
+      ClearPendingPlayerMove();
+      submit_error_message.clear();
+      show_swap_popup_ = true;
+      selected_swap_indices_.clear();
+    }
+    if (SDL_PointInRect(&mouse_pos, &submit_button_) == 1) {
+      if (!pending_move_.empty()) {
+        SubmitMove();
       }
     }
   }
@@ -654,7 +853,23 @@ void IngameState::HandleSwapPopupEvent(SDL_Event& event) {
   }
 
   SDL_Point mouse_pos{event.button.x, event.button.y};
-  SDL_SetCursor(gui_->cursor(SDL_SYSTEM_CURSOR_ARROW));
+
+  bool is_hovering = false;
+  for (const auto& tile : swap_deck_) {
+    if (SDL_PointInRect(&mouse_pos, &tile) == 1) {
+      is_hovering = true;
+    }
+  }
+  if (SDL_PointInRect(&mouse_pos, &swap_confirm_button_) == 1 ||
+      SDL_PointInRect(&mouse_pos, &swap_cancel_button_) == 1) {
+    is_hovering = true;
+  }
+  if (is_hovering) {
+    SDL_SetCursor(gui_->cursor(SDL_SYSTEM_CURSOR_HAND));
+  } else {
+    SDL_SetCursor(gui_->cursor(SDL_SYSTEM_CURSOR_ARROW));
+  }
+
   if (event.type == SDL_MOUSEBUTTONDOWN &&
       event.button.button == SDL_BUTTON_LEFT) {
     for (int i = 0; i < 7; ++i) {
@@ -672,7 +887,14 @@ void IngameState::HandleSwapPopupEvent(SDL_Event& event) {
 
     if (SDL_PointInRect(&mouse_pos, &swap_confirm_button_) == 1) {
       if (!selected_swap_indices_.empty()) {
+        const std::string name = game_.current_player().name();
         game_.ExecuteSwapMove(selected_swap_indices_);
+        const std::string turn_number = std::to_string(game_.turn_number());
+        const std::string message =
+            turn_number + ". " + name + " swapped some tiles";
+        movehistory_.push_back(
+            {{}, name, IngameState::MoveType::SWAP, message, {}});
+        ClearPendingPlayerMove();
         show_swap_popup_ = false;
       } else {
         no_tile_selected_error = true;
@@ -728,7 +950,49 @@ void IngameState::HandleEndgamePopupEvent(SDL_Event& event) {
   }
 }
 
+void IngameState::HandleHovering(SDL_Event& event) {
+  SDL_Point mouse_pos{event.motion.x, event.motion.y};
+
+  bool hovering_placed_tile_on_board = false;
+  for (int row = 0; row < 15; ++row) {
+    if (hovering_placed_tile_on_board) {
+      break;
+    }
+    for (int col = 0; col < 15; ++col) {
+      SDL_Rect square = board_display_grid_.at(row).at(col);
+      bool square_in_pending_placements = false;
+      for (const auto& p : pending_move_) {
+        if (p.row == row && p.col == col) {
+          square_in_pending_placements = true;
+          break;
+        }
+      }
+      bool hovering_square = (SDL_PointInRect(&mouse_pos, &square) == 1);
+      if (hovering_square && square_in_pending_placements) {
+        hovering_placed_tile_on_board = true;
+        break;
+      }
+    }
+  }
+
+  is_hovering_ = SDL_PointInRect(&mouse_pos, &pass_button_) == 1 ||
+                 SDL_PointInRect(&mouse_pos, &swap_button_) == 1 ||
+                 SDL_PointInRect(&mouse_pos, &submit_button_) == 1 ||
+                 SDL_PointInRect(&mouse_pos, &history_left_arrow_) == 1 ||
+                 SDL_PointInRect(&mouse_pos, &history_right_arrow_) == 1 ||
+                 hovering_placed_tile_on_board;
+
+  if (is_hovering_) {
+    SDL_SetCursor(gui_->cursor(SDL_SYSTEM_CURSOR_HAND));
+  } else {
+    SDL_SetCursor(gui_->cursor(SDL_SYSTEM_CURSOR_ARROW));
+  }
+}
+
 void IngameState::HandleEvent(SDL_Event& event) {
+  if (showing_first_player_popup_) {
+    return;
+  }
   if (show_swap_popup_) {
     HandleSwapPopupEvent(event);
     return;
@@ -741,9 +1005,11 @@ void IngameState::HandleEvent(SDL_Event& event) {
     HandleEndgamePopupEvent(event);
     return;
   }
+  HandleHovering(event);
   HandleTileDrag(event);
   HandleBoardSquareClick(event);
   HandleActionButtons(event);
+  HandleMoveHistoryNavigation(event);
 }
 
 void IngameState::UpdateEndgameInfo() {
@@ -778,12 +1044,33 @@ void IngameState::Update() {
       UpdateEndgameInfo();
     }
   }
+  if (!movehistory_.empty()) {
+    if (visible_entries_indices_[0] ==
+        static_cast<int>(movehistory_.size()) - 1) {
+      history_view_locked = false;
+    }
+    if (movehistory_.size() == 1) {
+      visible_entries_indices_ = {0, -1};
+    } else if (movehistory_.size() >= 2) {
+      if (!history_view_locked) {
+        visible_entries_indices_[0] = static_cast<int>(movehistory_.size()) - 1;
+        visible_entries_indices_[1] = static_cast<int>(movehistory_.size()) - 2;
+      }
+    }
+  } else {
+    visible_entries_indices_.fill(-1);
+  }
 }
 }  // namespace gui
 
 // TODO (Duy Nguyen):
-// * Handle move validation exceptions
-// * Move history
+// * Tiles remaining in game
+// [Move history] Fix can't see turn 1 when turn number is odd
+// [Move history] Print words in history entry of type SUBMIT
+// [Move history] Render colored tiles for word submission
 // Create 'determining first player' view
-// Add time constraint
+// Load lexicon asynchronously when ResourceManager init
+// Add bot
 // Fix settings menu
+// Add time constraint
+// Match history

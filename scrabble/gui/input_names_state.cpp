@@ -156,16 +156,14 @@ void InputNamesState::HandleEvent(SDL_Event& event) {
 
   SDL_Point mouse_pos{event.motion.x, event.motion.y};
   bool is_hovering = false;
-  if (event.type == SDL_MOUSEMOTION || event.type == SDL_MOUSEBUTTONDOWN) {
-    for (const auto& box : input_boxes_) {
-      if (SDL_PointInRect(&mouse_pos, &box.box) == 1) {
-        is_hovering = true;
-      }
-    }
-    if (SDL_PointInRect(&mouse_pos, &create_game_button_) == 1 ||
-        SDL_PointInRect(&mouse_pos, &back_button_) == 1) {
+  for (const auto& box : input_boxes_) {
+    if (SDL_PointInRect(&mouse_pos, &box.box) == 1) {
       is_hovering = true;
     }
+  }
+  if (SDL_PointInRect(&mouse_pos, &create_game_button_) == 1 ||
+      SDL_PointInRect(&mouse_pos, &back_button_) == 1) {
+    is_hovering = true;
   }
 
   if (is_hovering) {

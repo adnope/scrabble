@@ -95,14 +95,10 @@ GUI::GUI() {
   resources_.SetRenderer(renderer_);
   lexicon_ = resources_.twl_lexicon();
 
-  current_state_ = std::make_unique<MainMenuState>(this);
-
+  // current_state_ = std::make_unique<MainMenuState>(this);
   // current_state_ = std::make_unique<InputNamesState>(this, 4);
-
-  // current_state_type_ = GameStateType::Ingame;
-  // std::vector<std::string> player_names = {"duy1", "duy2", "duy3", "duy4"};
-  // current_state_ = std::make_unique<IngameState>(this, lexicon_,
-  // player_names);
+  ChangeState(GameStateType::Ingame,
+              {"duy1", "duy2", "duy3", "1234567890duy1"});
 }
 
 GUI::~GUI() {

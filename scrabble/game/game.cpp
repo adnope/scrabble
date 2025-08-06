@@ -65,6 +65,7 @@ void Game::ExecutePassMove() {
 
   NextTurn();
   ++consecutive_passes_;
+  ++turn_number_;
 }
 
 Game::SwapResponse Game::ExecuteSwapMove(const std::vector<int>& indices) {
@@ -97,6 +98,7 @@ Game::SwapResponse Game::ExecuteSwapMove(const std::vector<int>& indices) {
 
     NextTurn();
     consecutive_passes_ = 0;
+    ++turn_number_;
   }
   return {swap_successful, old_tiles, new_tiles, deck};
 }
@@ -144,6 +146,7 @@ core::Player::MoveSubmissionResponse Game::ExecutePlaceMove(
     move.words = player_response.words;
     move_history_.push_back(move);
     NextTurn();
+    ++turn_number_;
   }
 
   return player_response;

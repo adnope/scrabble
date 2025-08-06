@@ -55,6 +55,7 @@ class Game {
   std::vector<core::Player> players() const { return players_; }
   int consecutive_passes() const { return consecutive_passes_; }
   std::vector<Move> move_history() const { return move_history_; }
+  int turn_number() const { return static_cast<int>(turn_number_); }
   int bag_size() const { return bag_.num_tiles_remanining(); }
   core::Player winner() const { return winner_; }
   int num_players() const { return static_cast<int>(players_.size()); }
@@ -71,6 +72,7 @@ class Game {
   core::Board board_;
   core::Lexicon* lexicon_ = new core::Lexicon();
   std::vector<Move> move_history_;
+  unsigned int turn_number_ = 0;
   bool is_over = false;
 
   int current_player_index_ = 0;

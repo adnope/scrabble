@@ -13,7 +13,7 @@ class Player {
  public:
   struct Placement {
     int tile_index = 0;
-    char use = 0; // if the tile is a blank tile
+    char use = 0;  // if the tile is a blank tile
     int row = 0;
     int col = 0;
   };
@@ -22,12 +22,14 @@ class Player {
     std::vector<Word> words;
     int move_points;
     Board::ResponseStatus status;
+    std::string invalid_word;
 
     explicit MoveSubmissionResponse(
         const Board::MoveValidationResponse &board_response)
         : words(board_response.words),
           move_points(board_response.move_points),
-          status(board_response.status) {}
+          status(board_response.status),
+          invalid_word(board_response.invalid_word) {}
   };
 
   using Move = std::vector<Placement>;
