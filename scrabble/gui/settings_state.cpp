@@ -1,7 +1,7 @@
 #include "settings_state.hpp"
 
 #include <string>
-//#include <iostream>
+#include <iostream>
 #include "SDL_image.h"
 #include "SDL_mouse.h"
 #include "SDL_rect.h"
