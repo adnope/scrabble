@@ -47,8 +47,21 @@ void GUI::RenderText(SDL_Renderer* renderer, const std::string& text,
   if (text.empty()) {
     return;
   }
+  if (font == nullptr) {
+    std::cerr << "Font is null\n";
+    return;
+  }
   SDL_Surface* surface = TTF_RenderUTF8_Solid(font, text.c_str(), color);
+  if (surface == nullptr) {
+    std::cerr << "Failed to create surface: " << TTF_GetError() << '\n';
+    return;
+  }
   SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+  if (texture == nullptr) {
+    std::cerr << "Failed to create texture: " << SDL_GetError() << '\n';
+    SDL_FreeSurface(surface);
+    return;
+  }
 
   SDL_Rect dst = {x, y, surface->w, surface->h};
   SDL_RenderCopy(renderer, texture, nullptr, &dst);
@@ -63,8 +76,21 @@ void GUI::RenderTextCenteredX(SDL_Renderer* renderer, TTF_Font* font,
   if (text.empty()) {
     return;
   }
+  if (font == nullptr) {
+    std::cerr << "Font is null\n";
+    return;
+  }
   SDL_Surface* surface = TTF_RenderUTF8_Solid(font, text.c_str(), color);
+  if (surface == nullptr) {
+    std::cerr << "Failed to create surface: " << TTF_GetError() << '\n';
+    return;
+  }
   SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+  if (texture == nullptr) {
+    std::cerr << "Failed to create texture: " << SDL_GetError() << '\n';
+    SDL_FreeSurface(surface);
+    return;
+  }
 
   SDL_Rect area;
   area.w = surface->w;
@@ -83,13 +109,22 @@ void GUI::RenderFixedHeightText(SDL_Renderer* renderer, const std::string& text,
   if (text.empty()) {
     return;
   }
+  if (font == nullptr) {
+    std::cerr << "Font is null\n";
+    return;
+  }
   SDL_Surface* surface = TTF_RenderUTF8_Solid(font, text.c_str(), color);
-  if (!surface) {
-    std::cerr << "TTF_RenderUTF8_Solid failed: " << TTF_GetError() << std::endl;
+  if (surface == nullptr) {
+    std::cerr << "Failed to create surface: " << TTF_GetError() << '\n';
     return;
   }
   SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
-  //std::cout<<1<<std::endl;
+  if (texture == nullptr) {
+    std::cerr << "Failed to create texture: " << SDL_GetError() << '\n';
+    SDL_FreeSurface(surface);
+    return;
+  }
+
   SDL_Rect area;
   area.x = x;
   area.y = y;
@@ -109,8 +144,21 @@ void GUI::RenderFixedHeightCenteredText(SDL_Renderer* renderer,
   if (text.empty()) {
     return;
   }
+  if (font == nullptr) {
+    std::cerr << "Font is null\n";
+    return;
+  }
   SDL_Surface* surface = TTF_RenderUTF8_Solid(font, text.c_str(), color);
+  if (surface == nullptr) {
+    std::cerr << "Failed to create surface: " << TTF_GetError() << '\n';
+    return;
+  }
   SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+  if (texture == nullptr) {
+    std::cerr << "Failed to create texture: " << SDL_GetError() << '\n';
+    SDL_FreeSurface(surface);
+    return;
+  }
 
   SDL_Rect rect;
   rect.y = y;

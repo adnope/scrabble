@@ -379,6 +379,17 @@ void IngameState::RenderMoveHistory(SDL_Renderer* renderer) {
     const auto& content = movehistory_[entry1_index].move_content;
     GUI::RenderText(renderer, content, gui_->jersey32(), box.x + 5, box.y + 10,
                     kWhite);
+    if (movehistory_[entry1_index].move_type == MoveType::SUBMIT) {
+      std::string words = "Words: ";
+      for (const auto& word : movehistory_[entry1_index].words) {
+        std::string word_str = word.AsString();
+        std::transform(word_str.begin(), word_str.end(), word_str.begin(),
+                       toupper);
+        words += word_str + ' ';
+      }
+      GUI::RenderText(renderer, words, gui_->jersey32(), box.x + 5, box.y + 40,
+                      kWhite);
+    }
   }
   int entry2_index = visible_entries_indices_[1];
   if (entry2_index != -1) {
@@ -388,6 +399,17 @@ void IngameState::RenderMoveHistory(SDL_Renderer* renderer) {
     const auto& content = movehistory_[entry2_index].move_content;
     GUI::RenderText(renderer, content, gui_->jersey32(), box.x + 5, box.y + 10,
                     kWhite);
+    if (movehistory_[entry2_index].move_type == MoveType::SUBMIT) {
+      std::string words = "Words: ";
+      for (const auto& word : movehistory_[entry2_index].words) {
+        std::string word_str = word.AsString();
+        std::transform(word_str.begin(), word_str.end(), word_str.begin(),
+                       toupper);
+        words += word_str + ' ';
+      }
+      GUI::RenderText(renderer, words, gui_->jersey32(), box.x + 5, box.y + 40,
+                      kWhite);
+    }
   }
 }
 
@@ -722,7 +744,7 @@ void IngameState::SubmitMove() {
     const std::string message =
         turn_number + ". " + name + " earned " + points + " points";
     movehistory_.push_back(
-        {{}, name, IngameState::MoveType::SUBMIT, message, response.words});
+        {{}, name, MoveType::SUBMIT, message, response.words});
     pending_move_.clear();
   }
 }
