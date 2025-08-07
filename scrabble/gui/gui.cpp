@@ -84,14 +84,19 @@ void GUI::RenderFixedHeightText(SDL_Renderer* renderer, const std::string& text,
     return;
   }
   SDL_Surface* surface = TTF_RenderUTF8_Solid(font, text.c_str(), color);
+  if (!surface) {
+    std::cerr << "TTF_RenderUTF8_Solid failed: " << TTF_GetError() << std::endl;
+    return;
+  }
   SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
-
+  //std::cout<<1<<std::endl;
   SDL_Rect area;
   area.x = x;
   area.y = y;
   area.h = height;
   area.w = surface->w * height / surface->h;
   SDL_RenderCopy(renderer, texture, nullptr, &area);
+  //std::cout<<2<<std::endl;
 
   SDL_FreeSurface(surface);
   SDL_DestroyTexture(texture);
@@ -222,6 +227,7 @@ void GUI::ChangeState(GameStateType state_type,
 void GUI::Start() {
   SDL_Event e;
   while (!quit_) {
+    //InitSDL2();
     if (lexicon_ == nullptr) {
       lexicon_ = resources_.twl_lexicon();
     }
