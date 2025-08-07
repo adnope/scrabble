@@ -1065,13 +1065,3 @@ void IngameState::Update() {
   }
 }
 }  // namespace gui
-
-// TODO (Duy Nguyen):
-// * Tiles remaining in game
-// [Move history] Fix can't see turn 1 when turn number is odd
-// [Move history] Print words in history entry of type SUBMIT
-// [Move history] Render colored tiles for word submission
-// Add bot
-// Fix settings menu
-// Add time constraint
-// Match history

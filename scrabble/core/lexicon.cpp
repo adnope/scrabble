@@ -82,6 +82,7 @@ void Lexicon::PreloadDictionary(core::Dictionary::DictionaryType type) {
   core::Dictionary dictionary;
   dictionary.ChangeDictionary(type);
   BuildLexiconTree(dictionary);
+  dict_type_ = type;
 }
 
 Node* Lexicon::NodePath(const std::string& word) {

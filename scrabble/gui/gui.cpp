@@ -6,6 +6,7 @@
 #include "SDL2/SDL.h"
 #include "SDL_error.h"
 #include "SDL_image.h"
+#include "SDL_rect.h"
 #include "SDL_ttf.h"
 #include "SDL_video.h"
 #include "ingame_state.hpp"
@@ -46,19 +47,8 @@ void GUI::RenderText(SDL_Renderer* renderer, const std::string& text,
   if (text.empty()) {
     return;
   }
-  SDL_Surface* surface = TTF_RenderUTF8_Blended(font, text.c_str(), color);
-  if (surface == nullptr) {
-    std::cerr << "Failed to render text surface: " << SDL_GetError() << '\n';
-    return;
-  }
-
+  SDL_Surface* surface = TTF_RenderUTF8_Solid(font, text.c_str(), color);
   SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
-  if (texture == nullptr) {
-    std::cerr << "Failed to create texture from surface: " << SDL_GetError()
-              << '\n';
-    SDL_FreeSurface(surface);
-    return;
-  }
 
   SDL_Rect dst = {x, y, surface->w, surface->h};
   SDL_RenderCopy(renderer, texture, nullptr, &dst);
@@ -70,6 +60,9 @@ void GUI::RenderText(SDL_Renderer* renderer, const std::string& text,
 void GUI::RenderTextCenteredX(SDL_Renderer* renderer, TTF_Font* font,
                               const std::string& text, int anchor_x, int y,
                               SDL_Color color) {
+  if (text.empty()) {
+    return;
+  }
   SDL_Surface* surface = TTF_RenderUTF8_Solid(font, text.c_str(), color);
   SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
 
@@ -78,8 +71,49 @@ void GUI::RenderTextCenteredX(SDL_Renderer* renderer, TTF_Font* font,
   area.h = surface->h;
   area.x = anchor_x - (area.w / 2);
   area.y = y;
-
   SDL_RenderCopy(renderer, texture, nullptr, &area);
+
+  SDL_FreeSurface(surface);
+  SDL_DestroyTexture(texture);
+}
+
+void GUI::RenderFixedHeightText(SDL_Renderer* renderer, const std::string& text,
+                                TTF_Font* font, int x, int y, int height,
+                                SDL_Color color) {
+  if (text.empty()) {
+    return;
+  }
+  SDL_Surface* surface = TTF_RenderUTF8_Solid(font, text.c_str(), color);
+  SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+
+  SDL_Rect area;
+  area.x = x;
+  area.y = y;
+  area.h = height;
+  area.w = surface->w * height / surface->h;
+  SDL_RenderCopy(renderer, texture, nullptr, &area);
+
+  SDL_FreeSurface(surface);
+  SDL_DestroyTexture(texture);
+}
+
+void GUI::RenderFixedHeightCenteredText(SDL_Renderer* renderer,
+                                        const std::string& text, TTF_Font* font,
+                                        int x, int y, int height,
+                                        SDL_Color color, int& width) {
+  if (text.empty()) {
+    return;
+  }
+  SDL_Surface* surface = TTF_RenderUTF8_Solid(font, text.c_str(), color);
+  SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+
+  SDL_Rect rect;
+  rect.y = y;
+  rect.h = height;
+  rect.w = surface->w * height / surface->h;
+  rect.x = x - rect.w / 2;
+  width = rect.w;
+  SDL_RenderCopy(renderer, texture, nullptr, &rect);
 
   SDL_FreeSurface(surface);
   SDL_DestroyTexture(texture);

@@ -43,8 +43,10 @@ class Lexicon {
   unsigned int size() const;
   Node* getRoot() { return root.get(); }
   const Node* getRoot() const { return root.get(); }
+  Dictionary::DictionaryType type() { return dict_type_; }
 
  private:
+  Dictionary::DictionaryType dict_type_;
   std::unique_ptr<Node> root;
   const Node* FindNode(const std::string& word) const;
   Node* NodePath(const std::string& word);
