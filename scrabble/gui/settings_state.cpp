@@ -1,8 +1,7 @@
 #include "settings_state.hpp"
 
 #include <string>
-#include <iostream>
-#include "SDL_image.h"
+
 #include "SDL_mouse.h"
 #include "SDL_rect.h"
 #include "SDL_render.h"
@@ -101,9 +100,6 @@ void SettingsState::Render(SDL_Renderer* renderer) {
   gui_->RenderImage(renderer,
                     "assets/textures/settings/settings_background.png",
                     {0, 0, gui_->window_width(), gui_->window_height()});
-  //std::cout<<"10 %done"<<std::endl;
-
-
   const int w_width = gui_->window_width();
   const int w_height = gui_->window_height();
   const int num_options = static_cast<int>(option_list_.size());
@@ -115,7 +111,6 @@ void SettingsState::Render(SDL_Renderer* renderer) {
   settings_box_ = {box_x, box_y, box_w, box_h};
   gui_->RenderImage(renderer, "assets/textures/settings/settings_box.png",
                     settings_box_);
-  //std::cout<<"50 %done"<<std::endl;
 
   back_button_.w = w_width * 5 / 32;
   back_button_.h = w_height / 10;
@@ -128,22 +123,14 @@ void SettingsState::Render(SDL_Renderer* renderer) {
   const int option_h = box_h / 10;
   const int gap = box_h / 30;
   const int initial_y = box_y + padding_y;
-  //std::cout<<"70 %done"<<std::endl;
 
   for (int i = 0; i < num_options; ++i) {
     const int label_x = box_x + padding_x;
     const int label_y = initial_y + (i * (option_h + gap));
     const int current_option_x = box_x + box_w - (box_w / 4);
-    //std::cout<<"80 %done"<<std::endl;
-    TTF_Font* font = gui_->jersey32();
-    if (!font) {
-        std::cerr << "Font jersey32() is null! TTF_Error: " << TTF_GetError() << std::endl;
-        return;  // hoặc xử lý fallback
-    }
     GUI::RenderFixedHeightText(renderer, option_list_[i].label,
                                gui_->jersey32(), label_x, label_y, option_h,
                                {255, 255, 255, 255});
-    //std::cout<<"100 %done"<<std::endl;
     GUI::RenderFixedHeightCenteredText(
         renderer, option_list_[i].current_option(), gui_->jersey32(),
         current_option_x, label_y, option_h, {255, 255, 255, 255},
@@ -163,7 +150,6 @@ void SettingsState::Render(SDL_Renderer* renderer) {
     option_list_[i].rightarrow_rect = {rightarrow_x, arrow_y, arrow_w, arrow_h};
     gui_->RenderImage(renderer, "assets/textures/settings/right_arrow.png",
                       option_list_[i].rightarrow_rect);
-                      
   }
 }
 }  // namespace gui

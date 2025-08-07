@@ -131,7 +131,6 @@ void GUI::RenderFixedHeightText(SDL_Renderer* renderer, const std::string& text,
   area.h = height;
   area.w = surface->w * height / surface->h;
   SDL_RenderCopy(renderer, texture, nullptr, &area);
-  //std::cout<<2<<std::endl;
 
   SDL_FreeSurface(surface);
   SDL_DestroyTexture(texture);
@@ -275,7 +274,6 @@ void GUI::ChangeState(GameStateType state_type,
 void GUI::Start() {
   SDL_Event e;
   while (!quit_) {
-    //InitSDL2();
     if (lexicon_ == nullptr) {
       lexicon_ = resources_.twl_lexicon();
     }
