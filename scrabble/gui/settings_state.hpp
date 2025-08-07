@@ -4,7 +4,6 @@
 #include <vector>
 
 #include "SDL_rect.h"
-#include "core/dictionary.hpp"
 #include "gui.hpp"
 #include "i_game_state.hpp"
 

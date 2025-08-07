@@ -2,11 +2,9 @@
 
 #include <string>
 
-#include "SDL_image.h"
 #include "SDL_mouse.h"
 #include "SDL_rect.h"
 #include "SDL_render.h"
-#include "SDL_ttf.h"
 #include "core/dictionary.hpp"
 #include "gui/gui.hpp"
 
@@ -15,12 +13,12 @@ void SettingsState::HandleArrows(SDL_Event& event) {
   for (Option& option : option_list_) {
     SDL_Point mouse_pos = {event.motion.x, event.motion.y};
     if (SDL_PointInRect(&mouse_pos, &option.leftarrow_rect) == 1) {
-      option.current_option_index =
-          (option.current_option_index - 1) % option.options.size();
+      option.current_option_index = static_cast<int>(
+          (option.current_option_index - 1) % option.options.size());
     }
     if (SDL_PointInRect(&mouse_pos, &option.rightarrow_rect) == 1) {
-      option.current_option_index =
-          (option.current_option_index + 1) % option.options.size();
+      option.current_option_index = static_cast<int>(
+          (option.current_option_index + 1) % option.options.size());
     }
     if (option.label == "Resolution") {
       if (option.current_option() == "1280x720" &&
@@ -120,7 +118,6 @@ void SettingsState::Render(SDL_Renderer* renderer) {
   back_button_.y = settings_box_.y + settings_box_.h + w_height / 24;
   gui_->RenderImage(renderer, "assets/textures/settings/button_back.png",
                     back_button_);
-
   const int padding_x = box_w / 20;
   const int padding_y = box_h / 20;
   const int option_h = box_h / 10;
