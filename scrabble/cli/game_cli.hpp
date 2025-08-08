@@ -42,7 +42,7 @@ class CLIGame {
 
   std::vector<int> RequestSwappingIndices();
 
-  void InitDictionary();
+  static void InitDictionary();
 
   void InitPlayers();
 

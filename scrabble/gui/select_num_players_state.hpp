@@ -1,8 +1,8 @@
 #pragma once
 
 #include "SDL_rect.h"
-#include "i_game_state.hpp"
 #include "gui.hpp"
+#include "i_game_state.hpp"
 
 namespace gui {
 class SelectNumPlayersState : public IGameState {

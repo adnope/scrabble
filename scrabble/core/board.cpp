@@ -198,13 +198,9 @@ std::vector<Word> Board::GetWordsFromMove(const Move& move,
 }
 
 bool Board::IsMoveOccupied(const Move& move) const {
-  for (const auto& [tile, row, col] : move) {
-    if (IsOccupied(row, col)) {
-      // std::cout << "Move at: " << row << " " << col << " occupied\n";
-      return true;
-    }
-  }
-  return false;
+  return std::any_of(move.begin(), move.end(), [this](const auto& placement) {
+    return IsOccupied(placement.row, placement.col);
+  });
 }
 
 bool Board::IsInStartingSquare(const Move& move) {
@@ -338,7 +334,7 @@ Board::MoveValidationResponse Board::ValidateMove(const Move& move,
     return {{}, 0, ResponseStatus::kNotAdjacent, ""};
   }
 
-  // Checking placements alignment
+  // Checking placements alignment, return the type of alignment
   int horizontal = IsAligned(move);
   if (horizontal == -1) {
     return {{}, 0, ResponseStatus::kNotAligned, ""};

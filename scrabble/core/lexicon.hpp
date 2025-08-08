@@ -46,7 +46,7 @@ class Lexicon {
   Dictionary::DictionaryType type() { return dict_type_; }
 
  private:
-  Dictionary::DictionaryType dict_type_;
+  Dictionary::DictionaryType dict_type_ = Dictionary::TWL;
   std::unique_ptr<Node> root;
   const Node* FindNode(const std::string& word) const;
   Node* NodePath(const std::string& word);

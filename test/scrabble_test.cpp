@@ -2,15 +2,10 @@
 #include <iostream>
 #include <string>
 
-#include "cli/game_cli.hpp"
-#include "core/bag.hpp"
 #include "core/board.hpp"
-#include "core/bot.hpp"
 #include "core/dictionary.hpp"
 #include "core/lexicon.hpp"
-#include "core/player.hpp"
 #include "core/square.hpp"
-#include "core/tile.hpp"
 #include "core/word.hpp"
 #include "doctest/doctest.h"
 #include "spdlog/spdlog.h"
@@ -36,57 +31,6 @@ TEST_CASE("Lexicon contains test") {
     CHECK(lexicon.ContainsPrefix("bi") == false);
   }
 }
-
-// TEST_CASE("Player test") {
-//   using core::Bag;
-//   using core::Tile;
-
-//   Bag bag;
-//   core::Player player("test_player_1", 0);
-//   std::vector<Tile> initial_tiles = {{'A', 1}, {'B', 3}, {'C', 3}, {'D', 2},
-//                                      {'E', 1}, {'F', 4}, {'G', 2}};
-//   player.AddTiles(initial_tiles);
-//   spdlog::info("New player created");
-//   player.PrintDeck();
-//   std::cout << "Subcase: ";
-
-//   SUBCASE("Constructor") {
-//     std::cout << "[Player constructor]\n";
-
-//     CHECK(player.name() == "test_player_1");
-//     CHECK(player.score() == 0);
-//     CHECK(player.current_deck_size() == 7);
-//   }
-
-//   SUBCASE("Use tiles and draw tiles") {
-//     std::cout << "[Player use tiles and draw tiles]\n";
-
-//     player.UseTile(1);
-//     player.UseTile(4);
-//     player.UseTile(5);
-//     std::cout << "Deck before: \n";
-//     player.PrintDeck();
-//     CHECK(player.current_deck_size() == 4);
-
-//     player.DrawNewTiles(bag);
-//     std::cout << "Deck before: \n";
-//     player.PrintDeck();
-//     CHECK(player.current_deck_size() == 7);
-//   }
-
-//   SUBCASE("Swapping") {
-//     std::cout << "[Player swap]\n";
-//     std::cout << "Deck before: \n";
-//     player.PrintDeck();
-
-//     player.PerformSwap(bag, {1, 2, 3});
-
-//     std::cout << "Deck after: \n";
-//     player.PrintDeck();
-
-//     CHECK(player.current_deck_size() == 7);
-//   }
-// }
 
 void PrintBoardResponse(const core::Board::MoveValidationResponse& response) {
   std::cout << "[Move response]: \nWords: \n";
@@ -119,6 +63,10 @@ void PrintBoardResponse(const core::Board::MoveValidationResponse& response) {
       std::cout << "Status: MOVE OCCUPIED\n";
       break;
     }
+    case core::Board::ResponseStatus::kNotAdjacent: {
+      std::cout << "Status: MOVE NOT ADJACENT TO EXISTING TILES\n";
+      break;
+    }
     case core::Board::ResponseStatus::kNotAligned: {
       std::cout << "Status: MOVE NOT ALIGNED\n";
       break;
@@ -133,7 +81,6 @@ void PrintBoardResponse(const core::Board::MoveValidationResponse& response) {
     }
   }
 }
-
 
 TEST_CASE("Board test") {
   spdlog::info("Board test");
