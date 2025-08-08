@@ -11,7 +11,7 @@
 #include "tile.hpp"
 
 namespace core {
-Board::Board() : is_first_move_(true) {
+Board::Board() {
   const std::string default_board =
       "t..2...t...2..t\n"
       ".d...3...3...d.\n"
@@ -205,22 +205,84 @@ std::vector<Word> Board::GetWordsFromMove(const Move& move,
 }
 
 bool Board::IsMoveOccupied(const Move& move) const {
-  for (const auto& [tile, row, col] : move) {
-    if (IsOccupied(row, col)) {
-      std::cout << "Move at: " << row << " " << col << " occupied\n";
-      return true;
+  return std::any_of(move.begin(), move.end(), [this](const auto& placement) {
+    return IsOccupied(placement.row, placement.col);
+  });
+}
+
+bool Board::IsInStartingSquare(const Move& move) {
+  return std::any_of(move.begin(), move.end(), [](const Placement& p) {
+    return p.row == kStartPosRow && p.col == kStartPosColumn;
+  });
+}
+
+bool Board::AdjacentToAnotherInMove(const int row, const int col,
+                                    const Move& move) {
+  // for (const auto& [t, m_row, m_col] : move) {
+  //   if (m_row - 1 == row && m_col == col) {
+  //     return true;
+  //   }
+  //   if (m_row + 1 == row && m_col == col) {
+  //     return true;
+  //   }
+  //   if (m_row == row && m_col + 1 == col) {
+  //     return true;
+  //   }
+  //   if (m_row == row && m_col - 1 == col) {
+  //     return true;
+  //   }
+  // }
+  // return false;
+  return std::any_of(move.begin(), move.end(),
+                     [row, col](const auto& placement) {
+                       auto& [t, m_row, m_col] = placement;
+                       return (m_row - 1 == row && m_col == col) ||
+                              (m_row + 1 == row && m_col == col) ||
+                              (m_row == row && m_col + 1 == col) ||
+                              (m_row == row && m_col - 1 == col);
+                     });
+}
+
+bool Board::AdjacentToBoard(const int row, const int col) const {
+  for (int i = 0; i < 15; ++i) {
+    for (int j = 0; j < 15; ++j) {
+      if (!board_grid_.at(i).at(j).IsOccupied()) {
+        continue;
+      }
+      if (i - 1 == row && j == col) {
+        return true;
+      }
+      if (i + 1 == row && j == col) {
+        return true;
+      }
+      if (i == row && j + 1 == col) {
+        return true;
+      }
+      if (i == row && j - 1 == col) {
+        return true;
+      }
     }
   }
   return false;
 }
 
-bool Board::IsInStartingSquare(const Move& move) const {
+bool Board::IsAdjacentToExistingTiles(const Move& move) const {
   if (is_first_move_) {
-    return std::any_of(move.begin(), move.end(), [](const Placement& p) {
-      return p.row == kStartPosRow && p.col == kStartPosColumn;
-    });
+    return true;
   }
-  return true;
+  int adjacent_to_board_count = 0;
+  for (const auto& [t, row, col] : move) {
+    if (AdjacentToBoard(row, col)) {
+      ++adjacent_to_board_count;
+    }
+  }
+
+  return std::all_of(move.begin(), move.end(),
+                     [move, this](const Placement& p) {
+                       return AdjacentToAnotherInMove(p.row, p.col, move) ||
+                              AdjacentToBoard(p.row, p.col);
+                     }) &&
+         adjacent_to_board_count != 0;
 }
 
 int Board::IsAligned(const Move& move) {
@@ -236,7 +298,7 @@ int Board::IsAligned(const Move& move) {
   if (!horizontal) {
     for (const auto& [tile, row, col] : move) {
       if (col != anchor_col) {
-        std::cout << "Move placements not aligned\n";
+        // std::cout << "Move placements not aligned\n";
         return -1;
       }
     }
@@ -246,11 +308,15 @@ int Board::IsAligned(const Move& move) {
 }
 
 bool Board::AreInDictionary(const std::vector<std::string>& words,
-                            const Lexicon& lexicon) {
+                            const Lexicon& lexicon, std::string& invalid_word) {
+  if (words.empty()) {
+    invalid_word = "1 letter word is not allowed";
+    return false;
+  }
   for (auto word : words) {
     std::transform(word.begin(), word.end(), word.begin(), tolower);
     if (!lexicon.Contains(word)) {
-      std::cout << "Invalid word: " << word << '\n';
+      invalid_word = word;
       return false;
     }
   }
@@ -259,29 +325,26 @@ bool Board::AreInDictionary(const std::vector<std::string>& words,
 
 Board::MoveValidationResponse Board::ValidateMove(const Move& move,
                                                   const Lexicon& lexicon) {
-
-  
   // Check if first move is on the starting square
-  if (!IsInStartingSquare(move)) {
-    std::cout << "First move is not on start square\n";
-    return {{}, 0, ResponseStatus::kNotInStartingSquare};
+  if (is_first_move_ && !IsInStartingSquare(move)) {
+    // std::cout << "First move is not on start square\n";
+    return {{}, 0, ResponseStatus::kNotInStartingSquare, ""};
   }
 
   // Check if any placement is performed on occupied square
   if (IsMoveOccupied(move)) {
-    return {{}, 0, ResponseStatus::kOccupied};
+    return {{}, 0, ResponseStatus::kOccupied, ""};
   }
 
-  // Checking placements alignment
+  // Check if the move has at least 1 tile adjacent to existing tiles
+  if (!IsAdjacentToExistingTiles(move)) {
+    return {{}, 0, ResponseStatus::kNotAdjacent, ""};
+  }
+
+  // Checking placements alignment, return the type of alignment
   int horizontal = IsAligned(move);
   if (horizontal == -1) {
-    return {{}, 0, ResponseStatus::kNotAligned};
-  }
-    if (std::any_of(move.begin(), move.end(), [](const Placement& p) {
-        return p.row < 0 || p.row >= kHeight || 
-               p.col < 0 || p.col >= kWidth;
-      })) {
-    return {{}, 0, ResponseStatus::kNotAligned};
+    return {{}, 0, ResponseStatus::kNotAligned, ""};
   }
 
   // Checking words validity
@@ -291,8 +354,9 @@ Board::MoveValidationResponse Board::ValidateMove(const Move& move,
   for (const auto& word : words) {
     word_list.push_back(word.AsString());
   }
-  if (!AreInDictionary(word_list, lexicon)) {
-    return {words, 0, ResponseStatus::kWordsInvalid};
+  std::string invalid_word;
+  if (!AreInDictionary(word_list, lexicon, invalid_word)) {
+    return {words, 0, ResponseStatus::kWordsInvalid, invalid_word};
   }
 
   int move_points = 0;
@@ -306,7 +370,7 @@ Board::MoveValidationResponse Board::ValidateMove(const Move& move,
     PlaceTile(tile, row, col);
   }
 
-  return {words, move_points, ResponseStatus::kSuccess};
+  return {words, move_points, ResponseStatus::kSuccess, ""};
 }
 
 std::array<std::array<std::string, 15>, 15> Board::GetDisplayFormat() const {

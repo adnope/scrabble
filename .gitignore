@@ -10,3 +10,4 @@ __cmake_systeminformation/
 
 *.exe
 assets/dictionaries/*.txt
+todolist.txt

@@ -1,18 +1,13 @@
-#include "core/word.hpp"
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-
 #include <iostream>
 #include <string>
 
-#include "cli/game_cli.hpp"
-#include "core/bag.hpp"
 #include "core/board.hpp"
 #include "core/bot.hpp"
 #include "core/dictionary.hpp"
 #include "core/lexicon.hpp"
-#include "core/player.hpp"
 #include "core/square.hpp"
-#include "core/tile.hpp"
+#include "core/word.hpp"
 #include "doctest/doctest.h"
 #include "spdlog/spdlog.h"
 
@@ -115,12 +110,20 @@ void PrintBoardResponse(const core::Board::MoveValidationResponse& response) {
       std::cout << "Status: MOVE OCCUPIED\n";
       break;
     }
+    case core::Board::ResponseStatus::kNotAdjacent: {
+      std::cout << "Status: MOVE NOT ADJACENT TO EXISTING TILES\n";
+      break;
+    }
     case core::Board::ResponseStatus::kNotAligned: {
       std::cout << "Status: MOVE NOT ALIGNED\n";
       break;
     }
     case core::Board::ResponseStatus::kWordsInvalid: {
       std::cout << "Status: INVALID WORDS\n";
+      break;
+    }
+    case core::Board::ResponseStatus::kNotInStartingSquare: {
+      std::cout << "Status: NOT IN STARTING SQUARE\n";
       break;
     }
   }

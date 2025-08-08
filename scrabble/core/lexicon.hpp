@@ -27,11 +27,12 @@ struct Node {
 class Lexicon {
  public:
   Lexicon();
-  ~Lexicon() = default;
-  Lexicon(Lexicon&&) = default;
-  Lexicon& operator=(Lexicon&&) = default;
-  Lexicon(const Lexicon&) = delete;
+
+  Lexicon(Lexicon&&) = delete;
   Lexicon& operator=(const Lexicon&) = delete;
+  Lexicon& operator=(Lexicon&&) = delete;
+  Lexicon(const Lexicon&) = delete;
+  ~Lexicon() {}
 
   void AddWord(const std::string& word);
   bool Contains(std::string word) const;
@@ -42,8 +43,10 @@ class Lexicon {
   unsigned int size() const;
   Node* getRoot() { return root.get(); }
   const Node* getRoot() const { return root.get(); }
+  Dictionary::DictionaryType type() { return dict_type_; }
 
  private:
+  Dictionary::DictionaryType dict_type_ = Dictionary::TWL;
   std::unique_ptr<Node> root;
   const Node* FindNode(const std::string& word) const;
   Node* NodePath(const std::string& word);

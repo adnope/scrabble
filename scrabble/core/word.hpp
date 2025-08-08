@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cctype>
 #include <iostream>
 #include <string>
 #include <utility>
@@ -10,6 +11,8 @@
 namespace core {
 class Word {
  public:
+  Word() {}
+
   std::string AsString() const {
     std::string str;
     for (const auto& [letter, multiplier] : content_) {
@@ -19,7 +22,7 @@ class Word {
   }
 
   void AddToContent(const char letter, const Square::Multiplier multiplier) {
-    content_.emplace_back(letter, multiplier);
+    content_.emplace_back(static_cast<char>(toupper(letter)), multiplier);
   }
 
   void ApplyMultiplier() { points_ *= multiplier_; }

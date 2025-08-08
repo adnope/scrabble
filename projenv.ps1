@@ -1,5 +1,14 @@
 # projenv.ps1
 
+# Configure CMake
+function configure {
+  $buildDir = "build"
+  if (-Not (Test-Path $buildDir)) {
+    New-Item -ItemType Directory -Path $buildDir
+  }
+  cmake -DCMAKE_BUILD_TYPE:STRING=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE -DCMAKE_C_COMPILER:FILEPATH=clang.exe -DCMAKE_CXX_COMPILER:FILEPATH=clang++ --no-warn-unused-cli -S . -B $buildDir -G Ninja
+}
+
 # Build all or build a target
 function build {
   param(
@@ -8,8 +17,7 @@ function build {
 
   $buildDir = "build"
   if (-Not (Test-Path $buildDir)) {
-    New-Item -ItemType Directory -Path $buildDir
-    cmake -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ --no-warn-unused-cli -S . -B $buildDir -G "Ninja"
+    configure
   }
 
   if (-Not $target) {

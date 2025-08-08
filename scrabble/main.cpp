@@ -1,9 +1,13 @@
-#include "cli/game_cli.hpp"
+#include "gui/gui.hpp"
 
 int main() {
-  // test_sdl2_libraries();
-  cli::CLIGame cli_game;
-  cli_game.Start();
+  // cli::CLIGame cli_game;
+  // cli_game.Start();
+
+  if (gui::InitSDL2()) {
+    gui::GUI gui;
+    gui.Start();
+  }
 
   return 0;
 }

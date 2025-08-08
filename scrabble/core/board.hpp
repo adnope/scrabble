@@ -23,6 +23,7 @@ class Board {
     kNotInStartingSquare,
     kOccupied,
     kNotAligned,
+    kNotAdjacent,
     kWordsInvalid
   };
 
@@ -39,6 +40,7 @@ class Board {
     std::vector<Word> words;
     int move_points;
     ResponseStatus status;
+    std::string invalid_word;
   };
 
   using Move = std::vector<Placement>;
@@ -76,17 +78,22 @@ class Board {
 
  private:
   BoardGrid board_grid_;
-  bool is_first_move_;
+  bool is_first_move_ = true;
 
-  // Word GetWordFromPos(int row, int col, bool horizontal, const Move& move);
+  static bool AdjacentToAnotherInMove(int row, int col, const Move& move);
 
-  // std::vector<Word> GetWordsFromMove(const Move& move, bool horizontal);
+  bool AdjacentToBoard(int row, int col) const;
+
+  bool IsAdjacentToExistingTiles(const Move& move) const;
+
+  static bool IsInStartingSquare(const Move& move);
 
   bool IsInStartingSquare(const Move& move) const;
 
   static int IsAligned(const Move& move);
 
   static bool AreInDictionary(const std::vector<std::string>& words,
-                              const Lexicon& lexicon);
+                              const Lexicon& lexicon,
+                              std::string& invalid_word);
 };
 }  // namespace core

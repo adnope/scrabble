@@ -6,7 +6,6 @@
 
 #include "core/bag.hpp"
 #include "core/board.hpp"
-#include "core/dictionary.hpp"
 #include "core/lexicon.hpp"
 #include "core/player.hpp"
 #include "core/word.hpp"
@@ -30,19 +29,22 @@ class Game {
     std::string deck;
   };
 
-  void LoadDictionary(core::Dictionary::DictionaryType type);
+  Game() {}
+
+  explicit Game(const std::vector<std::string>& player_names);
 
   void AddPlayer(const std::string& name) { players_.emplace_back(name, 0); }
 
   void InitPlayerDecks();
 
   void SetFirstPlayer(const int index) { current_player_index_ = index; }
+  void SetLexicon(core::Lexicon* lexicon) { lexicon_ = lexicon; }
 
   void ExecutePassMove();
 
   SwapResponse ExecuteSwapMove(const std::vector<int>& indices);
 
-  core::Board::ResponseStatus ExecutePlaceMove(
+  core::Player::MoveSubmissionResponse ExecutePlaceMove(
       const core::Player::Move& player_move);
 
   void NextTurn();
@@ -50,15 +52,18 @@ class Game {
   bool IsOver();
 
   core::Bag bag() const { return bag_; }
+  core::Board board() const { return board_; }
   std::vector<core::Player> players() const { return players_; }
   int consecutive_passes() const { return consecutive_passes_; }
   std::vector<Move> move_history() const { return move_history_; }
+  int turn_number() const { return static_cast<int>(turn_number_); }
   int bag_size() const { return bag_.num_tiles_remanining(); }
   core::Player winner() const { return winner_; }
   int num_players() const { return static_cast<int>(players_.size()); }
   core::Player current_player() const {
     return players_[current_player_index_];
   }
+  core::Lexicon* lexicon() { return lexicon_; }
 
   void PrintBoard() const;
   void PrintDebugInfo() const;
@@ -67,8 +72,10 @@ class Game {
   std::vector<core::Player> players_;
   core::Bag bag_;
   core::Board board_;
-  core::Lexicon lexicon_;
+  core::Lexicon* lexicon_ = nullptr;
   std::vector<Move> move_history_;
+  unsigned int turn_number_ = 0;
+  bool is_over = false;
 
   int current_player_index_ = 0;
   int consecutive_passes_ = 0;

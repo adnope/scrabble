@@ -105,11 +105,9 @@ void CLIGame::InitDictionary() {
 
   if (choice == 1) {
     std::cout << "Dictionary: CSW\n\n";
-    game.LoadDictionary(core::Dictionary::CSW);
   }
   if (choice == 2) {
     std::cout << "Dictionary: TWL\n\n";
-    game.LoadDictionary(core::Dictionary::TWL);
   }
 }
 
@@ -122,9 +120,9 @@ void CLIGame::InitPlayers() {
 }
 
 void CLIGame::InitFirstPlayer() {
-  constexpr int INT_MAX = 9999;
+  constexpr int kIntMax = 9999;
   int first_player_index = 0;
-  int distance_from_a = INT_MAX;
+  int distance_from_a = kIntMax;
   auto game_bag = game.bag();
   auto game_players = game.players();
   std::cout << "Determining first player...\n";

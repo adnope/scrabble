@@ -1,4 +1,14 @@
 ---
+HeaderFileExtensions:
+  - h
+  - hh
+  - hpp
+  - hxx
+ImplementationFileExtensions:
+  - c
+  - cc
+  - cpp
+  - cxx
 Checks: 'clang-analyzer-*,
 cppcoreguidelines-*,
 performance-*,
@@ -9,3 +19,5 @@ readability-*,
 -bugprone-easily-swappable-parameters,
 -readability-magic-numbers,
 -cppcoreguidelines-avoid-magic-numbers'
+CheckOptions:
+  readability-function-cognitive-complexity.DescribeBasicIncrements: 'false'
