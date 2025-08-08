@@ -75,11 +75,11 @@ class GUI {
   TTF_Font* jersey48() const { return resources_.jersey48(); }
   TTF_Font* jersey64() const { return resources_.jersey64(); }
   core::Lexicon* lexicon() { return lexicon_; }
+  auto lexicon_type() { return lexicon_type_; }
   SDL_Cursor* cursor(SDL_SystemCursor cursor) {
     return resources_.GetSystemCursor(cursor);
   }
   std::string current_resolution() { return current_resolution_; }
-  std::string current_lexicon_option() { return current_lexicon_option_; }
 
   void SetSize(const int width, const int height) {
     if (width == 1280 && height == 720) {
@@ -99,15 +99,8 @@ class GUI {
     SDL_RenderSetVSync(renderer_, static_cast<int>(vsync_));
   }
 
-  void ChangeDictionary(core::Dictionary::DictionaryType dictionary_type) {
-    if (dictionary_type == core::Dictionary::CSW) {
-      lexicon_ = resources_.csw_lexicon();
-      current_lexicon_option_ = "CSW";
-    }
-    if (dictionary_type == core::Dictionary::TWL) {
-      lexicon_ = resources_.twl_lexicon();
-      current_lexicon_option_ = "TWL";
-    }
+  void SetLexiconType(core::Dictionary::DictionaryType type) {
+    lexicon_type_ = type;
   }
 
  private:
@@ -124,6 +117,7 @@ class GUI {
 
   bool quit_ = false;
   core::Lexicon* lexicon_ = nullptr;
+  core::Dictionary::DictionaryType lexicon_type_ = core::Dictionary::TWL;
 
   ResourceManager resources_;
 

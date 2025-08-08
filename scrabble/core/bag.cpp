@@ -42,7 +42,6 @@ Bag::Bag() {
       "y 4 2\n"
       "z 10 1";
 
-  // Populate the tile_bag (shuffle for randomization)
   std::istringstream bag_stream(default_bag);
   std::string line;
   while (std::getline(bag_stream, line)) {
@@ -54,6 +53,10 @@ Bag::Bag() {
 
     addTileToBag(tile_bag_, letter, points, count);
   }
+
+  // simulate end game
+  // Shuffle();
+  // tile_bag_.erase(tile_bag_.begin() + 40, tile_bag_.end() - 1);
 
   Shuffle();
 }

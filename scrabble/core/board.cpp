@@ -82,7 +82,7 @@ bool Board::PlaceTile(const Tile& tile, const int row, const int col) {
   if (row < 0 || row >= kHeight || col < 0 || col >= kWidth) {
     return false;
   }
-  
+
   if (!IsOccupied(row, col)) {
     if (is_first_move_) {
       is_first_move_ = false;
@@ -94,12 +94,13 @@ bool Board::PlaceTile(const Tile& tile, const int row, const int col) {
   return false;
 }
 
-
-Word Board::GetWordFromPos(int row, int col, const bool horizontal, const Move& move) {
+Word Board::GetWordFromPos(int row, int col, const bool horizontal,
+                           const Move& move) {
   // Go backward to find start
   int start_row = row;
   int start_col = col;
-  while (start_row >= 0 && start_row < kHeight && start_col >= 0 && start_col < kWidth && 
+  while (start_row >= 0 && start_row < kHeight && start_col >= 0 &&
+         start_col < kWidth &&
          board_grid_.at(start_row).at(start_col).IsOccupied()) {
     if (horizontal) {
       --start_col;
@@ -117,7 +118,8 @@ Word Board::GetWordFromPos(int row, int col, const bool horizontal, const Move& 
     start_row = std::max(start_row, 0);
   }
 
-  if (start_row < 0 || start_row >= kHeight || start_col < 0 || start_col >= kWidth) {
+  if (start_row < 0 || start_row >= kHeight || start_col < 0 ||
+      start_col >= kWidth) {
     return Word();
   }
   Word word;
@@ -178,6 +180,7 @@ Word Board::GetWordFromPos(int row, int col, const bool horizontal, const Move& 
 std::vector<Word> Board::GetWordsFromMove(const Move& move,
                                           const bool horizontal) {
   auto backup_board = board_grid_;
+  bool is_first_move_backup = is_first_move_;
 
   // Temporarily place the move to get words
   for (const auto& [tile, row, col] : move) {
@@ -201,6 +204,7 @@ std::vector<Word> Board::GetWordsFromMove(const Move& move,
 
   // Reverse the changes
   board_grid_ = backup_board;
+  is_first_move_ = is_first_move_backup;
   return words;
 }
 
@@ -218,21 +222,6 @@ bool Board::IsInStartingSquare(const Move& move) {
 
 bool Board::AdjacentToAnotherInMove(const int row, const int col,
                                     const Move& move) {
-  // for (const auto& [t, m_row, m_col] : move) {
-  //   if (m_row - 1 == row && m_col == col) {
-  //     return true;
-  //   }
-  //   if (m_row + 1 == row && m_col == col) {
-  //     return true;
-  //   }
-  //   if (m_row == row && m_col + 1 == col) {
-  //     return true;
-  //   }
-  //   if (m_row == row && m_col - 1 == col) {
-  //     return true;
-  //   }
-  // }
-  // return false;
   return std::any_of(move.begin(), move.end(),
                      [row, col](const auto& placement) {
                        auto& [t, m_row, m_col] = placement;
@@ -268,7 +257,9 @@ bool Board::AdjacentToBoard(const int row, const int col) const {
 
 bool Board::IsAdjacentToExistingTiles(const Move& move) const {
   if (is_first_move_) {
-    return true;
+    return std::all_of(move.begin(), move.end(), [move](const Placement& p) {
+      return AdjacentToAnotherInMove(p.row, p.col, move);
+    });
   }
   int adjacent_to_board_count = 0;
   for (const auto& [t, row, col] : move) {
@@ -327,7 +318,6 @@ Board::MoveValidationResponse Board::ValidateMove(const Move& move,
                                                   const Lexicon& lexicon) {
   // Check if first move is on the starting square
   if (is_first_move_ && !IsInStartingSquare(move)) {
-    // std::cout << "First move is not on start square\n";
     return {{}, 0, ResponseStatus::kNotInStartingSquare, ""};
   }
 
@@ -365,7 +355,6 @@ Board::MoveValidationResponse Board::ValidateMove(const Move& move,
   }
 
   // Place the move after checking errors
-  is_first_move_ = false;
   for (const auto& [tile, row, col] : move) {
     PlaceTile(tile, row, col);
   }

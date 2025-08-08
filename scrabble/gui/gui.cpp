@@ -9,6 +9,7 @@
 #include "SDL_rect.h"
 #include "SDL_ttf.h"
 #include "SDL_video.h"
+#include "core/dictionary.hpp"
 #include "ingame_state.hpp"
 #include "input_names_state.hpp"
 #include "main_menu_state.hpp"
@@ -274,9 +275,15 @@ void GUI::ChangeState(GameStateType state_type,
 void GUI::Start() {
   SDL_Event e;
   while (!quit_) {
-    if (lexicon_ == nullptr) {
-      lexicon_ = resources_.twl_lexicon();
+    if (lexicon_ == nullptr || lexicon_->type() != lexicon_type_) {
+      if (lexicon_type_ == core::Dictionary::TWL) {
+        lexicon_ = resources_.twl_lexicon();
+      }
+      if (lexicon_type_ == core::Dictionary::CSW) {
+        lexicon_ = resources_.csw_lexicon();
+      }
     }
+
     while (SDL_PollEvent(&e) != 0) {
       if (e.type == SDL_QUIT) {
         quit_ = true;

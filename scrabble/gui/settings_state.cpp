@@ -85,12 +85,12 @@ void SettingsState::Update() {
     }
     if (option.label == "Dictionary") {
       if (option.current_option() == "TWL" &&
-          gui_->current_lexicon_option() != "TWL") {
-        gui_->ChangeDictionary(core::Dictionary::TWL);
+          gui_->lexicon_type() != core::Dictionary::TWL) {
+        gui_->SetLexiconType(core::Dictionary::TWL);
       }
       if (option.current_option() == "CSW" &&
-          gui_->current_lexicon_option() != "CSW") {
-        gui_->ChangeDictionary(core::Dictionary::CSW);
+          gui_->lexicon_type() != core::Dictionary::CSW) {
+        gui_->SetLexiconType(core::Dictionary::CSW);
       }
     }
   }

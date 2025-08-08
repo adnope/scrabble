@@ -117,6 +117,7 @@ class IngameState : public IGameState {
 
   bool show_swap_popup_ = false;
   bool no_tile_selected_error = false;
+  bool not_enough_tiles_in_bag_error = false;
   std::vector<int> selected_swap_indices_;
   std::array<SDL_Rect, 7> swap_deck_{};
   SDL_Rect swap_popup_box_{};

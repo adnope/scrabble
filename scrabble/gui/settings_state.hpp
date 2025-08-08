@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "SDL_rect.h"
+#include "core/dictionary.hpp"
 #include "gui.hpp"
 #include "i_game_state.hpp"
 
@@ -38,10 +39,10 @@ class SettingsState : public IGameState {
     // Set initial options
     for (Option& option : option_list_) {
       if (option.label == "Dictionary") {
-        if (gui_->current_lexicon_option() == "TWL") {
+        if (gui_->lexicon_type() == core::Dictionary::TWL) {
           option.current_option_index = 1;
         }
-        if (gui_->current_lexicon_option() == "CSW") {
+        if (gui_->lexicon_type() == core::Dictionary::CSW) {
           option.current_option_index = 0;
         }
       }

@@ -5,6 +5,7 @@
 #include <cctype>
 #include <climits>
 #include <cstdint>
+#include <iostream>
 #include <string>
 #include <vector>
 
@@ -14,6 +15,7 @@
 #include "SDL_render.h"
 #include "SDL_timer.h"
 #include "core/board.hpp"
+#include "core/dictionary.hpp"
 #include "core/player.hpp"
 #include "game/game.hpp"
 #include "gui.hpp"
@@ -265,7 +267,7 @@ void IngameState::RenderDeck(SDL_Renderer* renderer) {
   const auto deck = game_.current_player().deck();
   const int deck_size = static_cast<int>(deck.size());
   for (int i = 0; i < deck_size; ++i) {
-    if (dragged_tile_index_ == i) {
+    if (dragged_tile_index_ == i || deck.at(i).IsEmpty()) {
       continue;
     }
     if (deck.at(i).letter() == '?') {
@@ -545,6 +547,17 @@ void IngameState::RenderSwapPopup(SDL_Renderer* renderer) {
                       {error_x, error_y, error_w, error_h});
   }
 
+  if (not_enough_tiles_in_bag_error) {
+    const int error_h = button_h / 2;
+    const int error_x = gui_->window_width() / 2;
+    const int error_y = cancel_button_y + button_h + (modal_h / 40);
+    y += error_h + modal_h / 40;
+    int width = 0;
+    GUI::RenderFixedHeightCenteredText(
+        renderer, "Not enough tiles in bag to swap", gui_->jersey32(), error_x,
+        error_y, error_h, {255, 0, 0, 255}, width);
+  }
+
   for (int i = 0; i < static_cast<int>(deck.size()); ++i) {
     swap_deck_.at(i) = {start_x + (i * (tile_w + gap)), y, tile_w, tile_h};
 
@@ -558,7 +571,9 @@ void IngameState::RenderSwapPopup(SDL_Renderer* renderer) {
                         "assets/textures/ingame/selected_tile_background.png",
                         outline);
     }
-
+    if (game_.current_player().deck().at(i).IsEmpty()) {
+      continue;
+    }
     std::string image_path = "assets/textures/board/";
     std::string letter = (deck.at(i).letter() == '?')
                              ? "blank"
@@ -854,12 +869,15 @@ void IngameState::HandleActionButtons(SDL_Event& event) {
           {{}, name, IngameState::MoveType::PASS, message, {}});
     }
     if (SDL_PointInRect(&mouse_pos, &swap_button_) == 1) {
+      not_enough_tiles_in_bag_error = false;
+      no_tile_selected_error = false;
       ClearPendingPlayerMove();
       submit_error_message.clear();
       show_swap_popup_ = true;
       selected_swap_indices_.clear();
     }
     if (SDL_PointInRect(&mouse_pos, &submit_button_) == 1) {
+      submit_error_message.clear();
       if (!pending_move_.empty()) {
         SubmitMove();
       }
@@ -907,6 +925,12 @@ void IngameState::HandleSwapPopupEvent(SDL_Event& event) {
 
     if (SDL_PointInRect(&mouse_pos, &swap_confirm_button_) == 1) {
       if (!selected_swap_indices_.empty()) {
+        if (static_cast<int>(selected_swap_indices_.size()) >
+            game_.bag().num_tiles_remanining()) {
+          no_tile_selected_error = false;
+          not_enough_tiles_in_bag_error = true;
+          return;
+        }
         const std::string name = game_.current_player().name();
         game_.ExecuteSwapMove(selected_swap_indices_);
         const std::string turn_number = std::to_string(game_.turn_number());
@@ -917,6 +941,7 @@ void IngameState::HandleSwapPopupEvent(SDL_Event& event) {
         ClearPendingPlayerMove();
         show_swap_popup_ = false;
       } else {
+        not_enough_tiles_in_bag_error = false;
         no_tile_selected_error = true;
       }
     }
@@ -1060,6 +1085,11 @@ void IngameState::UpdateEndgameInfo() {
 void IngameState::Update() {
   if (gui_->lexicon() != nullptr && game_.lexicon() == nullptr) {
     game_.SetLexicon(gui_->lexicon());
+    if (game_.lexicon()->type() == core::Dictionary::CSW) {
+      std::cout << "Using CSW lexicon\n";
+    } else if (game_.lexicon()->type() == core::Dictionary::TWL) {
+      std::cout << "Using TWL lexicon\n";
+    }
   }
 
   if (game_.IsOver()) {

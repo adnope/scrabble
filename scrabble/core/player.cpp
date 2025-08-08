@@ -83,8 +83,7 @@ Player::MoveSubmissionResponse Player::SubmitMove(const Move &move,
   }
 
   // Get board validation response
-  auto board_response = board.ValidateMove(board_move, lexicon);
-  MoveSubmissionResponse response(board_response);
+  MoveSubmissionResponse response(board.ValidateMove(board_move, lexicon));
 
   if (response.status != Board::ResponseStatus::kSuccess) {
     return response;

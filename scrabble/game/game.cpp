@@ -25,6 +25,7 @@ Game::Game(const std::vector<std::string>& player_names) {
   //   board_.PlaceTile(placement.tile, placement.row, placement.col);
   //   bag_.RemoveTile(placement.tile.letter());
   // }
+
 }
 
 void Game::InitPlayerDecks() {
@@ -35,16 +36,17 @@ void Game::InitPlayerDecks() {
 
 bool Game::IsOver() {
   if (!is_over) {
-    if (bag_.num_tiles_remanining() == 0) {
+    if (consecutive_passes_ >= num_players() * 2) {
+      EndGame();
+      is_over = true;
+    }
+    else if (bag_.num_tiles_remanining() == 0) {
       for (const auto& player : players_) {
         if (player.current_deck_size() == 0) {
           EndGame();
           is_over = true;
         }
       }
-    } else if (consecutive_passes_ >= 2 * num_players()) {
-      EndGame();
-      is_over = true;
     }
   }
   return is_over;

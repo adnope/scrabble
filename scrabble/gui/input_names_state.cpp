@@ -8,6 +8,7 @@
 #include <string>
 
 #include "SDL_events.h"
+#include "SDL_keycode.h"
 #include "SDL_mouse.h"
 #include "SDL_rect.h"
 #include "gui/gui.hpp"
@@ -138,6 +139,16 @@ void InputNamesState::HandleKeystrokes(SDL_Event& event, std::string& input) {
           input.pop_back();
         }
         break;
+
+      case SDLK_TAB: {
+        const int n = static_cast<int>(input_boxes_.size());
+        if ((event.key.keysym.mod & KMOD_SHIFT) != 0) {
+          focused_box_ = (focused_box_ - 1) % n;
+          break;
+        }
+        focused_box_ = (focused_box_ + 1) % n;
+        break;
+      }
 
       case SDLK_RETURN:
       case SDLK_KP_ENTER:
