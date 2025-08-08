@@ -88,8 +88,6 @@ class Board {
 
   static bool IsInStartingSquare(const Move& move);
 
-  bool IsInStartingSquare(const Move& move) const;
-
   static int IsAligned(const Move& move);
 
   static bool AreInDictionary(const std::vector<std::string>& words,

@@ -52,5 +52,4 @@ class Lexicon {
   Node* NodePath(const std::string& word);
   unsigned int length;
 };
-
 }  // namespace core

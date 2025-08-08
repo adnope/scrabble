@@ -2,11 +2,12 @@
 
 #include <algorithm>
 #include <cctype>
-//#include <chrono>
+#include <chrono>
+#include <iostream>
 #include <memory>
 #include <string>
-#include "dictionary.hpp"
 
+#include "dictionary.hpp"
 
 namespace core {
 Node::Node() : is_word(false) {};
@@ -16,30 +17,16 @@ Lexicon::Lexicon() : root(std::make_unique<Node>()), length(0) {}
 void Node::size(unsigned int& curr) {
   curr++;
   for (const auto& suffix : suffixes) {
-    if(suffix.second != nullptr) {
-      suffix.second->size(curr);
-    }
+    suffix.second->size(curr);
   }
 }
 
 void Lexicon::AddWord(const std::string& word) {
-  // NodePath(word)->is_word = true;
-  // length++;
-  if (word.empty()) {
-        return;
-    }
-    Node* node = NodePath(word);
-    if (node == nullptr) {
-        return;
-    }
-    node->is_word = true;
-    length++;
+  NodePath(word)->is_word = true;
+  length++;
 }
 
 bool Lexicon::Contains(std::string word) const {
-  if(word.empty()) {
-    return false;
-  }
   std::transform(word.begin(), word.end(), word.begin(), ::tolower);
   const Node* node = FindNode(word);
   if (node == nullptr) {
@@ -49,9 +36,6 @@ bool Lexicon::Contains(std::string word) const {
 }
 
 bool Lexicon::ContainsPrefix(const std::string& prefix) const {
-  if(prefix.empty()) {
-    return false;
-  }
   return FindNode(prefix) != nullptr;
 }
 
@@ -66,15 +50,15 @@ static std::string reverse_str(const std::string& str) {
 }
 
 // Done
-void GADDAG(const std::string& word, std::vector<std::string>& array) {
+static void GADDAG(const std::string& word, std::vector<std::string>& array) {
   for (unsigned int i = 0; i < word.size(); i++) {
     std::pair<std::string, std::string> p = split_string(word, i);
     array.push_back(reverse_str(p.first) + "+" + p.second);
   }
 }
 
-void Lexicon::BuildLexiconTree(const core::Dictionary& dictionary) { 
-  //const auto start = std::chrono::high_resolution_clock::now();
+void Lexicon::BuildLexiconTree(const core::Dictionary& dictionary) {
+  const auto start = std::chrono::high_resolution_clock::now();
   std::vector<std::string> lexicon;
   std::vector<std::string> words = dictionary.GetWords();
   for (const auto& word : words) {
@@ -87,11 +71,11 @@ void Lexicon::BuildLexiconTree(const core::Dictionary& dictionary) {
     }
     lexicon.clear();
   }
-  // const auto end = std::chrono::high_resolution_clock::now();
-  // const std::chrono::duration<double, std::milli> elapsed = end - start;
+  const auto end = std::chrono::high_resolution_clock::now();
+  const std::chrono::duration<double, std::milli> elapsed = end - start;
 
-  //spdlog::info("[Lexicon] Lexicon tree built with {0} words in {1} ms.",
-  // size(), elapsed.count());
+  std::cout << "[Lexicon] Lexicon tree built with " << size() << " words in "
+            << elapsed.count() << " ms\n";
 }
 
 void Lexicon::PreloadDictionary(core::Dictionary::DictionaryType type) {
@@ -102,36 +86,22 @@ void Lexicon::PreloadDictionary(core::Dictionary::DictionaryType type) {
 }
 
 Node* Lexicon::NodePath(const std::string& word) {
-  if (word.empty() || !root) {
-    return nullptr;
+  if (word.empty()) {
+    return root.get();
   }
 
   Node* current = root.get();
-  // for (char c : word) {
-  //   auto it = current->suffixes.find(c);
-  //   if (it == current->suffixes.end()) {
-  //     current->suffixes[c] = std::make_unique<Node>();
-  //   }
-  //   current = current->suffixes[c].get();
-  // }
   for (char c : word) {
-        auto it = current->suffixes.find(c);
-        if (it == current->suffixes.end()) {
-            // Thay vì gán trực tiếp, chỉ tạo mới nếu chưa tồn tại
-            current->suffixes[c] = std::make_unique<Node>();
-        }
-        current = current->suffixes[c].get();
-        if (!current->is_word) { // Kiểm tra an toàn
-            return nullptr;
-        }
+    auto it = current->suffixes.find(c);
+    if (it == current->suffixes.end()) {
+      current->suffixes[c] = std::make_unique<Node>();
     }
+    current = current->suffixes[c].get();
+  }
   return current;
 }
 
 const Node* Lexicon::FindNode(const std::string& word) const {
-  if (word.empty() || !root) {
-        return nullptr;
-    }
   const Node* current = root.get();
   for (char c : word) {
     auto it = current->suffixes.find(c);

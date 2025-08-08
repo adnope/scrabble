@@ -12,8 +12,6 @@
 #include "spdlog/spdlog.h"
 
 
-
-
 // TEST_CASE("Lexicon preload test") {
 //   core::Lexicon lexicon;
 
