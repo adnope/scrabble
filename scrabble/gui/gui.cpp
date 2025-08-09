@@ -217,9 +217,9 @@ GUI::GUI() {
   }
   resources_.SetRenderer(renderer_);
 
-  // current_state_ = std::make_unique<MainMenuState>(this);
-  current_state_ = std::make_unique<InputNamesState>(this, 4);
-  ChangeState(GameStateType::Ingame, {"duy1", "duy2", "duy3", "duy4"});
+  current_state_ = std::make_unique<MainMenuState>(this);
+  // current_state_ = std::make_unique<InputNamesState>(this, 4);
+  // ChangeState(GameStateType::Ingame, {"duy1", "duy2", "duy3", "zwee1234567890"});
 }
 
 GUI::~GUI() {

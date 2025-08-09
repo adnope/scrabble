@@ -315,12 +315,11 @@ void IngameState::RenderPlayerinfoBoxes(SDL_Renderer* renderer) {
 
     const int padding = box.w / 30;
     const int x = box.x + padding;
+    const int h = (box.h - padding * 3) / 2;
+
     const int name_y = box.y + padding;
+    const int score_y = name_y + h + padding;
 
-    const int gap = box.h / 3;
-    const int score_y = name_y + gap;
-
-    constexpr SDL_Color kWhite = {255, 255, 255, 255};
     if (name == game_.current_player().name()) {
       gui_->RenderImage(
           renderer, "assets/textures/ingame/playerinfo_box_current.png", box);
@@ -328,8 +327,11 @@ void IngameState::RenderPlayerinfoBoxes(SDL_Renderer* renderer) {
       gui_->RenderImage(renderer, "assets/textures/ingame/playerinfo_box.png",
                         box);
     }
-    GUI::RenderText(renderer, name, gui_->jersey32(), x, name_y, kWhite);
-    GUI::RenderText(renderer, score, gui_->jersey32(), x, score_y, kWhite);
+    constexpr SDL_Color kWhite = {255, 255, 255, 255};
+    GUI::RenderFixedHeightText(renderer, name, gui_->jersey32(), x, name_y, h,
+                               kWhite);
+    GUI::RenderFixedHeightText(renderer, score, gui_->jersey32(), x, score_y, h,
+                               kWhite);
   }
 }
 
@@ -384,113 +386,65 @@ void IngameState::RenderMoveHistory(SDL_Renderer* renderer) {
   constexpr SDL_Color kDWColor = {228, 162, 163, 255};
   constexpr SDL_Color kTLColor = {12, 103, 156, 255};
   constexpr SDL_Color kTWColor = {191, 78, 78, 255};
-  int entry1_index = visible_entries_indices_[0];
-  if (entry1_index != -1) {
-    const auto& box = movehistory_[entry1_index].box;
-    gui_->RenderImage(renderer,
-                      "assets/textures/ingame/movehistory_entry_1.png", box);
-    const auto& content = movehistory_[entry1_index].move_content;
-    GUI::RenderText(renderer, content, gui_->jersey32(), box.x + 5, box.y + 10,
-                    kWhite);
-    if (movehistory_[entry1_index].move_type == MoveType::SUBMIT) {
-      const int letter_h = box.h * 5 / 12;
-      std::string words_str = "Words: ";
-      int words_str_w = 0;
-      GUI::RenderFixedHeightTextReturnWidth(
-          renderer, words_str, gui_->jersey32(), box.x + 5, box.y + (box.h / 2),
-          letter_h, kWhite, words_str_w);
-      const auto words = movehistory_[entry1_index].words;
-      int x = box.x + 5 + words_str_w;
-      for (const auto& word : words) {
-        int letter_gap = 1;
-        for (const auto& [letter, multiplier] : word.content()) {
-          std::string letter_str;
-          letter_str += static_cast<char>(toupper(letter));
-          SDL_Color color;
-          switch (multiplier) {
-            case core::Square::Multiplier::kNormal: {
-              color = kWhite;
-              break;
+
+  for (int i = 0; i < 2; ++i) {
+    const int index = visible_entries_indices_.at(i);
+    const std::string entry_box_texture =
+        "assets/textures/ingame/movehistory_entry_" + std::to_string(i + 1) +
+        ".png";
+    if (index != -1) {
+      const auto& box = movehistory_[index].box;
+      const int padding = box.h / 12;
+      gui_->RenderImage(renderer, entry_box_texture, box);
+      const auto& content = movehistory_[index].move_content;
+      GUI::RenderFixedHeightText(renderer, content, gui_->jersey32(),
+                                 box.x + padding, box.y + padding,
+                                 box.h * 5 / 12, kWhite);
+      if (movehistory_[index].move_type == MoveType::SUBMIT) {
+        const int letter_h = box.h * 5 / 12;
+        std::string words_str = "Words: ";
+        int words_str_w = 0;
+        GUI::RenderFixedHeightTextReturnWidth(
+            renderer, words_str, gui_->jersey32(), box.x + padding,
+            box.y + (box.h / 2), letter_h, kWhite, words_str_w);
+        const auto words = movehistory_[index].words;
+        int x = box.x + padding + words_str_w;
+        for (const auto& word : words) {
+          int letter_gap = 1;
+          for (const auto& [letter, multiplier] : word.content()) {
+            std::string letter_str;
+            letter_str += static_cast<char>(toupper(letter));
+            SDL_Color color;
+            switch (multiplier) {
+              case core::Square::Multiplier::kNormal: {
+                color = kWhite;
+                break;
+              }
+              case core::Square::Multiplier::kDoubleLetter: {
+                color = kDLColor;
+                break;
+              }
+              case core::Square::Multiplier::kDoubleWord: {
+                color = kDWColor;
+                break;
+              }
+              case core::Square::Multiplier::kTripleLetter: {
+                color = kTLColor;
+                break;
+              }
+              case core::Square::Multiplier::kTripleWord: {
+                color = kTWColor;
+                break;
+              }
             }
-            case core::Square::Multiplier::kDoubleLetter: {
-              color = kDLColor;
-              break;
-            }
-            case core::Square::Multiplier::kDoubleWord: {
-              color = kDWColor;
-              break;
-            }
-            case core::Square::Multiplier::kTripleLetter: {
-              color = kTLColor;
-              break;
-            }
-            case core::Square::Multiplier::kTripleWord: {
-              color = kTWColor;
-              break;
-            }
+            int letter_w = 0;
+            GUI::RenderFixedHeightTextReturnWidth(
+                renderer, letter_str, gui_->jersey32(), x, box.y + (box.h / 2),
+                letter_h, color, letter_w);
+            x += letter_w + letter_gap;
           }
-          int letter_w = 0;
-          GUI::RenderFixedHeightTextReturnWidth(
-              renderer, letter_str, gui_->jersey32(), x, box.y + (box.h / 2),
-              letter_h, color, letter_w);
-          x += letter_w + letter_gap;
+          x += letter_gap * 8;
         }
-        x += letter_gap * 8;
-      }
-    }
-  }
-  int entry2_index = visible_entries_indices_[1];
-  if (entry2_index != -1) {
-    const auto& box = movehistory_[entry2_index].box;
-    gui_->RenderImage(renderer,
-                      "assets/textures/ingame/movehistory_entry_2.png", box);
-    const auto& content = movehistory_[entry2_index].move_content;
-    GUI::RenderText(renderer, content, gui_->jersey32(), box.x + 5, box.y + 10,
-                    kWhite);
-    if (movehistory_[entry2_index].move_type == MoveType::SUBMIT) {
-      const int letter_h = box.h * 5 / 12;
-      std::string words_str = "Words: ";
-      int words_str_w = 0;
-      GUI::RenderFixedHeightTextReturnWidth(
-          renderer, words_str, gui_->jersey32(), box.x + 5, box.y + (box.h / 2),
-          letter_h, kWhite, words_str_w);
-      const auto words = movehistory_[entry2_index].words;
-      int x = box.x + 5 + words_str_w;
-      for (const auto& word : words) {
-        int letter_gap = 1;
-        for (const auto& [letter, multiplier] : word.content()) {
-          std::string letter_str;
-          letter_str += static_cast<char>(toupper(letter));
-          SDL_Color color;
-          switch (multiplier) {
-            case core::Square::Multiplier::kNormal: {
-              color = kWhite;
-              break;
-            }
-            case core::Square::Multiplier::kDoubleLetter: {
-              color = kDLColor;
-              break;
-            }
-            case core::Square::Multiplier::kDoubleWord: {
-              color = kDWColor;
-              break;
-            }
-            case core::Square::Multiplier::kTripleLetter: {
-              color = kTLColor;
-              break;
-            }
-            case core::Square::Multiplier::kTripleWord: {
-              color = kTWColor;
-              break;
-            }
-          }
-          int letter_w = 0;
-          GUI::RenderFixedHeightTextReturnWidth(
-              renderer, letter_str, gui_->jersey32(), x, box.y + (box.h / 2),
-              letter_h, color, letter_w);
-          x += letter_w + letter_gap;
-        }
-        x += letter_gap * 8;
       }
     }
   }
@@ -841,7 +795,7 @@ void IngameState::SubmitMove() {
     const std::string turn_number = std::to_string(game_.turn_number());
     const std::string points = std::to_string(response.move_points);
     const std::string message =
-        turn_number + ". " + name + " earned " + points + " points";
+        turn_number + ". " + name + " scored " + points + " points";
     movehistory_.push_back(
         {{}, name, MoveType::SUBMIT, message, response.words});
     pending_move_.clear();
