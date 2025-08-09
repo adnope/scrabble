@@ -17,8 +17,16 @@
 #include "core/board.hpp"
 #include "core/dictionary.hpp"
 #include "core/player.hpp"
+#include "core/square.hpp"
 #include "game/game.hpp"
 #include "gui.hpp"
+
+static inline SDL_Point MousePos() {
+  int x = 0;
+  int y = 0;
+  SDL_GetMouseState(&x, &y);
+  return SDL_Point{x, y};
+}
 
 namespace gui {
 IngameState::IngameState(GUI* gui, const std::vector<std::string>& player_names)
@@ -372,6 +380,10 @@ void IngameState::RenderMoveHistory(SDL_Renderer* renderer) {
   gui_->RenderImage(renderer, "assets/textures/ingame/right_arrow.png",
                     history_right_arrow_);
 
+  constexpr SDL_Color kDLColor = {104, 162, 195, 255};
+  constexpr SDL_Color kDWColor = {228, 162, 163, 255};
+  constexpr SDL_Color kTLColor = {12, 103, 156, 255};
+  constexpr SDL_Color kTWColor = {191, 78, 78, 255};
   int entry1_index = visible_entries_indices_[0];
   if (entry1_index != -1) {
     const auto& box = movehistory_[entry1_index].box;
@@ -381,15 +393,50 @@ void IngameState::RenderMoveHistory(SDL_Renderer* renderer) {
     GUI::RenderText(renderer, content, gui_->jersey32(), box.x + 5, box.y + 10,
                     kWhite);
     if (movehistory_[entry1_index].move_type == MoveType::SUBMIT) {
-      std::string words = "Words: ";
-      for (const auto& word : movehistory_[entry1_index].words) {
-        std::string word_str = word.AsString();
-        std::transform(word_str.begin(), word_str.end(), word_str.begin(),
-                       toupper);
-        words += word_str + ' ';
+      const int letter_h = box.h * 5 / 12;
+      std::string words_str = "Words: ";
+      int words_str_w = 0;
+      GUI::RenderFixedHeightTextReturnWidth(
+          renderer, words_str, gui_->jersey32(), box.x + 5, box.y + (box.h / 2),
+          letter_h, kWhite, words_str_w);
+      const auto words = movehistory_[entry1_index].words;
+      int x = box.x + 5 + words_str_w;
+      for (const auto& word : words) {
+        int letter_gap = 1;
+        for (const auto& [letter, multiplier] : word.content()) {
+          std::string letter_str;
+          letter_str += static_cast<char>(toupper(letter));
+          SDL_Color color;
+          switch (multiplier) {
+            case core::Square::Multiplier::kNormal: {
+              color = kWhite;
+              break;
+            }
+            case core::Square::Multiplier::kDoubleLetter: {
+              color = kDLColor;
+              break;
+            }
+            case core::Square::Multiplier::kDoubleWord: {
+              color = kDWColor;
+              break;
+            }
+            case core::Square::Multiplier::kTripleLetter: {
+              color = kTLColor;
+              break;
+            }
+            case core::Square::Multiplier::kTripleWord: {
+              color = kTWColor;
+              break;
+            }
+          }
+          int letter_w = 0;
+          GUI::RenderFixedHeightTextReturnWidth(
+              renderer, letter_str, gui_->jersey32(), x, box.y + (box.h / 2),
+              letter_h, color, letter_w);
+          x += letter_w + letter_gap;
+        }
+        x += letter_gap * 8;
       }
-      GUI::RenderText(renderer, words, gui_->jersey32(), box.x + 5, box.y + 40,
-                      kWhite);
     }
   }
   int entry2_index = visible_entries_indices_[1];
@@ -401,15 +448,50 @@ void IngameState::RenderMoveHistory(SDL_Renderer* renderer) {
     GUI::RenderText(renderer, content, gui_->jersey32(), box.x + 5, box.y + 10,
                     kWhite);
     if (movehistory_[entry2_index].move_type == MoveType::SUBMIT) {
-      std::string words = "Words: ";
-      for (const auto& word : movehistory_[entry2_index].words) {
-        std::string word_str = word.AsString();
-        std::transform(word_str.begin(), word_str.end(), word_str.begin(),
-                       toupper);
-        words += word_str + ' ';
+      const int letter_h = box.h * 5 / 12;
+      std::string words_str = "Words: ";
+      int words_str_w = 0;
+      GUI::RenderFixedHeightTextReturnWidth(
+          renderer, words_str, gui_->jersey32(), box.x + 5, box.y + (box.h / 2),
+          letter_h, kWhite, words_str_w);
+      const auto words = movehistory_[entry2_index].words;
+      int x = box.x + 5 + words_str_w;
+      for (const auto& word : words) {
+        int letter_gap = 1;
+        for (const auto& [letter, multiplier] : word.content()) {
+          std::string letter_str;
+          letter_str += static_cast<char>(toupper(letter));
+          SDL_Color color;
+          switch (multiplier) {
+            case core::Square::Multiplier::kNormal: {
+              color = kWhite;
+              break;
+            }
+            case core::Square::Multiplier::kDoubleLetter: {
+              color = kDLColor;
+              break;
+            }
+            case core::Square::Multiplier::kDoubleWord: {
+              color = kDWColor;
+              break;
+            }
+            case core::Square::Multiplier::kTripleLetter: {
+              color = kTLColor;
+              break;
+            }
+            case core::Square::Multiplier::kTripleWord: {
+              color = kTWColor;
+              break;
+            }
+          }
+          int letter_w = 0;
+          GUI::RenderFixedHeightTextReturnWidth(
+              renderer, letter_str, gui_->jersey32(), x, box.y + (box.h / 2),
+              letter_h, color, letter_w);
+          x += letter_w + letter_gap;
+        }
+        x += letter_gap * 8;
       }
-      GUI::RenderText(renderer, words, gui_->jersey32(), box.x + 5, box.y + 40,
-                      kWhite);
     }
   }
 }
@@ -417,7 +499,7 @@ void IngameState::RenderMoveHistory(SDL_Renderer* renderer) {
 void IngameState::HandleMoveHistoryNavigation(SDL_Event& event) {
   if (event.type == SDL_MOUSEBUTTONDOWN &&
       event.button.button == SDL_BUTTON_LEFT) {
-    SDL_Point mouse_pos = {event.motion.x, event.motion.y};
+    SDL_Point mouse_pos = MousePos();
     // See latest moves, indices increase
     if (SDL_PointInRect(&mouse_pos, &history_left_arrow_) == 1) {
       const int i1 = visible_entries_indices_[0];
@@ -434,11 +516,16 @@ void IngameState::HandleMoveHistoryNavigation(SDL_Event& event) {
     // See previous moves, indices decrease
     if (SDL_PointInRect(&mouse_pos, &history_right_arrow_) == 1) {
       history_view_locked = true;
-      const int i1 = visible_entries_indices_[0];
-      const int i2 = visible_entries_indices_[1];
-      if (i1 - 2 >= 0 && i2 - 2 >= 0) {
-        visible_entries_indices_[0] -= 2;
-        visible_entries_indices_[1] -= 2;
+      int& i1 = visible_entries_indices_[0];
+      int& i2 = visible_entries_indices_[1];
+      if (i1 - 2 >= 0) {
+        if (i2 == 1) {
+          i1 -= 1;
+          i2 = 0;
+        } else {
+          i1 -= 2;
+          i2 -= 2;
+        }
       }
     }
   }
@@ -661,7 +748,6 @@ void IngameState::RenderEndgamePopup(SDL_Renderer* renderer) {
     return;
   }
 
-  // Box
   int box_w = gui_->window_width() * 13 / 20;
   int box_h = gui_->window_height() * 4 / 5;
   endgame_popup_box_ = {(gui_->window_width() - box_w) / 2,
@@ -672,7 +758,6 @@ void IngameState::RenderEndgamePopup(SDL_Renderer* renderer) {
   const int padding_x = box_w / 20;
   const int padding_y = box_h / 20;
 
-  // Back button
   const int button_w = box_w * 3 / 10;
   const int button_h = box_h * 2 / 15;
   const int button_x = endgame_popup_box_.x + ((box_w - button_w) / 2);
@@ -766,8 +851,7 @@ void IngameState::SubmitMove() {
 void IngameState::HandleTileDrag(SDL_Event& event) {
   if (event.type == SDL_MOUSEBUTTONDOWN &&
       event.button.button == SDL_BUTTON_LEFT) {
-    SDL_Point mouse_pos{event.button.x, event.button.y};
-
+    SDL_Point mouse_pos = MousePos();
     // Check if clicked a tile in deck
     const auto& deck = game_.current_player().deck();
     for (int i = 0; i < static_cast<int>(deck.size()); ++i) {
@@ -790,7 +874,8 @@ void IngameState::HandleTileDrag(SDL_Event& event) {
   // Drop tile
   else if (event.type == SDL_MOUSEBUTTONUP &&
            event.button.button == SDL_BUTTON_LEFT && dragging_tile_) {
-    SDL_Point mouse_pos{event.button.x, event.button.y};
+    // SDL_Point mouse_pos{event.button.x, event.button.y};
+    SDL_Point mouse_pos = MousePos();
 
     // Check if dropped on a board square
     bool placed = false;
@@ -829,7 +914,7 @@ void IngameState::HandleTileDrag(SDL_Event& event) {
 void IngameState::HandleBoardSquareClick(SDL_Event& event) {
   if (event.type == SDL_MOUSEBUTTONDOWN &&
       event.button.button == SDL_BUTTON_LEFT) {
-    SDL_Point mouse_pos{event.motion.x, event.motion.y};
+    SDL_Point mouse_pos = MousePos();
     for (int row = 0; row < 15; ++row) {
       for (int col = 0; col < 15; ++col) {
         SDL_Rect square = board_display_grid_.at(row).at(col);
@@ -857,7 +942,7 @@ void IngameState::HandleBoardSquareClick(SDL_Event& event) {
 void IngameState::HandleActionButtons(SDL_Event& event) {
   if (event.type == SDL_MOUSEBUTTONDOWN &&
       event.button.button == SDL_BUTTON_LEFT) {
-    SDL_Point mouse_pos{event.motion.x, event.motion.y};
+    SDL_Point mouse_pos = MousePos();
     if (SDL_PointInRect(&mouse_pos, &pass_button_) == 1) {
       ClearPendingPlayerMove();
       const std::string name = game_.current_player().name();
@@ -880,6 +965,8 @@ void IngameState::HandleActionButtons(SDL_Event& event) {
       submit_error_message.clear();
       if (!pending_move_.empty()) {
         SubmitMove();
+      } else {
+        submit_error_message = "Place a tile before submitting";
       }
     }
   }
@@ -890,7 +977,7 @@ void IngameState::HandleSwapPopupEvent(SDL_Event& event) {
     return;
   }
 
-  SDL_Point mouse_pos{event.button.x, event.button.y};
+  SDL_Point mouse_pos = MousePos();
 
   bool is_hovering = false;
   for (const auto& tile : swap_deck_) {
@@ -958,7 +1045,7 @@ void IngameState::HandleBlankSelectPopupEvent(SDL_Event& event) {
     return;
   }
 
-  SDL_Point mouse_pos{event.button.x, event.button.y};
+  SDL_Point mouse_pos = MousePos();
   if (event.type == SDL_MOUSEBUTTONDOWN &&
       event.button.button == SDL_BUTTON_LEFT) {
     for (int i = 0; i < 26; ++i) {
@@ -978,7 +1065,7 @@ void IngameState::HandleEndgamePopupEvent(SDL_Event& event) {
     return;
   }
 
-  SDL_Point mouse_pos{event.button.x, event.button.y};
+  SDL_Point mouse_pos = MousePos();
   if (event.type == SDL_MOUSEMOTION || event.type == SDL_MOUSEBUTTONDOWN) {
     bool is_hovering_back = SDL_PointInRect(&mouse_pos, &back_button_) == 1;
 
@@ -995,8 +1082,8 @@ void IngameState::HandleEndgamePopupEvent(SDL_Event& event) {
   }
 }
 
-void IngameState::HandleHovering(SDL_Event& event) {
-  SDL_Point mouse_pos{event.motion.x, event.motion.y};
+void IngameState::HandleHovering() {
+  SDL_Point mouse_pos = MousePos();
 
   bool hovering_placed_tile_on_board = false;
   for (int row = 0; row < 15; ++row) {
@@ -1050,11 +1137,23 @@ void IngameState::HandleEvent(SDL_Event& event) {
     HandleEndgamePopupEvent(event);
     return;
   }
-  HandleHovering(event);
-  HandleTileDrag(event);
-  HandleBoardSquareClick(event);
-  HandleActionButtons(event);
-  HandleMoveHistoryNavigation(event);
+  switch (event.type) {
+    case SDL_MOUSEMOTION:
+      HandleHovering();
+      HandleTileDrag(event);
+      break;
+
+    case SDL_MOUSEBUTTONDOWN:
+    case SDL_MOUSEBUTTONUP:
+      HandleTileDrag(event);
+      HandleBoardSquareClick(event);
+      HandleActionButtons(event);
+      HandleMoveHistoryNavigation(event);
+      break;
+
+    default:
+      break;
+  }
 }
 
 void IngameState::UpdateEndgameInfo() {

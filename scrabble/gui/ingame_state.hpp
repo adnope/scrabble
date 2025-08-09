@@ -69,7 +69,7 @@ class IngameState : public IGameState {
   game::Game game_;
 
   bool is_hovering_ = false;
-  void HandleHovering(SDL_Event& event);
+  void HandleHovering();
 
   std::array<std::array<SDL_Rect, kBoardSize>, kBoardSize>
       board_display_grid_{};

@@ -38,6 +38,13 @@ class GUI {
   static void RenderFixedHeightText(SDL_Renderer* renderer,
                                     const std::string& text, TTF_Font* font,
                                     int x, int y, int height, SDL_Color color);
+
+  static void RenderFixedHeightTextReturnWidth(SDL_Renderer* renderer,
+                                               const std::string& text,
+                                               TTF_Font* font, int x, int y,
+                                               int height, SDL_Color color,
+                                               int& width);
+
   static void RenderFixedHeightCenteredText(SDL_Renderer* renderer,
                                             const std::string& text,
                                             TTF_Font* font, int x, int y,

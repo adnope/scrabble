@@ -137,6 +137,42 @@ void GUI::RenderFixedHeightText(SDL_Renderer* renderer, const std::string& text,
   SDL_DestroyTexture(texture);
 }
 
+void GUI::RenderFixedHeightTextReturnWidth(SDL_Renderer* renderer,
+                                           const std::string& text,
+                                           TTF_Font* font, int x, int y,
+                                           int height, SDL_Color color,
+                                           int& width) {
+  if (text.empty()) {
+    return;
+  }
+  if (font == nullptr) {
+    std::cerr << "Font is null\n";
+    return;
+  }
+  SDL_Surface* surface = TTF_RenderUTF8_Solid(font, text.c_str(), color);
+  if (surface == nullptr) {
+    std::cerr << "Failed to create surface: " << TTF_GetError() << '\n';
+    return;
+  }
+  SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+  if (texture == nullptr) {
+    std::cerr << "Failed to create texture: " << SDL_GetError() << '\n';
+    SDL_FreeSurface(surface);
+    return;
+  }
+
+  SDL_Rect area;
+  area.x = x;
+  area.y = y;
+  area.h = height;
+  area.w = surface->w * height / surface->h;
+  width = area.w;
+  SDL_RenderCopy(renderer, texture, nullptr, &area);
+
+  SDL_FreeSurface(surface);
+  SDL_DestroyTexture(texture);
+}
+
 void GUI::RenderFixedHeightCenteredText(SDL_Renderer* renderer,
                                         const std::string& text, TTF_Font* font,
                                         int x, int y, int height,
@@ -181,10 +217,9 @@ GUI::GUI() {
   }
   resources_.SetRenderer(renderer_);
 
-  current_state_ = std::make_unique<MainMenuState>(this);
-  // current_state_ = std::make_unique<InputNamesState>(this, 4);
-  // ChangeState(GameStateType::Ingame,
-  //             {"duy1", "duy2", "duy3", "1234567890duy1"});
+  // current_state_ = std::make_unique<MainMenuState>(this);
+  current_state_ = std::make_unique<InputNamesState>(this, 4);
+  ChangeState(GameStateType::Ingame, {"duy1", "duy2", "duy3", "duy4"});
 }
 
 GUI::~GUI() {
