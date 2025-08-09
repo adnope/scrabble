@@ -28,6 +28,10 @@ static inline SDL_Point MousePos() {
   return SDL_Point{x, y};
 }
 
+static inline bool InRect(const SDL_Point& point, const SDL_Rect& rect) {
+  return SDL_PointInRect(&point, &rect) == 1;
+}
+
 namespace gui {
 IngameState::IngameState(GUI* gui, const std::vector<std::string>& player_names)
     : gui_(gui),
@@ -313,12 +317,13 @@ void IngameState::RenderPlayerinfoBoxes(SDL_Renderer* renderer) {
     const std::string score =
         "Score: " + std::to_string(player_infos_[i].score);
 
-    const int padding = box.w / 30;
-    const int x = box.x + padding;
-    const int h = (box.h - padding * 3) / 2;
+    const int padding_x = box.w / 30;
+    const int padding_y = box.h / 20;
+    const int x = box.x + padding_x;
+    const int h = (box.h - padding_y * 3) / 2;
 
-    const int name_y = box.y + padding;
-    const int score_y = name_y + h + padding;
+    const int name_y = box.y + padding_y;
+    const int score_y = name_y + h + padding_y;
 
     if (name == game_.current_player().name()) {
       gui_->RenderImage(
@@ -455,7 +460,7 @@ void IngameState::HandleMoveHistoryNavigation(SDL_Event& event) {
       event.button.button == SDL_BUTTON_LEFT) {
     SDL_Point mouse_pos = MousePos();
     // See latest moves, indices increase
-    if (SDL_PointInRect(&mouse_pos, &history_left_arrow_) == 1) {
+    if (InRect(mouse_pos, history_left_arrow_)) {
       const int i1 = visible_entries_indices_[0];
       const int mh_size = static_cast<int>(movehistory_.size());
       if (i1 + 1 < mh_size) {
@@ -468,7 +473,7 @@ void IngameState::HandleMoveHistoryNavigation(SDL_Event& event) {
       }
     }
     // See previous moves, indices decrease
-    if (SDL_PointInRect(&mouse_pos, &history_right_arrow_) == 1) {
+    if (InRect(mouse_pos, history_right_arrow_)) {
       history_view_locked = true;
       int& i1 = visible_entries_indices_[0];
       int& i2 = visible_entries_indices_[1];
@@ -809,7 +814,7 @@ void IngameState::HandleTileDrag(SDL_Event& event) {
     // Check if clicked a tile in deck
     const auto& deck = game_.current_player().deck();
     for (int i = 0; i < static_cast<int>(deck.size()); ++i) {
-      if (SDL_PointInRect(&mouse_pos, &deck_display_.at(i)) == 1) {
+      if (InRect(mouse_pos, deck_display_.at(i))) {
         submit_error_message.clear();
         dragging_tile_ = true;
         dragged_tile_index_ = i;
@@ -828,15 +833,13 @@ void IngameState::HandleTileDrag(SDL_Event& event) {
   // Drop tile
   else if (event.type == SDL_MOUSEBUTTONUP &&
            event.button.button == SDL_BUTTON_LEFT && dragging_tile_) {
-    // SDL_Point mouse_pos{event.button.x, event.button.y};
     SDL_Point mouse_pos = MousePos();
 
     // Check if dropped on a board square
     bool placed = false;
     for (int row = 0; row < kBoardSize && !placed; ++row) {
       for (int col = 0; col < kBoardSize && !placed; ++col) {
-        if (SDL_PointInRect(&mouse_pos, &board_display_grid_.at(row).at(col)) ==
-                1 &&
+        if (InRect(mouse_pos, board_display_grid_.at(row).at(col)) &&
             !board_occupied.at(row).at(col)) {
           if (!game_.current_player()
                    .deck()
@@ -881,7 +884,7 @@ void IngameState::HandleBoardSquareClick(SDL_Event& event) {
             break;
           }
         }
-        bool hovering_square = (SDL_PointInRect(&mouse_pos, &square) == 1);
+        bool hovering_square = (InRect(mouse_pos, square));
         if (hovering_square && found != pending_move_.end() &&
             square_in_pending_placements) {
           submit_error_message.clear();
@@ -897,7 +900,7 @@ void IngameState::HandleActionButtons(SDL_Event& event) {
   if (event.type == SDL_MOUSEBUTTONDOWN &&
       event.button.button == SDL_BUTTON_LEFT) {
     SDL_Point mouse_pos = MousePos();
-    if (SDL_PointInRect(&mouse_pos, &pass_button_) == 1) {
+    if (InRect(mouse_pos, pass_button_)) {
       ClearPendingPlayerMove();
       const std::string name = game_.current_player().name();
       game_.ExecutePassMove();
@@ -907,7 +910,7 @@ void IngameState::HandleActionButtons(SDL_Event& event) {
       movehistory_.push_back(
           {{}, name, IngameState::MoveType::PASS, message, {}});
     }
-    if (SDL_PointInRect(&mouse_pos, &swap_button_) == 1) {
+    if (InRect(mouse_pos, swap_button_)) {
       not_enough_tiles_in_bag_error = false;
       no_tile_selected_error = false;
       ClearPendingPlayerMove();
@@ -915,7 +918,7 @@ void IngameState::HandleActionButtons(SDL_Event& event) {
       show_swap_popup_ = true;
       selected_swap_indices_.clear();
     }
-    if (SDL_PointInRect(&mouse_pos, &submit_button_) == 1) {
+    if (InRect(mouse_pos, submit_button_)) {
       submit_error_message.clear();
       if (!pending_move_.empty()) {
         SubmitMove();
@@ -933,64 +936,69 @@ void IngameState::HandleSwapPopupEvent(SDL_Event& event) {
 
   SDL_Point mouse_pos = MousePos();
 
-  bool is_hovering = false;
-  for (const auto& tile : swap_deck_) {
-    if (SDL_PointInRect(&mouse_pos, &tile) == 1) {
-      is_hovering = true;
-    }
-  }
-  if (SDL_PointInRect(&mouse_pos, &swap_confirm_button_) == 1 ||
-      SDL_PointInRect(&mouse_pos, &swap_cancel_button_) == 1) {
-    is_hovering = true;
-  }
-  if (is_hovering) {
-    SDL_SetCursor(gui_->cursor(SDL_SYSTEM_CURSOR_HAND));
-  } else {
-    SDL_SetCursor(gui_->cursor(SDL_SYSTEM_CURSOR_ARROW));
-  }
-
-  if (event.type == SDL_MOUSEBUTTONDOWN &&
-      event.button.button == SDL_BUTTON_LEFT) {
-    for (int i = 0; i < 7; ++i) {
-      if (SDL_PointInRect(&mouse_pos, &swap_deck_.at(i)) == 1) {
-        no_tile_selected_error = false;
-        auto it = std::find(selected_swap_indices_.begin(),
-                            selected_swap_indices_.end(), i);
-        if (it == selected_swap_indices_.end()) {
-          selected_swap_indices_.push_back(i);
-        } else {
-          selected_swap_indices_.erase(it);
-        }
+  auto over_rect = [&](const SDL_Rect& r) { return InRect(mouse_pos, r); };
+  auto over_any_tile = [&] {
+    for (int i = 0; i < static_cast<int>(swap_deck_.size()); ++i) {
+      if (over_rect(swap_deck_.at(i))) {
+        return true;
       }
     }
+    return false;
+  };
 
-    if (SDL_PointInRect(&mouse_pos, &swap_confirm_button_) == 1) {
-      if (!selected_swap_indices_.empty()) {
-        if (static_cast<int>(selected_swap_indices_.size()) >
-            game_.bag().num_tiles_remanining()) {
-          no_tile_selected_error = false;
-          not_enough_tiles_in_bag_error = true;
-          return;
-        }
-        const std::string name = game_.current_player().name();
-        game_.ExecuteSwapMove(selected_swap_indices_);
-        const std::string turn_number = std::to_string(game_.turn_number());
-        const std::string message =
-            turn_number + ". " + name + " swapped some tiles";
-        movehistory_.push_back(
-            {{}, name, IngameState::MoveType::SWAP, message, {}});
-        ClearPendingPlayerMove();
-        show_swap_popup_ = false;
+  const bool hovering = over_any_tile() || over_rect(swap_confirm_button_) ||
+                        over_rect(swap_cancel_button_);
+  SDL_SetCursor(gui_->cursor(hovering ? SDL_SYSTEM_CURSOR_HAND
+                                      : SDL_SYSTEM_CURSOR_ARROW));
+
+  if (event.type != SDL_MOUSEBUTTONDOWN ||
+      event.button.button != SDL_BUTTON_LEFT) {
+    return;
+  }
+
+  for (int i = 0; i < static_cast<int>(swap_deck_.size()); ++i) {
+    if (over_rect(swap_deck_.at(i))) {
+      no_tile_selected_error = false;
+      auto it = std::find(selected_swap_indices_.begin(),
+                          selected_swap_indices_.end(), i);
+      if (it == selected_swap_indices_.end()) {
+        selected_swap_indices_.push_back(i);
       } else {
-        not_enough_tiles_in_bag_error = false;
-        no_tile_selected_error = true;
+        selected_swap_indices_.erase(it);
       }
+      break;
     }
+  }
 
-    if (SDL_PointInRect(&mouse_pos, &swap_cancel_button_) == 1) {
+  if (over_rect(swap_confirm_button_)) {
+    if (!selected_swap_indices_.empty()) {
+      if (static_cast<int>(selected_swap_indices_.size()) >
+          game_.bag().num_tiles_remanining()) {
+        no_tile_selected_error = false;
+        not_enough_tiles_in_bag_error = true;
+        return;
+      }
+
+      const std::string name = game_.current_player().name();
+      game_.ExecuteSwapMove(selected_swap_indices_);
+
+      const std::string turn_number = std::to_string(game_.turn_number());
+      const std::string message =
+          turn_number + ". " + name + " swapped some tiles";
+      movehistory_.push_back(
+          {{}, name, IngameState::MoveType::SWAP, message, {}});
+
+      ClearPendingPlayerMove();
       show_swap_popup_ = false;
-      selected_swap_indices_.clear();
+    } else {
+      not_enough_tiles_in_bag_error = false;
+      no_tile_selected_error = true;
     }
+  }
+
+  if (over_rect(swap_cancel_button_)) {
+    show_swap_popup_ = false;
+    selected_swap_indices_.clear();
   }
 }
 
@@ -1003,7 +1011,7 @@ void IngameState::HandleBlankSelectPopupEvent(SDL_Event& event) {
   if (event.type == SDL_MOUSEBUTTONDOWN &&
       event.button.button == SDL_BUTTON_LEFT) {
     for (int i = 0; i < 26; ++i) {
-      if (SDL_PointInRect(&mouse_pos, &letter_rects_.at(i)) == 1) {
+      if (InRect(mouse_pos, letter_rects_.at(i))) {
         selected_letter_index_ = i;
         blank_tile_use_ = static_cast<char>(i + 'a');
         pending_move_.push_back({blank_tile_index_, blank_tile_use_,
@@ -1021,7 +1029,7 @@ void IngameState::HandleEndgamePopupEvent(SDL_Event& event) {
 
   SDL_Point mouse_pos = MousePos();
   if (event.type == SDL_MOUSEMOTION || event.type == SDL_MOUSEBUTTONDOWN) {
-    bool is_hovering_back = SDL_PointInRect(&mouse_pos, &back_button_) == 1;
+    bool is_hovering_back = InRect(mouse_pos, back_button_);
 
     if (is_hovering_back) {
       SDL_SetCursor(gui_->cursor(SDL_SYSTEM_CURSOR_HAND));
@@ -1053,7 +1061,7 @@ void IngameState::HandleHovering() {
           break;
         }
       }
-      bool hovering_square = (SDL_PointInRect(&mouse_pos, &square) == 1);
+      bool hovering_square = (InRect(mouse_pos, square));
       if (hovering_square && square_in_pending_placements) {
         hovering_placed_tile_on_board = true;
         break;
@@ -1061,12 +1069,11 @@ void IngameState::HandleHovering() {
     }
   }
 
-  is_hovering_ = SDL_PointInRect(&mouse_pos, &pass_button_) == 1 ||
-                 SDL_PointInRect(&mouse_pos, &swap_button_) == 1 ||
-                 SDL_PointInRect(&mouse_pos, &submit_button_) == 1 ||
-                 SDL_PointInRect(&mouse_pos, &history_left_arrow_) == 1 ||
-                 SDL_PointInRect(&mouse_pos, &history_right_arrow_) == 1 ||
-                 hovering_placed_tile_on_board;
+  is_hovering_ =
+      InRect(mouse_pos, pass_button_) || InRect(mouse_pos, swap_button_) ||
+      InRect(mouse_pos, submit_button_) ||
+      InRect(mouse_pos, history_left_arrow_) ||
+      InRect(mouse_pos, history_right_arrow_) || hovering_placed_tile_on_board;
 
   if (is_hovering_) {
     SDL_SetCursor(gui_->cursor(SDL_SYSTEM_CURSOR_HAND));
