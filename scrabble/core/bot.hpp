@@ -41,7 +41,7 @@ class Bot : public Player {
   static Player::Move PassMove();
   Player::Move FindBestMove(Board& board, Lexicon& lexicon, Bag& bag);
 
-  // Các phương thức hỗ trợ cho logic AI
+  // Các phương thức hỗ trợ cho logic giải
   std::vector<Player::Move> GenerateAllMoves(Board& board, Lexicon& lexicon);
   static bool IsAnchor(int row, int col, Board& board);
   void GenerateMoveFromAnchor(bool horizontal, Board& board, Lexicon& lexicon,
@@ -68,9 +68,9 @@ class Bot : public Player {
   void AutoPlaceTile(Board& board, Lexicon& lexicon, Bag& bag);
 
  private:
-  std::vector<Player::Move> moves_;  // Kế thừa từ Player
+  std::vector<Player::Move> moves_;   
   std::unique_ptr<Lexicon>
-      lexicon_;  // Lưu trữ con trỏ tới lexicon để sử dụng trong IsValidMove
+      lexicon_;
   void BuildCrossWordSegment(Board& board, const Board::Move& move, int& r,
                              int& c, bool cross_horizontal, bool forward,
                              std::string& word);
