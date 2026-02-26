@@ -1,5 +1,11 @@
 # Scrabble
 
+![screenshot_main_menu](https://github.com/adnope/scrabble/blob/main/screenshots/main_menu.png)
+![screenshot_game_start](https://github.com/adnope/scrabble/blob/main/screenshots/game_start.png)
+![screenshot_gameplay](https://github.com/adnope/scrabble/blob/main/screenshots/gameplay.png)
+![screenshot_game_end](https://github.com/adnope/scrabble/blob/main/screenshots/game_end.png)
+
+
 ## Tổng quan
 
 Scrabble là dự án game cho môn học Lập trình nâng cao INT2215 kì hè 2024-2025
